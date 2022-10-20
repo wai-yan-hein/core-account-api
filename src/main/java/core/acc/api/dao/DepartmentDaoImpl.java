@@ -1,12 +1,13 @@
 package core.acc.api.dao;
 
 import core.acc.api.entity.Department;
+import core.acc.api.entity.DepartmentKey;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class DepartmentDaoImpl extends AbstractDao<String, Department> implements DepartmentDao {
+public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> implements DepartmentDao {
 
     @Override
     public Department save(Department dept) {
@@ -15,8 +16,8 @@ public class DepartmentDaoImpl extends AbstractDao<String, Department> implement
     }
 
     @Override
-    public Department findById(String id) {
-        return getByKey(id);
+    public Department findById(DepartmentKey key) {
+        return getByKey(key);
     }
 
     @Override
@@ -39,9 +40,9 @@ public class DepartmentDaoImpl extends AbstractDao<String, Department> implement
 
         if (!compCode.equals("-")) {
             if (strFilter.isEmpty()) {
-                strFilter = "o.compCode = " + compCode;
+                strFilter = "o.key.compCode = '" + compCode+"'";
             } else {
-                strFilter = strFilter + " and o.compCode = " + compCode;
+                strFilter = strFilter + " and o.key.compCode = '" + compCode+"'";
             }
         }
 
@@ -73,7 +74,7 @@ public class DepartmentDaoImpl extends AbstractDao<String, Department> implement
 
     @Override
     public List<Department> getDepartmentTree(String compCode) {
-        String hsql = "select o from Department o where  o.parentDept = '#' and o.compCode = '" + compCode + "'";
+        String hsql = "select o from Department o where  o.parentDept = '#' and o.key.compCode = '" + compCode + "'";
         List<Department> departments = findHSQL(hsql);
         for (Department dep : departments) {
             getChild(dep, compCode);
@@ -82,8 +83,8 @@ public class DepartmentDaoImpl extends AbstractDao<String, Department> implement
     }
 
     private void getChild(Department parent, String compCode) {
-        String hsql = "select o from Department o where o.parentDept = '" + parent.getDeptCode()
-                + "' and o.compCode = '" + compCode + "'";
+        String hsql = "select o from Department o where o.parentDept = '" + parent.getKey().getDeptCode()
+                + "' and o.key.compCode = '" + compCode + "'";
         List<Department> departments = findHSQL(hsql);
         parent.setChild(departments);
         if (!departments.isEmpty()) {
@@ -101,7 +102,7 @@ public class DepartmentDaoImpl extends AbstractDao<String, Department> implement
 
     @Override
     public List<Department> findAll(String compCode) {
-        String hsql = "select o from Department o where o.compCode ='" + compCode + "'";
+        String hsql = "select o from Department o where o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
 }

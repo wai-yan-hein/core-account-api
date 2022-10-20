@@ -2,6 +2,7 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.COADao;
+import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.entity.VCOALv3;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +22,14 @@ public class COAServiceImpl implements COAService {
 
     @Override
     public ChartOfAccount save(ChartOfAccount coa) throws Exception {
-        if (Util1.isNullOrEmpty(coa.getCoaCode())) {
+        if (Util1.isNullOrEmpty(coa.getKey().getCoaCode())) {
             Integer macId = coa.getMacId();
-            String compCode = coa.getCompCode();
+            String compCode = coa.getKey().getCompCode();
             String coaCode = getCOACode(macId, compCode);
-            ChartOfAccount valid = findById(coaCode);
+            coa.getKey().setCoaCode(coaCode);
+            ChartOfAccount valid = findById(coa.getKey());
             if (valid == null) {
-                coa.setCoaCode(coaCode);
+                coa.getKey().setCoaCode(coaCode);
             } else {
                 throw new IllegalStateException("Duplicate Account Code");
             }
@@ -41,8 +43,8 @@ public class COAServiceImpl implements COAService {
     }
 
     @Override
-    public ChartOfAccount findById(String id) {
-        return dao.findById(id);
+    public ChartOfAccount findById(COAKey key) {
+        return dao.findById(key);
     }
 
     @Override
@@ -81,8 +83,4 @@ public class COAServiceImpl implements COAService {
         return dao.getVCOACurrency(compCode);
     }
 
-    @Override
-    public VCOALv3 findByCode(String code) {
-        return dao.findByCode(code);
-    }
 }

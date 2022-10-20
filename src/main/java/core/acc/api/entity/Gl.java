@@ -1,26 +1,18 @@
 package core.acc.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-@Getter
-@Setter
-@ToString
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@RequiredArgsConstructor
+@Data
 @Entity
 @Table(name = "gl")
 public class Gl {
-    @Id
-    @Column(name = "gl_code", unique = true, nullable = false)
-    private String glCode;
+    @EmbeddedId
+    private GlKey key;
     @Temporal(TemporalType.DATE)
     @Column(name = "gl_date")
     private Date glDate;
@@ -44,8 +36,6 @@ public class Gl {
     private String vouNo;
     @Column(name = "trader_code")
     private String traderCode;
-    @Column(name = "comp_code")
-    private String compCode;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")
     private Date createdDate;

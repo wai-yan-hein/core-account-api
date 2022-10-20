@@ -6,11 +6,10 @@ import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements COADao {
+public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements COADao {
     @Autowired
     private SessionFactory sessionFactory;
 
@@ -21,13 +20,13 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
     }
 
     @Override
-    public ChartOfAccount findById(String id) {
-        return getByKey(id);
+    public ChartOfAccount findById(COAKey key) {
+        return getByKey(key);
     }
 
     @Override
     public List<ChartOfAccount> getCOA(String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.active = true and  o.compCode = '" + compCode + "' order by o.coaLevel,o.coaCodeUsr";
+        String hsql = "select o from ChartOfAccount o where o.active = true and  o.key.compCode = '" + compCode + "' order by o.coaLevel,o.coaCodeUsr";
         return findHSQL(hsql);
     }
 
@@ -36,14 +35,14 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
         int status = 10;
         //check gl
         String delSql = "delete from ChartOfAccount o where o.code = '"
-                + code + "' and o.compCode = '" + compCode + "'";
+                + code + "' and o.key.compCode = '" + compCode + "'";
         String vSql = "select distinct o.sourceAcId,o.accCode from Gl o where (o.sourceAcId ='" + code + "' or o.accCode = '" + code + "')"
-                + " and o.compCode = '" + compCode + "'";
+                + " and o.key.compCode = '" + compCode + "'";
         //check opening
-        String opSql = "select distinct o.sourceAccId from COAOpening o where o.sourceAccId = '" + code + "' and o.compCode = '" + compCode + "'\n"
+        String opSql = "select distinct o.sourceAccId from COAOpening o where o.sourceAccId = '" + code + "' and o.key.compCode = '" + compCode + "'\n"
                 + "and (o.drAmt<>0 or o.crAmt<>0)";
         //check trader
-        String tSql = "select distinct o.account.code from Trader o where o.account.code = '" + code + "' and o.compCode = '" + compCode + "'";
+        String tSql = "select distinct o.account.code from Trader o where o.account.code = '" + code + "' and o.key.compCode = '" + compCode + "'";
         List<COAOpening> listOP = getSession().createQuery(opSql, COAOpening.class).list();
         List<Gl> listGl = getSession().createQuery(vSql, Gl.class).list();
         List<Trader> listTrader = getSession().createQuery(tSql, Trader.class).list();
@@ -55,33 +54,12 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getUnusedCOA(String compCode) {
-        List<ChartOfAccount> unused = new ArrayList<>();
-        List<VCOALv3> listCOA = getVCOALv3(compCode);
-        if (!listCOA.isEmpty()) {
-            listCOA.forEach(coa -> {
-                String code = coa.getCoaCode();
-                String hsql = "select distinct o.sourceAcId,o.accCode from Gl o "
-                        + "where (o.sourceAcId = '" + code + "' or o.accCode = '" + code + "') "
-                        + " and o.compCode = '" + compCode + "'";
-                List<Gl> list = getSession().createQuery(hsql, Gl.class).list();
-                if (list.isEmpty()) {
-                    //unused
-                    String hsql1 = "select distinct o.sourceAccId from COAOpening o "
-                            + " where o.sourceAccId = '" + code + "' and o.compCode = '" + compCode + "'\n"
-                            + "and (o.drAmt<>0 or o.crAmt <> 0)";
-                    List<COAOpening> list1 = getSession().createQuery(hsql1, COAOpening.class).list();
-                    if (list1.isEmpty()) {
-                        unused.add(new ChartOfAccount(code, coa.getCoaNameEng()));
-                    }
-                }
-            });
-        }
-        return unused;
+        return  null;
     }
 
     @Override
     public List<ChartOfAccount> getCOAChild(String parentCode, String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.compCode = '" + compCode + "'";
+        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.key.compCode = '" + compCode + "' order by o.coaCodeUsr";
         return findHSQL(hsql);
     }
 
@@ -98,13 +76,8 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
     }
 
     @Override
-    public VCOALv3 findByCode(String code) {
-        return getSession().get(VCOALv3.class, code);
-    }
-
-    @Override
     public List<ChartOfAccount> getCOATree(String compCode) {
-        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.compCode = '" + compCode + "'";
+        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.key.compCode = '" + compCode + "'";
         List<ChartOfAccount> chart = findHSQL(hsql);
         for (ChartOfAccount coa : chart) {
             getChild(coa, compCode);
@@ -114,7 +87,7 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getAllChild(String parent, String compCode) {
-        String strSql = "select o from ChartOfAccount o where o.compCode = '"
+        String strSql = "select o from ChartOfAccount o where o.key.compCode = '"
                 + compCode + "' and o.code = '" + parent + "'";
         List<ChartOfAccount> listAllChild = findHSQL(strSql);
         getChild(listAllChild, parent, compCode);
@@ -122,18 +95,18 @@ public class COADaoImpl extends AbstractDao<String, ChartOfAccount> implements C
     }
 
     private void getChild(List<ChartOfAccount> listAllChild, String parent, String compCode) {
-        String strSql = "select o from ChartOfAccount o where o.compCode = '"
+        String strSql = "select o from ChartOfAccount o where o.key.compCode = '"
                 + compCode + "' and o.coaParent = '" + parent + "'";
         List<ChartOfAccount> listCOA = findHSQL(strSql);
         if (!listCOA.isEmpty()) {
             listAllChild.addAll(listCOA);
         }
-        listCOA.forEach(coa -> getChild(listAllChild, coa.getCoaCode(), compCode));
+        listCOA.forEach(coa -> getChild(listAllChild, coa.getKey().getCoaCode(), compCode));
     }
 
     private void getChild(ChartOfAccount parent, String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getCoaCode()
-                + "' and o.compCode = '" + compCode + "'";
+        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getKey().getCoaCode()
+                + "' and o.key.compCode = '" + compCode + "'";
         List<ChartOfAccount> chart = findHSQL(hsql);
         parent.setChild(chart);
         if (!chart.isEmpty()) {

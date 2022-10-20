@@ -1,7 +1,7 @@
 package core.acc.api.service;
 
 import core.acc.api.dao.VDespDao;
-import core.acc.api.entity.VDesp;
+import core.acc.api.entity.VDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +15,7 @@ public class VDespServiceImpl implements VDespService {
     private VDespDao dao;
 
     @Override
-    public List<VDesp> getDesp(String compCode) {
+    public List<VDescription> getDesp(String compCode) {
         return dao.getDesp(compCode);
     }
 }

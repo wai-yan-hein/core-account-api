@@ -1,5 +1,6 @@
 package core.acc.api.service;
 
+import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.entity.VCOALv3;
 
@@ -11,7 +12,7 @@ public interface COAService {
 
     ChartOfAccount save(ChartOfAccount coa, String opDate) throws Exception;
 
-    ChartOfAccount findById(String id);
+    ChartOfAccount findById(COAKey id);
 
     List<ChartOfAccount> getCOA(String compCode);
 
@@ -25,5 +26,4 @@ public interface COAService {
 
     List<VCOALv3> getVCOACurrency(String compCode);
 
-    VCOALv3 findByCode(String code);
 }

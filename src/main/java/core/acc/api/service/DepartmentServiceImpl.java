@@ -1,7 +1,9 @@
 package core.acc.api.service;
 
+import core.acc.api.common.Util1;
 import core.acc.api.dao.DepartmentDao;
 import core.acc.api.entity.Department;
+import core.acc.api.entity.DepartmentKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,24 +21,23 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department save(Department dept) {
-        if (dept.getDeptCode() == null || dept.getDeptCode().isEmpty()) {
+        if (Util1.isNullOrEmpty(dept.getKey().getDeptCode())) {
             Integer macId = dept.getMacId();
-            String compCode = dept.getCompCode();
+            String compCode = dept.getKey().getCompCode();
             String depCode = getDepCode(macId, compCode);
-            dept.setDeptCode(depCode);
+            dept.getKey().setDeptCode(depCode);
         }
         dept = dao.save(dept);
         return dept;
     }
 
     @Override
-    public Department findById(String id) {
-        return dao.findById(id);
+    public Department findById(DepartmentKey key) {
+        return dao.findById(key);
     }
 
     @Override
-    public List<Department> search(String code, String name, String compCode,
-                                   String userCode, String parentId, boolean active) {
+    public List<Department> search(String code, String name, String compCode, String userCode, String parentId, boolean active) {
         return dao.search(code, name, compCode, userCode, parentId, active);
     }
 

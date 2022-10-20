@@ -41,18 +41,15 @@ public class AccountController {
     private VTranSourceService tranSourceService;
     @Autowired
     private ReportService reportService;
-    private String exportPath = "temp";
 
     @GetMapping(path = "/get-department")
-    public ResponseEntity<List<Department>> getDepartment(@RequestParam String compCode) {
-        List<Department> listCat = departmentService.findAll(compCode);
-        return ResponseEntity.ok(listCat);
+    public ResponseEntity<?> getDepartment(@RequestParam String compCode) {
+        return ResponseEntity.ok(departmentService.findAll(compCode));
     }
 
-    @GetMapping(path = "/find-department")
-    public ResponseEntity<Department> findDepartment(@RequestParam String deptCode) {
-        Department dep = departmentService.findById(deptCode);
-        return ResponseEntity.ok(dep);
+    @PostMapping(path = "/find-department")
+    public ResponseEntity<?> findDepartment(@RequestParam DepartmentKey key) {
+        return ResponseEntity.ok(departmentService.findById(key));
     }
 
     @GetMapping(path = "/get-department-tree")
@@ -109,10 +106,14 @@ public class AccountController {
         return ResponseEntity.ok(chart);
     }
 
-    @GetMapping(path = "/get-coa-child")
-    public ResponseEntity<List<ChartOfAccount>> getCOAChild(@RequestParam String parentCode, @RequestParam String compCode) {
-        List<ChartOfAccount> chart = coaService.getCOAChild(parentCode, compCode);
-        return ResponseEntity.ok(chart);
+    @PostMapping(path = "/get-coa-child")
+    public ResponseEntity<?> getCOAChild(@RequestBody COAKey key) {
+        return ResponseEntity.ok(coaService.getCOAChild(key.getCoaCode(), key.getCompCode()));
+    }
+
+    @PostMapping(path = "/find-coa")
+    public ResponseEntity<?> findCOA(@RequestBody COAKey key) {
+        return ResponseEntity.ok(coaService.findById(key));
     }
 
     @PostMapping(path = "/save-coa")
@@ -137,10 +138,9 @@ public class AccountController {
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
-        List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, desp,
-                srcAcc, acc, curCode, reference, compCode,
-                tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+        List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, desp, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
+        String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
         Util1.writeJsonFile(vGls, path);
         ro.setFile(Util1.zipJsonFile(path));
@@ -159,8 +159,7 @@ public class AccountController {
         List<String> department = filter.getDepartments();
         List<TmpOpening> openings = new ArrayList<>();
         try {
-            openings = coaOpeningService.getCOAOpening(coaCode, opDate, clDate,
-                    3, curCode, compCode, department, macId, traderCode);
+            openings = coaOpeningService.getCOAOpening(coaCode, opDate, clDate, 3, curCode, compCode, department, macId, traderCode);
         } catch (Exception e) {
             log.error(String.format("getCOAOpening: %s", e.getMessage()));
         }
@@ -208,7 +207,7 @@ public class AccountController {
 
     //Desp
     @GetMapping(path = "/get-description")
-    public ResponseEntity<List<VDesp>> getDesp(@RequestParam String compCode) {
+    public ResponseEntity<List<VDescription>> getDesp(@RequestParam String compCode) {
         return ResponseEntity.ok(despService.getDesp(compCode));
     }
 

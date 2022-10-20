@@ -34,7 +34,7 @@ public class ReportController {
         String opDate = filter.getOpeningDate();
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
-        String desp = Util1.isNull(filter.getDesp(), "-");
+        String des = Util1.isNull(filter.getDesp(), "-");
         String srcAcc = Util1.isNull(filter.getSrcAcc(), "-");
         String acc = Util1.isNull(filter.getAcc(), "-");
         String curCode = Util1.isNull(filter.getCurCode(), "-");
@@ -60,15 +60,15 @@ public class ReportController {
                     Util1.writeJsonFile(triBalance, exportPath);
                 }
                 case "ARAP" -> {
-                    List<VApar> aparList = reportService.getApAr(traderCode, traderType, macId);
-                    Util1.writeJsonFile(aparList, exportPath);
+                    List<VApar> list = reportService.getApAr(traderCode, traderType, macId);
+                    Util1.writeJsonFile(list, exportPath);
                 }
                 case "Income&Expenditure" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", true, macId);
                     reportService.getIncomeAndExpenditure(incomeGroup, expenseGroup, macId);
                 }
                 case "IndividualLedger" -> {
-                    List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, desp,
+                    List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, des,
                             srcAcc, acc, curCode, reference, compCode,
                             tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
                     Util1.writeJsonFile(vGls, exportPath);

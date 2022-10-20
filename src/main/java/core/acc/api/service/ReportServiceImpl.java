@@ -205,7 +205,7 @@ public class ReportServiceImpl implements ReportService {
         List<ChartOfAccount> listCoA = coaDao.getAllChild(code, compCode);
         if (!listCoA.isEmpty()) {
             tmp = "";
-            tmp = listCoA.stream().map(coa -> String.format("'%s',", coa.getCoaCode())).reduce(tmp, String::concat);
+            tmp = listCoA.stream().map(coa -> String.format("'%s',", coa.getKey().getCoaCode())).reduce(tmp, String::concat);
         }
         tmp = tmp.substring(0, tmp.length() - 1);
         return Util1.isNull(tmp, "-");
@@ -680,9 +680,9 @@ public class ReportServiceImpl implements ReportService {
         String delSql1 = "delete from tmp_tri where mac_id =" + macId + "";
         String delSql2 = "delete from tmp_closing where mac_id =" + macId + "";
         dao.execSQLRpt(delSql1, delSql2);
-        String opSql = "insert into tmp_closing(coa_code, cur_code, dr_amt, cr_amt, dept_code, mac_id)\n"
+        String opSql = "insert into tmp_closing(coa_code, cur_code, dr_amt, cr_amt, dept_code,comp_code, mac_id)\n"
                 + "select coa_code, cur_code,if(sum(dr_amt-cr_amt)>0, sum(dr_amt-cr_amt),0) dr_amt, \n"
-                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code," + macId + "\n"
+                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code,'" + compCode + "'," + macId + "\n"
                 + "from (\n"
                 + "select op.source_acc_id as coa_code, op.cur_code,\n"
                 + "		   sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt,dept_code\n"
@@ -727,9 +727,9 @@ public class ReportServiceImpl implements ReportService {
                 + ")a\n"
                 + "group by coa_code, cur_code";
 
-        String sql = "insert into tmp_tri(coa_code, curr_id, dr_amt, cr_amt,dept_code,mac_id)\n"
+        String sql = "insert into tmp_tri(coa_code, curr_id, dr_amt, cr_amt,dept_code,comp_code,mac_id)\n"
                 + "select coa_code, cur_code,if(sum(dr_amt-cr_amt)>0, sum(dr_amt-cr_amt),0) dr_amt, \n"
-                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code," + macId + "\n"
+                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code,'" + compCode + "'," + macId + "\n"
                 + "from (\n"
                 + "     select coa_code,cur_code,dr_amt,cr_amt,dept_code\n"
                 + "     from tmp_closing \n"

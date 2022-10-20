@@ -2,13 +2,14 @@ package core.acc.api.dao;
 
 
 import core.acc.api.entity.Gl;
+import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VGl;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public class GlDaoImpl extends AbstractDao<String, Gl> implements GlDao {
+public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public Gl save(Gl gl) throws Exception {
@@ -17,21 +18,19 @@ public class GlDaoImpl extends AbstractDao<String, Gl> implements GlDao {
     }
 
     @Override
-    public Gl findByCode(String glCode) {
-        return getByKey(glCode);
+    public Gl findByCode(GlKey key) {
+        return getByKey(key);
     }
 
     @Override
     public boolean delete(Gl gl) {
-        String sql = "delete from gl where gl_code = '" + gl.getGlCode() + "'";
+        String sql = "delete from gl where gl_code = '" + gl.getKey().getGlCode() + "'";
         execSQL(sql);
         return true;
     }
 
     @Override
-    public List<VGl> search(String fromDate, String toDate, String desp, String srcAcc,
-                            String acc, String curCode, String reference, String deptCode, String retNo,
-                            String compCode, String tranSource, String glVouNo, String traderCode) {
+    public List<VGl> search(String fromDate, String toDate, String desp, String srcAcc, String acc, String curCode, String reference, String deptCode, String retNo, String compCode, String tranSource, String glVouNo, String traderCode) {
         String hsql = "select o from VGl o where date(o.glDate) between '" + fromDate + "' and '" + toDate + "'";
         String strFilter = "";
 
@@ -75,7 +74,7 @@ public class GlDaoImpl extends AbstractDao<String, Gl> implements GlDao {
 
     @Override
     public void deleteGl(String vouNo, String tranSource) {
-        String sql = "delete from gl where ref_no ='" + vouNo + "' and '" + tranSource + "'";
+        String sql = "delete from gl where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "'";
         execSQL(sql);
     }
 }

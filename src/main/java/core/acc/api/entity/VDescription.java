@@ -1,15 +1,16 @@
 package core.acc.api.entity;
 
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 
 @Data
-public class VTranSource {
+public class VDescription {
     @Id
-    @Column(name = "tran_source")
-    private String tranSource;
+    @Column(name = "description")
+    private String description;
     @Column(name = "comp_code")
     private String compCode;
+
 }

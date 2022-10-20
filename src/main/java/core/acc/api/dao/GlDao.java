@@ -1,6 +1,7 @@
 package core.acc.api.dao;
 
 import core.acc.api.entity.Gl;
+import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VGl;
 
 import java.util.List;
@@ -8,7 +9,7 @@ import java.util.List;
 public interface GlDao {
     Gl save(Gl gl) throws Exception;
 
-    Gl findByCode(String glCode);
+    Gl findByCode(GlKey key);
 
     boolean delete(Gl gl);
 

@@ -1,9 +1,9 @@
 package core.acc.api.dao;
 
-import core.acc.api.entity.VDesp;
+import core.acc.api.entity.VDescription;
 
 import java.util.List;
 
 public interface VDespDao {
-    List<VDesp> getDesp(String compCode);
+    List<VDescription> getDesp(String compCode);
 }

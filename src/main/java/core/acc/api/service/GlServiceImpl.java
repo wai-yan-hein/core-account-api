@@ -5,6 +5,7 @@ import core.acc.api.common.Util1;
 import core.acc.api.dao.GlDao;
 import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.Gl;
+import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VGl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,13 +26,16 @@ public class GlServiceImpl implements GlService {
 
     @Override
     public Gl save(Gl gl) throws Exception {
-        if (Util1.isNull(gl.getGlCode())) {
+        if (Util1.isNull(gl.getKey().getGlCode())) {
             Integer macId = gl.getMacId();
-            String compCode = gl.getCompCode();
+            String compCode = gl.getKey().getCompCode();
             String glCode = getGLCode(macId, compCode);
-            Gl valid = findByCode(glCode);
+            GlKey key = new GlKey();
+            key.setGlCode(glCode);
+            key.setCompCode(compCode);
+            Gl valid = findByCode(key);
             if (Objects.isNull(valid)) {
-                gl.setGlCode(glCode);
+                gl.getKey().setGlCode(glCode);
             } else {
                 throw new IllegalStateException("Duplication Occur in Gl");
             }
@@ -40,7 +44,10 @@ public class GlServiceImpl implements GlService {
         }
         if (gl.getDelList() != null) {
             for (String code : gl.getDelList()) {
-                Gl gv = findByCode(code);
+                GlKey key = new GlKey();
+                key.setCompCode(gl.getKey().getCompCode());
+                key.setGlCode(code);
+                Gl gv = findByCode(key);
                 backupGl(gv, "GV_DELETE");
                 glDao.delete(gv);
             }
@@ -55,7 +62,7 @@ public class GlServiceImpl implements GlService {
             Gl tmp = glList.get(0);
             String vouNo = tmp.getRefNo();
             String tranSource = tmp.getTranSource();
-            String compCode = tmp.getCompCode();
+            String compCode = tmp.getKey().getCompCode();
             boolean delete = tmp.isDeleted();
             glDao.deleteGl(vouNo, tranSource);
             if (!delete) {
@@ -79,8 +86,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public Gl findByCode(String glCode) {
-        return glDao.findByCode(glCode);
+    public Gl findByCode(GlKey key) {
+        return glDao.findByCode(key);
     }
 
     @Override
@@ -92,7 +99,7 @@ public class GlServiceImpl implements GlService {
     private void backupGl(Gl gl, String option) {
         String userCode = gl.getModifyBy();
         Integer macId = gl.getMacId();
-        String logCode = getGLLogCode(macId, gl.getCompCode());
+        String logCode = getGLLogCode(macId, gl.getKey().getCompCode());
         String sql = "insert into gl_log(gl_code, gl_date, created_date, modify_date, modify_by, \n"
                 + "description, source_ac_id, account_id, cur_code, dr_amt, cr_amt, \n"
                 + "reference, dept_code, voucher_no, user_code, trader_code, comp_code, \n"
@@ -104,7 +111,7 @@ public class GlServiceImpl implements GlService {
                 + "tran_source, gl_vou_no, split_id, intg_upd_status, remark, \n"
                 + "ref_no, mac_id,'" + option + "','" + userCode + "'," + macId + ",'" + logCode + "'\n"
                 + "from gl\n"
-                + "where gl_code = '" + gl.getGlCode() + "'";
+                + "where gl_code = '" + gl.getKey().getGlCode() + "'";
         reportDao.execSQLRpt(sql);
     }
 

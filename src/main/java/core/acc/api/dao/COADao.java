@@ -1,5 +1,6 @@
 package core.acc.api.dao;
 
+import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.entity.VCOALv3;
 
@@ -8,7 +9,7 @@ import java.util.List;
 public interface COADao {
     ChartOfAccount save(ChartOfAccount coa);
 
-    ChartOfAccount findById(String id);
+    ChartOfAccount findById(COAKey key);
 
     List<ChartOfAccount> getCOA(String compCode);
 
@@ -22,7 +23,6 @@ public interface COADao {
 
     List<VCOALv3> getVCOACurrency(String compCode);
 
-    VCOALv3 findByCode(String code);
 
     List<ChartOfAccount> getCOATree(String compCode);
 
