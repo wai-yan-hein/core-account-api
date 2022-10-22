@@ -184,10 +184,7 @@ public class AccountController {
     //Trader
     @PostMapping(path = "/save-trader")
     public ResponseEntity<?> getTrader(@RequestBody Trader trader) {
-        trader = traderService.save(trader);
-        ro.setCompCode(trader.getKey().getCompCode());
-        ro.setVouNo(trader.getKey().getCode());
-        return ResponseEntity.ok(ro);
+        return ResponseEntity.ok(traderService.save(trader));
     }
 
     @GetMapping(path = "/get-trader")
