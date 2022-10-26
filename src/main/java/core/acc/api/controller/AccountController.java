@@ -34,12 +34,6 @@ public class AccountController {
     @Autowired
     private CurrencyService currencyService;
     @Autowired
-    private VDespService despService;
-    @Autowired
-    private VRefService refService;
-    @Autowired
-    private VTranSourceService tranSourceService;
-    @Autowired
     private ReportService reportService;
 
     @GetMapping(path = "/get-department")
@@ -205,19 +199,19 @@ public class AccountController {
     //Desp
     @GetMapping(path = "/get-description")
     public ResponseEntity<List<VDescription>> getDesp(@RequestParam String compCode) {
-        return ResponseEntity.ok(despService.getDesp(compCode));
+        return ResponseEntity.ok(null);
     }
 
     //Ref
     @GetMapping(path = "/get-reference")
     public ResponseEntity<List<VRef>> getRef(@RequestParam String compCode) {
-        return ResponseEntity.ok(refService.getRef(compCode));
+        return ResponseEntity.ok(null);
     }
 
     //TranSource
     @GetMapping(path = "/get-tran-source")
     public ResponseEntity<List<VTranSource>> getTranSource(@RequestParam String compCode) {
-        return ResponseEntity.ok(tranSourceService.getTranSource(compCode));
+        return ResponseEntity.ok(null);
     }
 
 }

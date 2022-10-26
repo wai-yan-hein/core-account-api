@@ -48,16 +48,17 @@ public class ReportServiceImpl implements ReportService {
                                         String acc, String curCode, String reference,
                                         String compCode, String tranSource, String traderCode, String traderType,
                                         String coaLv2, String coaLv1, Integer macId) throws SQLException {
+        String filter = "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n";
         String sql = "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
                 "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no,\n" +
                 "dep_usr_code, trader_code,trader_name, comp_code, tran_source, gl_vou_no,\n" +
                 "remark, mac_id, ref_no, trader_name, discriminator, \n" +
                 "src_usr_code, src_acc_name, src_parent_2, src_parent_1, acc_usr_code, acc_name, acc_parent_2, acc_parent_1\n" +
                 "from v_gl \n" +
-                "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
-                "and comp_code = '" + compCode + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
+                ""+filter+"\n"+
                 "and ((account_id = '" + acc + "' or '-' = '" + acc + "') or (source_ac_id ='" + acc + "' or '-' ='" + acc + "'))\n" +
                 "and ((src_parent_2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "') or (acc_parent_2 ='" + coaLv2 + "' or '-'='" + coaLv2 + "'))\n" +
                 "and ((src_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "') or (acc_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "'))\n" +

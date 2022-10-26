@@ -15,19 +15,19 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
 
     @Override
     public List<Trader> getTrader(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
 
     @Override
     public List<Trader> getCustomer(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.traderType = 'C' and and o.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.traderType = 'C' and and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
 
     @Override
     public List<Trader> getSupplier(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.traderType = 'S' and o.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.traderType = 'S' and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
 }

@@ -25,12 +25,8 @@ public class ReportController {
     private ReportService reportService;
     private final ReturnObject ro = new ReturnObject();
 
-    @PostMapping(
-            value = "/get-report",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public @ResponseBody
-    ReturnObject getReport(@RequestBody ReportFilter filter) {
+    @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
+    public @ResponseBody ReturnObject getReport(@RequestBody ReportFilter filter) {
         String opDate = filter.getOpeningDate();
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
@@ -50,8 +46,7 @@ public class ReportController {
         String expenseGroup = filter.getExpenseGroup();
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
-        String exportPath = String.format("temp%s%s.json", File.separator,
-                reportName + filter.getMacId());
+        String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
         reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
         try {
             switch (reportName) {
@@ -68,9 +63,7 @@ public class ReportController {
                     reportService.getIncomeAndExpenditure(incomeGroup, expenseGroup, macId);
                 }
                 case "IndividualLedger" -> {
-                    List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, des,
-                            srcAcc, acc, curCode, reference, compCode,
-                            tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+                    List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
                     Util1.writeJsonFile(vGls, exportPath);
                 }
             }
@@ -113,13 +106,11 @@ public class ReportController {
         String traderType = Util1.isNull(filter.getTraderType(), "-");
         reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
         reportService.genArAp(compCode, opDate, stDate, enDate, currency, traderCode, macId);
-        List<VApar> aparList = reportService.getApAr(traderCode, traderType, macId);
-        return ResponseEntity.ok(aparList);
+        return ResponseEntity.ok(reportService.getApAr(traderCode, traderType, macId));
     }
 
     @GetMapping(path = "/get-trader-balance")
-    public ResponseEntity<Double> getTraderBalance( @RequestParam String date,
-                                                   @RequestParam String traderCode, @RequestParam String compCode) {
+    public ResponseEntity<Double> getTraderBalance(@RequestParam String date, @RequestParam String traderCode, @RequestParam String compCode) {
         return ResponseEntity.ok(reportService.getTraderLastBalance(date, traderCode, compCode));
     }
 }
