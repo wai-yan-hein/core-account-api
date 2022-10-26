@@ -1,6 +1,7 @@
 package core.acc.api.service;
 
 import core.acc.api.entity.Trader;
+import core.acc.api.entity.TraderKey;
 
 import java.util.List;
 
@@ -12,5 +13,7 @@ public interface TraderService {
     List<Trader> getCustomer(String compCode);
 
     List<Trader> getSupplier(String compCode);
+
+    void delete(TraderKey t);
 
 }

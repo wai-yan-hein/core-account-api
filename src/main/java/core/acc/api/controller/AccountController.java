@@ -181,6 +181,14 @@ public class AccountController {
         return ResponseEntity.ok(traderService.save(trader));
     }
 
+    @PostMapping(path = "/delete-trader")
+    public ResponseEntity<?> deleteTrader(@RequestBody TraderKey key) {
+        traderService.delete(key);
+        ro.setMessage("Deleted.");
+        log.info("deleted trader.");
+        return ResponseEntity.ok(ro);
+    }
+
     @GetMapping(path = "/get-trader")
     public ResponseEntity<List<Trader>> getTrader(@RequestParam String compCode) {
         return ResponseEntity.ok(traderService.getTrader(compCode));

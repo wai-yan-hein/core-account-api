@@ -3,6 +3,7 @@ package core.acc.api.service;
 import core.acc.api.common.Util1;
 import core.acc.api.dao.TraderDao;
 import core.acc.api.entity.Trader;
+import core.acc.api.entity.TraderKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,11 @@ public class TraderServiceImpl implements TraderService {
     @Override
     public List<Trader> getSupplier(String compCode) {
         return traderDao.getSupplier(compCode);
+    }
+
+    @Override
+    public void delete(TraderKey t) {
+        traderDao.delete(t);
     }
 
     private String getTraderCode(String type, String compCode) {
