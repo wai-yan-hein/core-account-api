@@ -1,6 +1,7 @@
 package core.acc.api.dao;
 
 import core.acc.api.entity.Trader;
+import core.acc.api.entity.TraderKey;
 
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface TraderDao {
     List<Trader> getCustomer(String compCode);
 
     List<Trader> getSupplier(String compCode);
+    void delete(TraderKey t);
+
 }

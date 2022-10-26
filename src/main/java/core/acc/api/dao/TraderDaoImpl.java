@@ -1,6 +1,7 @@
 package core.acc.api.dao;
 
 import core.acc.api.entity.Trader;
+import core.acc.api.entity.TraderKey;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,5 +30,11 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
     public List<Trader> getSupplier(String compCode) {
         String hsql = "select o from Trader o where o.active = true and o.traderType = 'S' and o.compCode ='" + compCode + "'";
         return findHSQL(hsql);
+    }
+
+    @Override
+    public void delete(TraderKey key) {
+        String sql = "delete from trader where comp_code ='" + key.getCompCode() + "' and code ='" + key.getCode() + "'";
+        execSQL(sql);
     }
 }
