@@ -44,10 +44,10 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<VGl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
-                                        String acc, String curCode, String reference,
-                                        String compCode, String tranSource, String traderCode, String traderType,
-                                        String coaLv2, String coaLv1, Integer macId) throws SQLException {
+    public List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
+                                       String acc, String curCode, String reference,
+                                       String compCode, String tranSource, String traderCode, String traderType,
+                                       String coaLv2, String coaLv1, Integer macId) throws SQLException {
         String filter = "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and comp_code = '" + compCode + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
@@ -58,7 +58,7 @@ public class ReportServiceImpl implements ReportService {
                 "remark, mac_id, ref_no, trader_name, discriminator, \n" +
                 "src_usr_code, src_acc_name, src_parent_2, src_parent_1, acc_usr_code, acc_name, acc_parent_2, acc_parent_1\n" +
                 "from v_gl \n" +
-                ""+filter+"\n"+
+                "" + filter + "\n" +
                 "and ((account_id = '" + acc + "' or '-' = '" + acc + "') or (source_ac_id ='" + acc + "' or '-' ='" + acc + "'))\n" +
                 "and ((src_parent_2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "') or (acc_parent_2 ='" + coaLv2 + "' or '-'='" + coaLv2 + "'))\n" +
                 "and ((src_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "') or (acc_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "'))\n" +
@@ -70,15 +70,17 @@ public class ReportServiceImpl implements ReportService {
                 "and (cur_code ='" + curCode + "' or '-' = '" + curCode + "')\n" +
                 "order by gl_date,tran_source,gl_code\n";
         ResultSet rs = dao.executeSql(sql);
-        List<VGl> vGls = new ArrayList<>();
+        List<Gl> Gls = new ArrayList<>();
         if (!Objects.isNull(rs)) {
             while (rs.next()) {
-                VGl v = new VGl();
-                v.setGlCode(rs.getString("gl_code"));
+                Gl v = new Gl();
+                GlKey key = new GlKey();
+                key.setCompCode(compCode);
+                key.setGlCode(rs.getString("gl_code"));
+                v.setKey(key);
                 v.setGlDate(rs.getDate("gl_date"));
-                v.setFormatDate(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
                 v.setDescription((rs.getString("description")));
-                v.setSourceAcId(rs.getString("source_ac_id"));
+                v.setSrcAccCode(rs.getString("source_ac_id"));
                 v.setAccCode(rs.getString("account_id"));
                 v.setCurCode(rs.getString("cur_code"));
                 v.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
@@ -90,30 +92,29 @@ public class ReportServiceImpl implements ReportService {
                 v.setDeptUsrCode(rs.getString("dep_usr_code"));
                 v.setTraderCode(rs.getString("trader_code"));
                 v.setTraderName(rs.getString("trader_name"));
-                v.setCompCode(rs.getString("comp_code"));
                 v.setTranSource(rs.getString("tran_source"));
                 v.setGlVouNo(rs.getString("gl_vou_no"));
                 v.setSrcAccName(rs.getString("src_acc_name"));
                 v.setAccName(rs.getString("acc_name"));
-                vGls.add(v);
+                Gls.add(v);
             }
         }
-        if (!vGls.isEmpty()) {
-            vGls.forEach(vgl -> {
-                String account = Util1.isNull(vgl.getAccCode(), "-");
+        if (!Gls.isEmpty()) {
+            Gls.forEach(Gl -> {
+                String account = Util1.isNull(Gl.getAccCode(), "-");
                 if (account.equals(srcAcc)) {
                     //swap amt
-                    double tmpDrAmt = Util1.getDouble(vgl.getDrAmt());
-                    vgl.setDrAmt(vgl.getCrAmt());
-                    vgl.setCrAmt(tmpDrAmt);
+                    double tmpDrAmt = Util1.getDouble(Gl.getDrAmt());
+                    Gl.setDrAmt(Gl.getCrAmt());
+                    Gl.setCrAmt(tmpDrAmt);
                     //swap acc
-                    String tmpStr = vgl.getAccName();
-                    vgl.setAccName(vgl.getSrcAccName());
-                    vgl.setSrcAccName(tmpStr);
+                    String tmpStr = Gl.getAccName();
+                    Gl.setAccName(Gl.getSrcAccName());
+                    Gl.setSrcAccName(tmpStr);
                 }
             });
         }
-        return vGls;
+        return Gls;
     }
 
     private void deleteTmp(String tableName, Integer macId) {
@@ -932,7 +933,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<VGl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId) {
+    public List<Gl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId) {
         String[] i = incomeGroup.split(",");
         String[] e = expenseGroup.split(",");
         String delSql = "delete from tmp_in_ex where mac_id = " + macId + "";

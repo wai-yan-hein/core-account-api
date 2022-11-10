@@ -68,4 +68,12 @@ public class Gl {
     private boolean deleted;
     @Transient
     private boolean cash = false;
+    @Transient
+    private String deptUsrCode;
+    @Transient
+    private String traderName;
+    @Transient
+    private String srcAccName;
+    @Transient
+    private String accName;
 }

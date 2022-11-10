@@ -6,7 +6,6 @@ import core.acc.api.dao.GlDao;
 import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
-import core.acc.api.entity.VGl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +48,7 @@ public class GlServiceImpl implements GlService {
                 key.setGlCode(code);
                 Gl gv = findByCode(key);
                 backupGl(gv, "GV_DELETE");
-                glDao.delete(gv);
+                glDao.delete(key);
             }
         }
         return glDao.save(gl);
@@ -91,9 +90,9 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public boolean delete(Gl gl) {
-        backupGl(gl, "DELETE");
-        return glDao.delete(gl);
+    public boolean delete(GlKey key) {
+        backupGl(glDao.findByCode(key), "DELETE");
+        return glDao.delete(key);
     }
 
     private void backupGl(Gl gl, String option) {
@@ -115,14 +114,6 @@ public class GlServiceImpl implements GlService {
         reportDao.execSQLRpt(sql);
     }
 
-    @Override
-    public List<VGl> search(String fromDate, String toDate, String desp, String srcAcc, String acc, String curCode,
-                            String reference, String dept, String retNo, String compCode, String tranSource,
-                            String glVouNo, String traderCode) {
-        return glDao.search(fromDate, toDate, desp, srcAcc, acc, curCode,
-                reference, dept, retNo, compCode, tranSource,
-                glVouNo, traderCode);
-    }
 
     private String getGLCode(Integer macId, String compCode) {
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");

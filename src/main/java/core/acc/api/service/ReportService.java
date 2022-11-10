@@ -1,7 +1,7 @@
 package core.acc.api.service;
 
+import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
-import core.acc.api.entity.VGl;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.BalanceSheetRetObj;
 import core.acc.api.model.ProfitAndLostRetObj;
@@ -12,10 +12,10 @@ import java.util.List;
 public interface ReportService {
     void insertTmp(List<String> listStr, Integer macId, String taleName);
 
-    List<VGl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
-                                 String acc, String curCode, String reference,
-                                 String compCode, String tranSource, String traderCode, String traderType,
-                                 String coaLv2, String coaLv1, Integer macId) throws SQLException;
+    List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
+                                String acc, String curCode, String reference,
+                                String compCode, String tranSource, String traderCode, String traderType,
+                                String coaLv2, String coaLv1, Integer macId) throws SQLException;
 
     void getProfitLost(String plProcess, String from, String to, String dept,
                        String currency, String comp, String userCode, String macId, String invCOA) throws Exception;
@@ -59,7 +59,7 @@ public interface ReportService {
 
     List<VApar> getApAr(String traderCode, String traderType, Integer macId);
 
-    List<VGl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId);
+    List<Gl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId);
 
     double getTraderLastBalance(String date, String traderCode, String compCode);
 

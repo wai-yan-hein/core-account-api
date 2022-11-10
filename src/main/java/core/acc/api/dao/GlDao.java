@@ -2,7 +2,6 @@ package core.acc.api.dao;
 
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
-import core.acc.api.entity.VGl;
 
 import java.util.List;
 
@@ -11,13 +10,7 @@ public interface GlDao {
 
     Gl findByCode(GlKey key);
 
-    boolean delete(Gl gl);
-
-    List<VGl> search(String fromDate, String toDate, String desp, String srcAcc,
-                     String acc, String curCode, String reference, String dept,
-                     String retNo, String compCode, String tranSource,
-                     String glVouNo, String traderCode);
-
+    boolean delete(GlKey key);
 
     void deleteGl(String vouNo, String tranSource);
 }

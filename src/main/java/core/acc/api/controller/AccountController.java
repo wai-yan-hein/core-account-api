@@ -42,7 +42,7 @@ public class AccountController {
     }
 
     @PostMapping(path = "/find-department")
-    public ResponseEntity<?> findDepartment(@RequestParam DepartmentKey key) {
+    public ResponseEntity<?> findDepartment(@RequestBody DepartmentKey key) {
         return ResponseEntity.ok(departmentService.findById(key));
     }
 
@@ -132,11 +132,11 @@ public class AccountController {
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
-        List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, desp, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, desp, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
-        Util1.writeJsonFile(vGls, path);
+        Util1.writeJsonFile(Gls, path);
         ro.setFile(Util1.zipJsonFile(path));
         return ResponseEntity.ok(ro);
     }
@@ -171,8 +171,8 @@ public class AccountController {
     }
 
     @PostMapping(path = "/delete-gl")
-    public ResponseEntity<Boolean> deleteGL(@RequestBody Gl gl) {
-        return ResponseEntity.ok(glService.delete(gl));
+    public ResponseEntity<Boolean> deleteGL(@RequestBody GlKey key) {
+        return ResponseEntity.ok(glService.delete(key));
     }
 
     //Trader

@@ -2,8 +2,8 @@ package core.acc.api.controller;
 
 import core.acc.api.common.ReturnObject;
 import core.acc.api.common.Util1;
+import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
-import core.acc.api.entity.VGl;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.service.ReportService;
@@ -63,8 +63,8 @@ public class ReportController {
                     reportService.getIncomeAndExpenditure(incomeGroup, expenseGroup, macId);
                 }
                 case "IndividualLedger" -> {
-                    List<VGl> vGls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
-                    Util1.writeJsonFile(vGls, exportPath);
+                    List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+                    Util1.writeJsonFile(Gls, exportPath);
                 }
             }
             byte[] bytes = new FileInputStream(exportPath).readAllBytes();
