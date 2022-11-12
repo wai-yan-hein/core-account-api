@@ -1,5 +1,6 @@
 package core.acc.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -8,6 +9,7 @@ import java.util.Date;
 @Data
 @Entity
 @Table(name = "coa_opening")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class COAOpening {
     @EmbeddedId
     private OpeningKey key;
@@ -31,7 +33,12 @@ public class COAOpening {
     private String depCode;
     @Column(name = "trader_code")
     private String traderCode;
-    @Column(name = "tran_source")
-    private String tranSource;
-
+    @Transient
+    private String srcAccName;
+    @Transient
+    private String traderName;
+    @Transient
+    private String traderUsrCode;
+    @Transient
+    private String deptUsrCode;
 }

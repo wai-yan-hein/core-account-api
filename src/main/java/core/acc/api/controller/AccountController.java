@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -142,7 +141,7 @@ public class AccountController {
     }
 
     @PostMapping(path = "/get-coa-opening")
-    public ResponseEntity<List<TmpOpening>> getCOAOpening(@RequestBody ReportFilter filter) {
+    public ResponseEntity<List<TmpOpening>> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
         String opDate = filter.getOpeningDate();
         String clDate = filter.getClosingDate();
         String curCode = Util1.isNull(filter.getCurCode(), "-");
@@ -151,13 +150,24 @@ public class AccountController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
         List<String> department = filter.getDepartments();
-        List<TmpOpening> openings = new ArrayList<>();
-        try {
-            openings = coaOpeningService.getCOAOpening(coaCode, opDate, clDate, 3, curCode, compCode, department, macId, traderCode);
-        } catch (Exception e) {
-            log.error(String.format("getCOAOpening: %s", e.getMessage()));
-        }
-        return ResponseEntity.ok(openings);
+        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, clDate, 3, curCode, compCode, department, macId, traderCode));
+    }
+
+    @PostMapping(path = "/get-opening")
+    public ResponseEntity<?> getOpening(@RequestBody ReportFilter filter) {
+        String curCode = Util1.isNull(filter.getCurCode(), "-");
+        String compCode = Util1.isNull(filter.getCompCode(), "-");
+        String deptCode = Util1.isNull(filter.getDeptCode(), "-");
+        String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
+        String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
+        String coaLv3 = Util1.isNull(filter.getCoaCode(), "-");
+        String traderType = Util1.isNull(filter.getTraderType(), "-");
+        return ResponseEntity.ok(coaOpeningService.searchOpening(deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
+    }
+
+    @PostMapping(path = "/save-opening")
+    public ResponseEntity<?> saveOpening(@RequestBody COAOpening op) {
+        return ResponseEntity.ok(coaOpeningService.save(op));
     }
 
     @PostMapping(path = "/save-gl")

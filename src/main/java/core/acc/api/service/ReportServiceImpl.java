@@ -13,10 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @Transactional
@@ -41,6 +38,26 @@ public class ReportServiceImpl implements ReportService {
         } catch (Exception e) {
             log.error(String.format("insertTmp: %s", e.getMessage()));
         }
+    }
+
+    @Override
+    public String getOpeningDate(String compCode) {
+        String opDate = null;
+        String sql = "select max(op_date) op_date from coa_opening where comp_code ='" + compCode + "'";
+        try {
+            ResultSet rs = dao.executeSql(sql);
+            if (rs != null) {
+                while (rs.next()) {
+                    Date date = rs.getDate("op_date");
+                    if (date != null) {
+                        opDate = Util1.toDateStr(date, "yyyy-MM-dd");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return Util1.isNull(opDate, "1998-10-07");
     }
 
     @Override
@@ -679,93 +696,76 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void genTriBalance(String compCode, String stDate, String enDate,
                               String opDate, String currency, boolean closing, Integer macId) {
+        log.info("start date : " + stDate);
+        log.info("end date : " + enDate);
+        log.info("op date : " + opDate);
         String delSql1 = "delete from tmp_tri where mac_id =" + macId + "";
         String delSql2 = "delete from tmp_closing where mac_id =" + macId + "";
         dao.execSQLRpt(delSql1, delSql2);
-        String opSql = "insert into tmp_closing(coa_code, cur_code, dr_amt, cr_amt, dept_code,comp_code, mac_id)\n"
-                + "select coa_code, cur_code,if(sum(dr_amt-cr_amt)>0, sum(dr_amt-cr_amt),0) dr_amt, \n"
-                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code,'" + compCode + "'," + macId + "\n"
-                + "from (\n"
-                + "select op.source_acc_id as coa_code, op.cur_code,\n"
-                + "		   sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt,dept_code\n"
-                + "	from  coa_opening op\n"
-                + "	where date(op.op_date) = '" + opDate + "' \n"
-                + "		and (op.dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "             and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "             and comp_code = '" + compCode + "'\n"
-                + "	group by op.source_acc_id, op.cur_code\n"
-                + "			union all\n"
-                + "	select gl.source_ac_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.source_ac_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "         sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.source_ac_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,dept_code\n"
-                + "	from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,\n"
-                + "			sum(ifnull(cr_amt,0)) cr_amt,dept_code\n"
-                + "			from gl \n"
-                + "			where source_ac_id in (select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) >= '" + opDate + "'\n"
-                + "			and date(gl_date) <'" + stDate + "' \n"
-                + "         and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "'\n"
-                + "         and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "			group by account_id, cur_code, source_ac_id) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id\n"
-                + "			union all \n"
-                + "    select gl.account_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.account_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "         sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.account_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,dept_code\n"
-                + "     from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code\n"
-                + "			from gl \n"
-                + "			where account_id in (select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "')\n"
-                + "         and date(gl_date) >= '" + opDate + "' \n"
-                + "			and date(gl_date) <'" + stDate + "' \n"
-                + "         and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "'\n"
-                + "         and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "			group by account_id, cur_code, source_ac_id) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id\n"
-                + ")a\n"
-                + "group by coa_code, cur_code";
+        String coaFilter = "select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "'";
+        String opSql = "insert into tmp_closing(coa_code, cur_code,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
+                "select source_acc_id,cur_code,dept_code,round(if(balance>0,balance,0),0) dr_amt,round(if(balance<0,balance*-1,0),0) cr_amt,'" + compCode + "'," + macId + "\n" +
+                "from (\n" +
+                "select source_acc_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
+                "from (\n" +
+                "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
+                "from coa_opening\n" +
+                "where date(op_date)='" + opDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
+                "and (dr_amt>0 or cr_amt>0)\n" +
+                "group by source_acc_id, cur_code\n" +
+                "\tunion all\n" +
+                "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" +
+                "from gl \n" +
+                "where account_id in (" + coaFilter + ")\n" +
+                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
+                "group by account_id, cur_code\n" +
+                "\tunion all\n" +
+                "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
+                "from gl \n" +
+                "where source_ac_id in (" + coaFilter + ")\n" +
+                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
+                "group by source_ac_id, cur_code\n" +
+                ")a\n" +
+                "group by source_acc_id,cur_code)b";
 
-        String sql = "insert into tmp_tri(coa_code, curr_id, dr_amt, cr_amt,dept_code,comp_code,mac_id)\n"
-                + "select coa_code, cur_code,if(sum(dr_amt-cr_amt)>0, sum(dr_amt-cr_amt),0) dr_amt, \n"
-                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code,'" + compCode + "'," + macId + "\n"
-                + "from (\n"
-                + "     select coa_code,cur_code,dr_amt,cr_amt,dept_code\n"
-                + "     from tmp_closing \n"
-                + "     where mac_id = " + macId + "\n"
-                + "        union all\n"
-                + "    	select gl.source_ac_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.source_ac_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "                     sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.source_ac_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,dept_code\n"
-                + "	from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code\n"
-                + "			from gl \n"
-                + "			where source_ac_id in (select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) between '" + stDate + "' \n"
-                + "			and '" + enDate + "' and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "' and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "			group by account_id, cur_code, source_ac_id) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id\n"
-                + "			union all \n"
-                + "    select gl.account_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.account_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "                     sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.account_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,dept_code\n"
-                + "     from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code\n"
-                + "			from gl \n"
-                + "			where account_id in (select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) between '" + stDate + "' \n"
-                + "			and '" + enDate + "'\n"
-                + "                     and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "' and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "			group by account_id, cur_code, source_ac_id) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id) a\n"
-                + "group by coa_code, cur_code";
+        String sql = "insert into tmp_tri(coa_code, curr_id,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
+                "select account_id,cur_code,dept_code,round(if(balance>0,balance,0),0) dr_amt,round(if(balance<0,balance*-1,0),0) cr_amt,'" + compCode + "'," + macId + "\n" +
+                "from (\n" +
+                "select coa_code, cur_code,dept_code,(dr_amt-cr_amt) balance\n" +
+                "from tmp_closing\n" +
+                "where mac_id =" + macId + "\n" +
+                "and comp_code ='" + compCode + "'" +
+                "\tunion all\n" +
+                "select account_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
+                "from (\n" +
+                "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" +
+                "from gl \n" +
+                "where account_id in (" + coaFilter + ")\n" +
+                "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
+                "group by account_id, cur_code\n" +
+                "\tunion all\n" +
+                "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
+                "from gl \n" +
+                "where source_ac_id in (" + coaFilter + ")\n" +
+                "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
+                "group by source_ac_id, cur_code\n" +
+                ")a\n" +
+                "group by account_id,cur_code)b";
         if (!closing) {
             dao.execSQLRpt(opSql);
         }

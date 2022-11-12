@@ -84,7 +84,7 @@ public class ReportController {
         String compCode = filter.getCompCode();
         String stDate = filter.getFromDate();
         String enDate = filter.getToDate();
-        String opDate = filter.getOpeningDate();
+        String opDate = reportService.getOpeningDate(compCode);
         String currency = filter.getCurCode();
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();

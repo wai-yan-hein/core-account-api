@@ -15,6 +15,12 @@ public class COAOpeningDaoImpl extends AbstractDao<String, COAOpening> implement
     }
 
     @Override
+    public COAOpening save(COAOpening op) {
+        persist(op);
+        return op;
+    }
+
+    @Override
     public void executeSql(String... sql) {
         execSQL(sql);
     }

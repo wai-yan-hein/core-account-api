@@ -31,4 +31,5 @@ public class ReportFilter {
     private String expenseGroup;
     private boolean closing;
     private List<String> departments;
+    private String deptCode;
 }

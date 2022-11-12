@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface ReportService {
     void insertTmp(List<String> listStr, Integer macId, String taleName);
-
+    String getOpeningDate(String compCode);
     List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
                                 String acc, String curCode, String reference,
                                 String compCode, String tranSource, String traderCode, String traderType,
