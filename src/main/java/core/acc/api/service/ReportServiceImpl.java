@@ -825,68 +825,75 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public void genArAp(String compCode, String opDate, String stDate, String enDate, String currency, String traderCode, Integer macId) {
+    public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency,
+                               String traderCode, String coaCode, Integer macId) {
         String delSql = "delete from tmp_op_cl_apar where mac_id = " + macId + "";
         dao.execSQLRpt(delSql);
-        String sql = "select source_acc_id,account_id,cur_code,sum(dr_amt) -sum(cr_amt) balance\n" +
+        String coaFilter = "select distinct account_code from trader where comp_code='" + compCode + "' and account_code is not null";
+        if (!coaCode.equals("-")) {
+            coaFilter = "'" + coaCode + "'";
+        }
+        String sql = "select trader_code,cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,t.account_code\n" +
                 "from (\n" +
-                "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" +
-                "\tfrom  coa_opening op\n" +
-                "\twhere\n" +
-                "\tcomp_code = '" + compCode + "'\n" +
-                "\tdate(op_date) = '" + opDate + "'\n" +
-                "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "select trader_code,cur_code,sum(dr_amt) -sum(cr_amt) balance,comp_code\n" +
+                "from (\n" +
+                "\tselect trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
+                "\tfrom  coa_opening \n" +
+                "\twhere comp_code = '" + compCode + "'\n" +
+                "\tand date(op_date) = '" + opDate + "'\n" +
+                "\tand source_acc_id in (" + coaFilter + ")\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
-                "\tgroup by  op.cur_code,op.trader_code\n" +
-                "\t\t\tunion all\n" +
-                "\tselect source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
-                "\tfrom gl \n" +
-                "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
-                "\tand date(gl_date) <= '" + enDate + "' \n" +
-                "\tand comp_code = '" + compCode + "'\n" +
-                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
                 "\tgroup by  cur_code,trader_code\n" +
                 "\t\t\tunion all\n" +
-                "\tselect account_id,source_ac_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
+                "\tselect trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom gl \n" +
-                "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
-                "\tand date(gl_date) <= '" + enDate + "' \n" +
+                "\twhere source_ac_id in (" + coaFilter + ")\n" +
+                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
                 "\tand comp_code = '" + compCode + "'\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
+                "\tgroup by  cur_code,trader_code\n" +
+                "\t\t\tunion all\n" +
+                "\tselect trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" +
+                "\tfrom gl \n" +
+                "\twhere account_id in (" + coaFilter + ")\n" +
+                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
                 "\tgroup by cur_code,trader_code\n" +
                 ")a\n" +
-                "group by cur_code";
-        dao.execSQLRpt(sql);
-    }
-
-    @Override
-    public List<VApar> getApAr(String traderCode, String traderType, Integer macId) {
-        String sql = "select tmp.trader_code,t.user_code,t.discriminator,t.trader_name,tmp.cur_code,tmp.dr_amt,tmp.cr_amt\n" +
-                "from tmp_op_cl_apar tmp join trader t\n" +
-                "on tmp.trader_code = t.code\n" +
-                "where (t.discriminator = '" + traderType + "' or '-' = '" + traderType + "')\n" +
-                "and tmp.mac_id = " + macId + "";
-        ResultSet rs = dao.executeSql(sql);
-        List<VApar> aparList = new ArrayList<>();
+                "group by trader_code,cur_code\n" +
+                ")b\n" +
+                "join trader t on b.trader_code = t.code\n" +
+                "and b.comp_code = t.comp_code\n" +
+                "where balance<>0\n" +
+                "order by t.user_code";
+        List<VApar> list = new ArrayList<>();
         try {
-            if (!Objects.isNull(rs)) {
+            ResultSet rs = dao.executeSql(sql);
+            if (rs != null) {
                 while (rs.next()) {
-                    VAparKey key = new VAparKey();
-                    key.setTraderCode(rs.getString("trader_code"));
-                    key.setCurCode(rs.getString("cur_code"));
-                    VApar apar = new VApar();
-                    apar.setKey(key);
-                    apar.setUserCode(rs.getString("t.user_code"));
-                    apar.setTraderName(rs.getString("trader_name"));
-                    apar.setDrAmt(rs.getDouble("dr_amt"));
-                    apar.setCrAmt(rs.getDouble("cr_amt"));
-                    aparList.add(apar);
+                    VApar a = new VApar();
+                    a.setCoaCode(rs.getString("account_code"));
+                    a.setCompCode(compCode);
+                    a.setCurCode(rs.getString("cur_code"));
+                    a.setTraderCode(rs.getString("trader_code"));
+                    a.setUserCode(rs.getString("user_code"));
+                    a.setTraderName(rs.getString("trader_name"));
+                    a.setDrAmt(rs.getDouble("dr_amt"));
+                    a.setCrAmt(rs.getDouble("cr_amt"));
+                    list.add(a);
                 }
             }
         } catch (Exception e) {
-            log.error(String.format("getApAr: %s", e.getMessage()));
+            log.error(e.getMessage());
         }
-        return aparList;
+        return list;
     }
 
     @Override

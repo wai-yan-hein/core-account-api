@@ -98,6 +98,12 @@ public class AccountController {
         return ResponseEntity.ok(coaService.searchCOA3(str, compCode));
     }
 
+    @GetMapping(path = "/get-trader-coa")
+    public ResponseEntity<?> getTraderCOA(@RequestParam String compCode) {
+        return ResponseEntity.ok(coaService.getTraderCOA(compCode));
+    }
+
+
     @PostMapping(path = "/get-coa-child")
     public ResponseEntity<?> getCOAChild(@RequestBody COAKey key) {
         return ResponseEntity.ok(coaService.getCOAChild(key.getCoaCode(), key.getCompCode()));

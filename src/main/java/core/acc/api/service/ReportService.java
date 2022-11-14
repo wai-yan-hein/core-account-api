@@ -54,10 +54,8 @@ public interface ReportService {
 
     List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2, Integer macId);
 
-    void genArAp(String compCode, String opDate, String stDate,
-                 String enDate, String currency, String traderCode, Integer macId);
-
-    List<VApar> getApAr(String traderCode, String traderType, Integer macId);
+    List<VApar> genArAp(String compCode, String opDate,
+                        String clDate, String currency, String traderCode, String coaCode, Integer macId);
 
     List<Gl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId);
 

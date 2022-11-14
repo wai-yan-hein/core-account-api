@@ -77,4 +77,9 @@ public class COAServiceImpl implements COAService {
         return dao.getCOAChild(parentCode, compCode);
     }
 
+    @Override
+    public List<ChartOfAccount> getTraderCOA(String compCode) {
+        return dao.getTraderCOA(compCode);
+    }
+
 }

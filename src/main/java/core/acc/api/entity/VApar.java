@@ -4,7 +4,10 @@ import lombok.Data;
 
 @Data
 public class VApar {
-    private VAparKey key;
+    private String traderCode;
+    private String compCode;
+    private String curCode;
+    private String coaCode;
     private String userCode;
     private String traderName;
     private Double drAmt;

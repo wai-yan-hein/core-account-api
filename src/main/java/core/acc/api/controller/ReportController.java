@@ -27,7 +27,8 @@ public class ReportController {
 
     @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ReturnObject getReport(@RequestBody ReportFilter filter) {
-        String opDate = filter.getOpeningDate();
+        String compCode = Util1.isNull(filter.getCompCode(), "-");
+        String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
         String des = Util1.isNull(filter.getDesp(), "-");
@@ -35,7 +36,6 @@ public class ReportController {
         String acc = Util1.isNull(filter.getAcc(), "-");
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String reference = Util1.isNull(filter.getReference(), "-");
-        String compCode = Util1.isNull(filter.getCompCode(), "-");
         String tranSource = Util1.isNull(filter.getTranSource(), "-");
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String traderType = Util1.isNull(filter.getTraderType(), "-");
@@ -55,7 +55,7 @@ public class ReportController {
                     Util1.writeJsonFile(triBalance, exportPath);
                 }
                 case "ARAP" -> {
-                    List<VApar> list = reportService.getApAr(traderCode, traderType, macId);
+                    List<VApar> list = reportService.genArAp(compCode, opDate, toDate, curCode, traderCode, coaCode, macId);
                     Util1.writeJsonFile(list, exportPath);
                 }
                 case "Income&Expenditure" -> {
@@ -97,16 +97,14 @@ public class ReportController {
     @PostMapping(path = "/get-arap")
     public ResponseEntity<List<VApar>> getArap(@RequestBody ReportFilter filter) {
         String compCode = filter.getCompCode();
-        String stDate = filter.getFromDate();
         String enDate = filter.getToDate();
-        String opDate = filter.getOpeningDate();
+        String opDate = reportService.getOpeningDate(compCode);
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String currency = Util1.isNull(filter.getCurCode(), "-");
         Integer macId = filter.getMacId();
-        String traderType = Util1.isNull(filter.getTraderType(), "-");
+        String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
-        reportService.genArAp(compCode, opDate, stDate, enDate, currency, traderCode, macId);
-        return ResponseEntity.ok(reportService.getApAr(traderCode, traderType, macId));
+        return ResponseEntity.ok(reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId));
     }
 
     @GetMapping(path = "/get-trader-balance")
