@@ -4,7 +4,6 @@ import core.acc.api.common.Util1;
 import core.acc.api.dao.COADao;
 import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
-import core.acc.api.entity.VCOALv3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,8 +63,8 @@ public class COAServiceImpl implements COAService {
     }
 
     @Override
-    public List<VCOALv3> getVCOALv3(String compCode) {
-        return dao.getVCOALv3(compCode);
+    public List<ChartOfAccount> searchCOA3(String str, String compCode) {
+        return dao.searchCOA3(str,compCode);
     }
 
     @Override
@@ -76,11 +75,6 @@ public class COAServiceImpl implements COAService {
     @Override
     public List<ChartOfAccount> getCOAChild(String parentCode, String compCode) {
         return dao.getCOAChild(parentCode, compCode);
-    }
-
-    @Override
-    public List<VCOALv3> getVCOACurrency(String compCode) {
-        return dao.getVCOACurrency(compCode);
     }
 
 }

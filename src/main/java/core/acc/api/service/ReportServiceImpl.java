@@ -69,6 +69,33 @@ public class ReportServiceImpl implements ReportService {
                 "and comp_code = '" + compCode + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n";
+        if (!acc.equals("-")) {
+            filter += "and (account_id = '" + acc + "' or source_ac_id ='" + acc + "')\n";
+        }
+        if (!coaLv2.equals("-")) {
+            filter += "and (src_parent_2 = '" + coaLv2 + "' or  acc_parent_2 ='" + coaLv2 + "')\n";
+        }
+        if (!coaLv1.equals("-")) {
+            filter += "and (src_parent_1 = '" + coaLv1 + "'  or acc_parent_1 = '" + coaLv1 + "')\n";
+        }
+        if (!tranSource.equals("-")) {
+            filter += "and tran_source = '" + tranSource + "'\n";
+        }
+        if (!reference.equals("-")) {
+            filter += "and reference = '" + reference + "'\n";
+        }
+        if (!desp.equals("-")) {
+            filter += "and description = '" + desp + "'\n";
+        }
+        if (!traderCode.equals("-")) {
+            filter += "and  trader_code ='" + traderCode + "'\n";
+        }
+        if (!traderType.equals("-")) {
+            filter += "and  discriminator ='" + traderType + "' \n";
+        }
+        if (!curCode.equals("-")) {
+            filter += "and cur_code ='" + curCode + "'\n";
+        }
         String sql = "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
                 "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no,\n" +
                 "dep_usr_code, trader_code,trader_name, comp_code, tran_source, gl_vou_no,\n" +
@@ -76,15 +103,6 @@ public class ReportServiceImpl implements ReportService {
                 "src_usr_code, src_acc_name, src_parent_2, src_parent_1, acc_usr_code, acc_name, acc_parent_2, acc_parent_1\n" +
                 "from v_gl \n" +
                 "" + filter + "\n" +
-                "and ((account_id = '" + acc + "' or '-' = '" + acc + "') or (source_ac_id ='" + acc + "' or '-' ='" + acc + "'))\n" +
-                "and ((src_parent_2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "') or (acc_parent_2 ='" + coaLv2 + "' or '-'='" + coaLv2 + "'))\n" +
-                "and ((src_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "') or (acc_parent_1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "'))\n" +
-                "and (tran_source = '" + tranSource + "' or '-' ='" + tranSource + "')\n" +
-                "and (description = '" + desp + "' or '-' = '" + desp + "')\n" +
-                "and (reference = '" + reference + "' or '-' = '" + reference + "')\n" +
-                "and  (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
-                "and  (discriminator ='" + traderType + "' or '-' ='" + traderType + "')\n" +
-                "and (cur_code ='" + curCode + "' or '-' = '" + curCode + "')\n" +
                 "order by gl_date,tran_source,gl_code\n";
         ResultSet rs = dao.executeSql(sql);
         List<Gl> Gls = new ArrayList<>();
@@ -704,7 +722,7 @@ public class ReportServiceImpl implements ReportService {
         dao.execSQLRpt(delSql1, delSql2);
         String coaFilter = "select coa_code from chart_of_account where coa_level >=3 and comp_code='" + compCode + "'";
         String opSql = "insert into tmp_closing(coa_code, cur_code,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
-                "select source_acc_id,cur_code,dept_code,round(if(balance>0,balance,0),0) dr_amt,round(if(balance<0,balance*-1,0),0) cr_amt,'" + compCode + "'," + macId + "\n" +
+                "select source_acc_id,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" +
                 "from (\n" +
                 "select source_acc_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
                 "from (\n" +
@@ -738,15 +756,15 @@ public class ReportServiceImpl implements ReportService {
                 "group by source_acc_id,cur_code)b";
 
         String sql = "insert into tmp_tri(coa_code, curr_id,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
-                "select account_id,cur_code,dept_code,round(if(balance>0,balance,0),0) dr_amt,round(if(balance<0,balance*-1,0),0) cr_amt,'" + compCode + "'," + macId + "\n" +
+                "select coa_code,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" +
                 "from (\n" +
-                "select coa_code, cur_code,dept_code,(dr_amt-cr_amt) balance\n" +
+                "select coa_code,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
+                "from (\n" +
+                "select coa_code, cur_code,dr_amt,cr_amt,dept_code\n" +
                 "from tmp_closing\n" +
                 "where mac_id =" + macId + "\n" +
-                "and comp_code ='" + compCode + "'" +
+                "and comp_code ='" + compCode + "'\n" +
                 "\tunion all\n" +
-                "select account_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
-                "from (\n" +
                 "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" +
                 "from gl \n" +
                 "where account_id in (" + coaFilter + ")\n" +
@@ -765,7 +783,7 @@ public class ReportServiceImpl implements ReportService {
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
                 "group by source_ac_id, cur_code\n" +
                 ")a\n" +
-                "group by account_id,cur_code)b";
+                "group by coa_code,cur_code)b";
         if (!closing) {
             dao.execSQLRpt(opSql);
         }
@@ -810,95 +828,34 @@ public class ReportServiceImpl implements ReportService {
     public void genArAp(String compCode, String opDate, String stDate, String enDate, String currency, String traderCode, Integer macId) {
         String delSql = "delete from tmp_op_cl_apar where mac_id = " + macId + "";
         dao.execSQLRpt(delSql);
-        String sql = "insert into tmp_op_cl_apar(coa_code, cur_code, dr_amt, cr_amt,dept_code,trader_code,mac_id,comp_code) \n"
-                + "select coa_code, cur_code,if(sum(dr_amt-cr_amt)>0, sum(dr_amt-cr_amt),0) dr_amt, \n"
-                + "		if(sum(dr_amt-cr_amt)<0, sum(dr_amt-cr_amt)*-1,0) cr_amt,dept_code,trader_code," + macId + ",'" + compCode + "'\n"
-                + "from (\n"
-                + "	#cal opening(\n"
-                + "	select op.source_acc_id as coa_code, op.cur_code,\n"
-                + "		   sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt,\n"
-                + "           dept_code,trader_code\n"
-                + "	from  coa_opening op\n"
-                + "	where date(op.op_date) = '" + opDate + "' \n"
-                + "	and (op.dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "	and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + " and comp_code = '" + compCode + "'\n"
-                + "	and source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n"
-                + " and trader_code is not null \n"
-                + "	and (trader_code = '" + traderCode + "' or '-' = '" + traderCode + "')\n"
-                + "	group by op.source_acc_id, op.cur_code,op.trader_code\n"
-                + "			union all\n"
-                + "	select gl.source_ac_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.source_ac_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "                     sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.source_ac_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,gl.dept_code,gl.trader_code\n"
-                + "	from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,\n"
-                + "			sum(ifnull(cr_amt,0)) cr_amt,dept_code,trader_code\n"
-                + "			from gl \n"
-                + "			where source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) >= '" + opDate + "' \n"
-                + "			and date(gl_date) <'" + stDate + "' \n"
-                + "			and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "'\n"
-                + "			and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "         and trader_code is not null \n"
-                + "	        and (trader_code = '" + traderCode + "' or '-' = '" + traderCode + "')\n"
-                + "			group by account_id, cur_code, source_ac_id,trader_code) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id,gl.trader_code\n"
-                + "			union all \n"
-                + "    select gl.account_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.account_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "			sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.account_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,gl.dept_code,gl.trader_code\n"
-                + "     from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code,trader_code\n"
-                + "			from gl \n"
-                + "			where account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n"
-                + "                     and date(gl_date) >= '" + opDate + "' \n"
-                + "			and date(gl_date) <'" + stDate + "' \n"
-                + "			and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code='" + compCode + "'\n"
-                + "			and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "         and trader_code is not null \n"
-                + "	        and (trader_code = '" + traderCode + "' or '-' = '" + traderCode + "')\n"
-                + "			group by account_id, cur_code, source_ac_id,trader_code) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id,gl.trader_code\n"
-                + "    #)\n"
-                + "        union all\n"
-                + "    	select gl.source_ac_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.source_ac_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "                     sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.source_ac_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,gl.dept_code,gl.trader_code\n"
-                + "		from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code,trader_code\n"
-                + "			from gl \n"
-                + "			where source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) between '" + stDate + "' \n"
-                + "			and '" + enDate + "'\n"
-                + "			and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "' and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "         and trader_code is not null \n"
-                + "	        and (trader_code = '" + traderCode + "' or '-' = '" + traderCode + "')\n"
-                + "			group by account_id, cur_code, source_ac_id,trader_code) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id,gl.trader_code\n"
-                + "			union all \n"
-                + "    select gl.account_id coa_code, gl.cur_code,sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, \n"
-                + "			gl.account_id, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                + "                     sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, gl.account_id, gl.dr_amt, \n"
-                + "			gl.cr_amt, 'CR')) cr_amt,gl.dept_code,gl.trader_code\n"
-                + "     from (	select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,\n"
-                + "			dept_code,trader_code\n"
-                + "			from gl \n"
-                + "			where account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n"
-                + "			and date(gl_date) between '" + stDate + "' \n"
-                + "			and '" + enDate + "'\n"
-                + "			and (dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + "))\n"
-                + "			and comp_code = '" + compCode + "' and (cur_code = '" + currency + "' or '-'='" + currency + "')\n"
-                + "         and trader_code is not null \n"
-                + "	        and (trader_code = '" + traderCode + "' or '-' = '" + traderCode + "')\n"
-                + "			group by account_id, cur_code, source_ac_id,trader_code) gl\n"
-                + "	group by gl.account_id, gl.cur_code, gl.source_ac_id,gl.trader_code) a\n"
-                + "group by coa_code, cur_code,trader_code";
+        String sql = "select source_acc_id,account_id,cur_code,sum(dr_amt) -sum(cr_amt) balance\n" +
+                "from (\n" +
+                "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" +
+                "\tfrom  coa_opening op\n" +
+                "\twhere\n" +
+                "\tcomp_code = '" + compCode + "'\n" +
+                "\tdate(op_date) = '" + opDate + "'\n" +
+                "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tgroup by  op.cur_code,op.trader_code\n" +
+                "\t\t\tunion all\n" +
+                "\tselect source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
+                "\tfrom gl \n" +
+                "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand date(gl_date) <= '" + enDate + "' \n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tgroup by  cur_code,trader_code\n" +
+                "\t\t\tunion all\n" +
+                "\tselect account_id,source_ac_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
+                "\tfrom gl \n" +
+                "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand date(gl_date) <= '" + enDate + "' \n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tgroup by cur_code,trader_code\n" +
+                ")a\n" +
+                "group by cur_code";
         dao.execSQLRpt(sql);
     }
 
@@ -1003,7 +960,6 @@ public class ReportServiceImpl implements ReportService {
         } catch (SQLException e) {
             log.error("getTraderLastBalance: " + e.getMessage());
         }
-
         return lastBalance;
     }
 }

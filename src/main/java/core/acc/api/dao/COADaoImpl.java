@@ -1,14 +1,18 @@
 package core.acc.api.dao;
 
 import core.acc.api.entity.*;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 @Repository
+@Slf4j
 public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements COADao {
     @Autowired
     private SessionFactory sessionFactory;
@@ -26,8 +30,36 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOA(String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.active = true and  o.key.compCode = '" + compCode + "' order by o.coaLevel,o.coaCodeUsr";
-        return findHSQL(hsql);
+        List<ChartOfAccount> list = new ArrayList<>();
+        String sql = "select c1.coa_code,c1.coa_code_usr,c1.coa_name_eng,ifnull(c2.coa_name_eng,'Head') parent_name,c1.coa_level\n" +
+                "from chart_of_account c1\n" +
+                "left join chart_of_account c2\n" +
+                "on c1.coa_parent = c2.coa_code\n" +
+                "and c1.comp_code = c2.comp_code\n" +
+                "where c1.deleted =0\n" +
+                "and c1.active =1\n" +
+                "and c1.comp_code ='" + compCode + "'\n" +
+                "order by c1.coa_level,c1.coa_code_usr,c1.coa_name_eng";
+        try {
+            ResultSet rs = getResultSet(sql);
+            if (rs != null) {
+                while (rs.next()) {
+                    ChartOfAccount coa = new ChartOfAccount();
+                    COAKey key = new COAKey();
+                    key.setCompCode(compCode);
+                    key.setCoaCode(rs.getString("coa_code"));
+                    coa.setKey(key);
+                    coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
+                    coa.setCoaNameEng(rs.getString("coa_name_eng"));
+                    coa.setGroupName(rs.getString("parent_name"));
+                    coa.setCoaLevel(rs.getInt("coa_level"));
+                    list.add(coa);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return list;
     }
 
     @Override
@@ -64,16 +96,52 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
-    public List<VCOALv3> getVCOALv3(String compCode) {
-        String hsql = "select o from VCOALv3 o where o.compCode = '" + compCode + "'";
-        return getSession().createQuery(hsql, VCOALv3.class).list();
+    public List<ChartOfAccount> searchCOA3(String str, String compCode) {
+        List<ChartOfAccount> list = new ArrayList<>();
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
+                "from (\n" +
+                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code\n" +
+                "from chart_of_account\n" +
+                "where active = 1\n" +
+                "and deleted = 0\n" +
+                "and coa_level >=3\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
+                "limit 20\n" +
+                ")a\n" +
+                "join chart_of_account c1\n" +
+                "on a.coa_parent = c1.coa_code\n" +
+                "and a.comp_code = c1.comp_code\n" +
+                "join chart_of_account c2\n" +
+                "on c1.coa_parent = c2.coa_code\n" +
+                "and c1.comp_code = c2.comp_code";
+        try {
+            ResultSet rs = getResultSet(sql);
+            if (rs != null) {
+                while (rs.next()) {
+                    ChartOfAccount coa = new ChartOfAccount();
+                    //coa_code, coa_code_usr, coa_name_eng, group_code, group_usr_code, group_name, head_code, head_usr_code, head_name
+                    COAKey key = new COAKey();
+                    key.setCoaCode(rs.getString("coa_code"));
+                    key.setCompCode(compCode);
+                    coa.setKey(key);
+                    coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
+                    coa.setCoaNameEng(rs.getString("coa_name_eng"));
+                    coa.setGroupCode(rs.getString("group_code"));
+                    coa.setGroupUsrCode(rs.getString("group_usr_code"));
+                    coa.setGroupName(rs.getString("group_name"));
+                    coa.setHeadCode(rs.getString("head_code"));
+                    coa.setHeadUsrCode(rs.getString("head_usr_code"));
+                    coa.setHeadName(rs.getString("head_name"));
+                    list.add(coa);
+                }
+            }
+        } catch (Exception e) {
+            log.error("searchCOA : " + e.getMessage());
+        }
+        return list;
     }
 
-    @Override
-    public List<VCOALv3> getVCOACurrency(String compCode) {
-        String hsql = "select o from VCOALv3 o where o.curCode is not null";
-        return getSession().createQuery(hsql, VCOALv3.class).list();
-    }
 
     @Override
     public List<ChartOfAccount> getCOATree(String compCode) {

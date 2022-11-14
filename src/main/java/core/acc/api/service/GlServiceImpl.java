@@ -6,6 +6,8 @@ import core.acc.api.dao.GlDao;
 import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
+import core.acc.api.entity.VDescription;
+import core.acc.api.entity.VRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,6 +95,16 @@ public class GlServiceImpl implements GlService {
     public boolean delete(GlKey key) {
         backupGl(glDao.findByCode(key), "DELETE");
         return glDao.delete(key);
+    }
+
+    @Override
+    public List<VDescription> getDescription(String str, String compCode) {
+        return glDao.getDescription(str, compCode);
+    }
+
+    @Override
+    public List<VRef> getReference(String str, String compCode) {
+        return glDao.getReference(str, compCode);
     }
 
     private void backupGl(Gl gl, String option) {

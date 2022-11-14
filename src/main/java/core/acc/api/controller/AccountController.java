@@ -87,16 +87,15 @@ public class AccountController {
         return ResponseEntity.ok(chart);
     }
 
-    @GetMapping(path = "/get-coa-group")
+    @GetMapping(path = "/get-coa")
     public ResponseEntity<List<ChartOfAccount>> getCOAGroup(@RequestParam String compCode) {
         List<ChartOfAccount> chart = coaService.getCOA(compCode);
         return ResponseEntity.ok(chart);
     }
 
-    @GetMapping(path = "/get-coa")
-    public ResponseEntity<List<VCOALv3>> getCOA(@RequestParam String compCode) {
-        List<VCOALv3> chart = coaService.getVCOALv3(compCode);
-        return ResponseEntity.ok(chart);
+    @GetMapping(path = "/get-coa-lv3")
+    public ResponseEntity<?> getCOA(@RequestParam String str, @RequestParam String compCode) {
+        return ResponseEntity.ok(coaService.searchCOA3(str, compCode));
     }
 
     @PostMapping(path = "/get-coa-child")
@@ -216,14 +215,14 @@ public class AccountController {
 
     //Desp
     @GetMapping(path = "/get-description")
-    public ResponseEntity<List<VDescription>> getDesp(@RequestParam String compCode) {
-        return ResponseEntity.ok(null);
+    public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getDescription(str, compCode));
     }
 
     //Ref
     @GetMapping(path = "/get-reference")
-    public ResponseEntity<List<VRef>> getRef(@RequestParam String compCode) {
-        return ResponseEntity.ok(null);
+    public ResponseEntity<List<VRef>> getRef(@RequestParam String str, @RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getReference(str, compCode));
     }
 
     //TranSource

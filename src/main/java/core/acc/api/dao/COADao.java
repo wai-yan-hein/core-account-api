@@ -2,7 +2,6 @@ package core.acc.api.dao;
 
 import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
-import core.acc.api.entity.VCOALv3;
 
 import java.util.List;
 
@@ -19,10 +18,7 @@ public interface COADao {
 
     List<ChartOfAccount> getCOAChild(String parentCode, String compCode);
 
-    List<VCOALv3> getVCOALv3(String compCode);
-
-    List<VCOALv3> getVCOACurrency(String compCode);
-
+    List<ChartOfAccount> searchCOA3(String str, String compCode);
 
     List<ChartOfAccount> getCOATree(String compCode);
 
