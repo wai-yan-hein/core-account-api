@@ -123,10 +123,12 @@ public class COAOpeningServiceImpl implements COAOpeningService {
     }
 
     private void insertDep(List<String> department, Integer macId) {
-        if (!department.isEmpty()) {
-            for (String code : department) {
-                String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select '" + code + "'," + macId + "";
-                coaOpeningDao.executeSql(sql);
+        if (department != null) {
+            if (!department.isEmpty()) {
+                for (String code : department) {
+                    String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select '" + code + "'," + macId + "";
+                    coaOpeningDao.executeSql(sql);
+                }
             }
         }
     }

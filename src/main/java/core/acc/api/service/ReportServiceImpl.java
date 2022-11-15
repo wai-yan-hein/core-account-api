@@ -34,7 +34,6 @@ public class ReportServiceImpl implements ReportService {
                         "select '" + str + "'," + macId + "";
                 executeSql(sql);
             }
-            log.info(String.format("insertTmp: %s", taleName));
         } catch (Exception e) {
             log.error(String.format("insertTmp: %s", e.getMessage()));
         }
@@ -82,10 +81,10 @@ public class ReportServiceImpl implements ReportService {
             filter += "and tran_source = '" + tranSource + "'\n";
         }
         if (!reference.equals("-")) {
-            filter += "and reference = '" + reference + "'\n";
+            filter += "and reference like '" + reference + "%'\n";
         }
         if (!desp.equals("-")) {
-            filter += "and description = '" + desp + "'\n";
+            filter += "and description like '" + desp + "%'\n";
         }
         if (!traderCode.equals("-")) {
             filter += "and  trader_code ='" + traderCode + "'\n";
