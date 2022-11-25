@@ -161,21 +161,42 @@ public class ReportServiceImpl implements ReportService {
     public List<Financial> getProfitLost(String plProcess, String stDate, String enDate, boolean detail, String compCode, Integer macId) {
         List<Financial> list = new ArrayList<>();
         dao.execSQLRpt("delete from tmp_profit_lost where mac_id = " + macId + "");
+        //income,purchase,other income,expense
         if (!plProcess.equals("-")) {
             String sql = "";
             String[] process = plProcess.split(",");
-            for (String head : process) {
+            for (int i = 0; i < process.length; i++) {
+                String head = process[i];
                 sql = detail ? getHeadSqlDetail(head, macId) : getHeadSqlSummary(head, macId);
                 ResultSet rs = dao.executeSql(sql);
                 try {
-                    if (rs.next()) {
+                    if (rs != null) {
                         while (rs.next()) {
-
+                            Financial f = new Financial();
+                            f.setCurCode(rs.getString("curr_id"));
+                            f.setAmount(rs.getDouble("amount"));
+                            if (detail) {
+                                f.setCoaName(rs.getString("coa_name_eng"));
+                            }
+                            f.setGroupName(rs.getString("group_name"));
+                            f.setHeadName(rs.getString("head_name"));
+                            switch (i + 1) {
+                                case 1:
+                                    f.setTranGroup("Income");
+                                case 2:
+                                    f.setTranGroup("Purchase");
+                                case 3:
+                                    f.setTranGroup("Other Income");
+                                case 4:
+                                    f.setTranGroup("Expense");
+                            }
+                            list.add(f);
                         }
                     }
                 } catch (Exception e) {
-                    log.info("getProfitLost"+e.getMessage());
+                    log.error(e.getMessage());
                 }
+
             }
         }
         return list;
