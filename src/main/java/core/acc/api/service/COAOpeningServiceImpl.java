@@ -71,7 +71,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
 
     @Override
     public List<COAOpening> searchOpening(String deptCode, String curCode, String traderType, String coaLv1, String coaLv2, String coaLv3, String compCode) {
-        String sql = "select op.*,c1.coa_name_eng,c1.coa_parent coa_lv2,c2.coa_parent coa_lv1,t.user_code t_user_code,t.trader_name,t.discriminator,d.usr_code\n" +
+        String sql = "select op.*,c1.coa_code_usr,c1.coa_name_eng,c1.coa_parent coa_lv2,c2.coa_parent coa_lv1,t.user_code t_user_code,t.trader_name,t.discriminator,d.usr_code\n" +
                 "from coa_opening op\n" +
                 "join chart_of_account c1 on op.source_acc_id = c1.coa_code\n" +
                 "and op.comp_code = c1.comp_code\n" +
@@ -79,6 +79,8 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "left join trader t\n" + "on op.trader_code = t.code\n" + "and op.comp_code = t.comp_code\n" +
                 "join department d on op.dept_code = d.dept_code\n" + "and op.comp_code = d.comp_code\n" +
                 "where (op.dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
+                "and (c1.coa_parent ='" + coaLv2 + "' or '-'='" + coaLv2 + "')\n" +
+                "and (c2.coa_parent ='" + coaLv1 + "' or '-'='" + coaLv1 + "')\n" +
                 "and (op.cur_code ='" + curCode + "' or '-'='" + curCode + "')\n" +
                 "and op.comp_code ='" + compCode + "'\n" +
                 "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')";
@@ -95,6 +97,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                     key.setCompCode(compCode);
                     key.setOpId(rs.getString("coa_op_id"));
                     coa.setKey(key);
+                    coa.setCoaUsrCode(rs.getString("coa_code_usr"));
                     coa.setSourceAccId(rs.getString("source_acc_id"));
                     coa.setCurCode(rs.getString("cur_code"));
                     coa.setDrAmt(rs.getDouble("dr_amt"));

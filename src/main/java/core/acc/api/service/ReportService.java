@@ -4,6 +4,7 @@ import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.BalanceSheetRetObj;
+import core.acc.api.model.Financial;
 import core.acc.api.model.ProfitAndLostRetObj;
 
 import java.sql.SQLException;
@@ -17,12 +18,7 @@ public interface ReportService {
                                 String compCode, String tranSource, String traderCode, String traderType,
                                 String coaLv2, String coaLv1, Integer macId) throws SQLException;
 
-    void getProfitLost(String plProcess, String from, String to, String dept,
-                       String currency, String comp, String userCode, String macId, String invCOA) throws Exception;
-
-    void getProfitLostMultiCurrency(String plProcess, String stDate,
-                                    String enDate, String dept, String reqCurrency, String comp,
-                                    String userCode, String macId, String inventory) throws Exception;
+    List<Financial> getProfitLost(String plProcess, String stDate, String enDate, boolean detail, String compCode, Integer macId) throws Exception;
 
     ProfitAndLostRetObj getPLCalculateValue(String compCode, String macId, boolean multiCur);
 
@@ -57,7 +53,7 @@ public interface ReportService {
     List<VApar> genArAp(String compCode, String opDate,
                         String clDate, String currency, String traderCode, String coaCode, Integer macId);
 
-    List<Gl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId);
+    List<Financial> getIncomeAndExpenditure(String process, boolean detail, Integer macId);
 
     double getTraderLastBalance(String date, String traderCode, String compCode);
 

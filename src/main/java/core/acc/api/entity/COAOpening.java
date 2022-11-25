@@ -34,6 +34,8 @@ public class COAOpening {
     @Column(name = "trader_code")
     private String traderCode;
     @Transient
+    private String coaUsrCode;
+    @Transient
     private String srcAccName;
     @Transient
     private String traderName;

@@ -5,6 +5,7 @@ import core.acc.api.common.Util1;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
+import core.acc.api.model.Financial;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/account/report")
+@RequestMapping("/report")
 public class ReportController {
     @Autowired
     private ReportService reportService;
@@ -42,12 +43,11 @@ public class ReportController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
-        String incomeGroup = filter.getIncomeGroup();
-        String expenseGroup = filter.getExpenseGroup();
+        String ieProcess = Util1.isNull(filter.getIncomeExpenseProcess(), "-");
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
-        reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         try {
             switch (reportName) {
                 case "TriBalance" -> {
@@ -58,17 +58,25 @@ public class ReportController {
                     List<VApar> list = reportService.genArAp(compCode, opDate, toDate, curCode, traderCode, coaCode, macId);
                     Util1.writeJsonFile(list, exportPath);
                 }
-                case "Income&Expenditure" -> {
+                case "Income&ExpenditureDetail" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", true, macId);
-                    reportService.getIncomeAndExpenditure(incomeGroup, expenseGroup, macId);
+                    List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "Income&ExpenditureSummary" -> {
+                    List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, false, macId);
+                    Util1.writeJsonFile(data, exportPath);
                 }
                 case "IndividualLedger" -> {
                     List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
                     Util1.writeJsonFile(Gls, exportPath);
                 }
             }
-            byte[] bytes = new FileInputStream(exportPath).readAllBytes();
-            ro.setFile(bytes);
+            try (FileInputStream in = new FileInputStream(exportPath)) {
+                byte[] bytes = in.readAllBytes();
+                ro.setFile(bytes);
+            }
+
         } catch (Exception e) {
             ro.setErrorMessage(e.getMessage());
             log.error(String.format("getReport: %s", e.getMessage()));
@@ -88,7 +96,7 @@ public class ReportController {
         String currency = filter.getCurCode();
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();
-        reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, netChange, macId);
         List<VTriBalance> triBalance = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
         return ResponseEntity.ok(triBalance);
@@ -103,7 +111,7 @@ public class ReportController {
         String currency = Util1.isNull(filter.getCurCode(), "-");
         Integer macId = filter.getMacId();
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
-        reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         return ResponseEntity.ok(reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId));
     }
 

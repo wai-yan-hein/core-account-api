@@ -94,7 +94,7 @@ public class AccountController {
     }
 
     @GetMapping(path = "/get-coa-lv3")
-    public ResponseEntity<?> getCOA(@RequestParam String str, @RequestParam String compCode) {
+    public ResponseEntity<?> getCOALv3(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(coaService.searchCOA3(str, compCode));
     }
 
@@ -104,9 +104,9 @@ public class AccountController {
     }
 
 
-    @PostMapping(path = "/get-coa-child")
-    public ResponseEntity<?> getCOAChild(@RequestBody COAKey key) {
-        return ResponseEntity.ok(coaService.getCOAChild(key.getCoaCode(), key.getCompCode()));
+    @GetMapping(path = "/get-coa-child")
+    public ResponseEntity<?> getCOAChild(@RequestParam String coaCode, @RequestParam String compCode) {
+        return ResponseEntity.ok(coaService.getCOAChild(coaCode, compCode));
     }
 
     @PostMapping(path = "/find-coa")
@@ -135,7 +135,7 @@ public class AccountController {
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         Integer macId = filter.getMacId();
-        reportService.insertTmp(filter.getDepartments(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, desp, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
@@ -154,7 +154,7 @@ public class AccountController {
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
-        List<String> department = filter.getDepartments();
+        List<String> department = filter.getListDepartment();
         return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, clDate, 3, curCode, compCode, department, macId, traderCode));
     }
 
@@ -207,6 +207,10 @@ public class AccountController {
     @GetMapping(path = "/get-trader")
     public ResponseEntity<List<Trader>> getTrader(@RequestParam String compCode) {
         return ResponseEntity.ok(traderService.getTrader(compCode));
+    }
+    @GetMapping(path = "/search-trader")
+    public ResponseEntity<List<Trader>> getTrader(@RequestParam String text,@RequestParam String compCode) {
+        return ResponseEntity.ok(traderService.getTrader(text,compCode));
     }
 
     @GetMapping(path = "/get-supplier")

@@ -9,6 +9,7 @@ public interface TraderService {
     Trader save(Trader t);
 
     List<Trader> getTrader(String compCode);
+    List<Trader> getTrader(String text,String compCode);
 
     List<Trader> getCustomer(String compCode);
 

@@ -5,6 +5,7 @@ import core.acc.api.dao.COADao;
 import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.BalanceSheetRetObj;
+import core.acc.api.model.Financial;
 import core.acc.api.model.ProfitAndLostRetObj;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,83 +158,27 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public void getProfitLost(String plProcess, String stDate, String enDate, String dept,
-                              String reqCurrency, String comp, String userCode, String macId, String inventory) {
-        long start = new GregorianCalendar().getTimeInMillis();
+    public List<Financial> getProfitLost(String plProcess, String stDate, String enDate, boolean detail, String compCode, Integer macId) {
+        List<Financial> list = new ArrayList<>();
         dao.execSQLRpt("delete from tmp_profit_lost where mac_id = " + macId + "");
-        String strInsert = "insert into tmp_profit_lost(acc_code,curr_code,dept_code,\n "
-                + "acc_total,comp_code, sort_order,mac_id)";
-        String[] process = plProcess.split(",");
-        int sortOrder = 1;
-        stDate = Util1.toDateStrMYSQL(stDate, "dd/MM/yyyy");
-        enDate = Util1.toDateStrMYSQL(enDate, "dd/MM/yyyy");
-        String invCode = getCOACode(inventory, comp);
-        inventory = invCode.equals("-") ? "'" + inventory + "'" : invCode;
-        //Sales Income
-        for (String tmp : process) {
-            switch (tmp) {
-                case "os" -> {
-                    try {
-                        String sql = "select coa_code,curr_code,dept_code,sum(amount)amount,comp_code," + sortOrder + "," + macId + "\n"
-                                + "	from stock_op_value\n"
-                                + "	where coa_code in(" + inventory + ")\n"
-                                + "    and date(tran_date) =(select max(tran_date)\n"
-                                + "	from stock_op_value\n"
-                                + "	where date(tran_date) <'" + stDate + "'\n"
-                                + "    )\n"
-                                + "and (dept_code in (" + dept + "))\n"
-                                + "and (comp_code ='" + comp + "' or '-' ='" + comp + "')\n"
-                                + "group by coa_code,curr_code";
-                        ResultSet rs = dao.executeSql(sql);
-                        if (rs.next()) {
-                            dao.execSQLRpt(strInsert + "\n" + sql);
-                        } else {
-                            String sql1 = "select source_acc_id coa_code,cur_code,dept_code,sum(dr_amt) op_amt,comp_code," + sortOrder + "," + macId + "\n"
-                                    + "	from coa_opening \n"
-                                    + "	where source_acc_id in(" + inventory + ")\n"
-                                    + "	and date(op_date) ='" + stDate + "'\n"
-                                    + " and (dept_code in (" + dept + "))\n"
-                                    + "	and (comp_code ='" + comp + "' or '-' ='" + comp + "')\n"
-                                    + "group by op_date, coa_code,cur_code,comp_code";
-                            dao.execSQLRpt(strInsert + "\n" + sql1);
+        if (!plProcess.equals("-")) {
+            String sql = "";
+            String[] process = plProcess.split(",");
+            for (String head : process) {
+                sql = detail ? getHeadSqlDetail(head, macId) : getHeadSqlSummary(head, macId);
+                ResultSet rs = dao.executeSql(sql);
+                try {
+                    if (rs.next()) {
+                        while (rs.next()) {
+
                         }
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Multiple Opening Problem.Fix in Journal Stock Opening.");
                     }
-                }
-                case "cs" -> {
-                    try {
-                        String strCS = "select coa_code,curr_code,dept_code,sum(amount) amount,\n"
-                                + "'" + comp + "'," + sortOrder + "," + macId + "\n"
-                                + "from stock_op_value\n"
-                                + "where  coa_code in (" + inventory + ")\n"
-                                + "and (dept_code in (" + dept + "))\n"
-                                + "and comp_code = '" + comp + "'\n"
-                                + "and date(tran_date) = '" + enDate + "'\n"
-                                + "group by coa_code,curr_code";
-                        dao.execSQLRpt(strInsert + "\n" + strCS);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Closing Calculation Error.");
-                    }
-                }
-                default -> {
-                    try {
-                        String sql = "select coa_code,curr_id,ifnull(dept_code,'-'),if(dr_amt>0,dr_amt*-1,cr_amt) acc_total,\n"
-                                + "'" + comp + "'," + sortOrder + "," + macId + "\n"
-                                + "from tmp_tri\n"
-                                + "where mac_id = " + macId + " \n"
-                                + "and dept_code in (" + dept + ")\n"
-                                + "and coa_code in (select coa_code from v_coa_lv3 where coa_code_3 = '" + tmp + "' and comp_code = '" + comp + "')";
-                        dao.execSQLRpt(strInsert + "\n" + sql);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Profit And Lost Error.");
-                    }
+                } catch (Exception e) {
+                    log.info("getProfitLost"+e.getMessage());
                 }
             }
-            sortOrder++;
         }
-        long end = new GregorianCalendar().getTimeInMillis();
-        log.info(String.format("getProfitLost %s ms", end - start));
+        return list;
     }
 
     public String getCOACode(String code, String compCode) {
@@ -515,107 +460,6 @@ public class ReportServiceImpl implements ReportService {
         dao.execSQLRpt(sql);
     }
 
-    @Override
-    public void getProfitLostMultiCurrency(String plProcess, String stDate,
-                                           String enDate, String dept,
-                                           String reqCurrency, String comp,
-                                           String userCode, String macId,
-                                           String inventory) {
-        long start = new GregorianCalendar().getTimeInMillis();
-        String delSql = "delete from tmp_profit_lost where mac_id = '" + macId + "'";
-        dao.execSQLRpt(delSql);
-        dao.execSQLRpt("delete from tmp_profit_lost_detail where mac_id = '" + macId + "'");
-        String strInsert = "insert into tmp_profit_lost_detail(gl_date,acc_code,curr_code,dept_code,\n "
-                + "acc_total,comp_code, sort_order,mac_id,ex_cur)";
-        String[] process = plProcess.split(",");
-        int sortOrder = 1;
-        stDate = Util1.toDateStrMYSQL(stDate, "dd/MM/yyyy");
-        enDate = Util1.toDateStrMYSQL(enDate, "dd/MM/yyyy");
-        String invCode = getCOACode(inventory, comp);
-        inventory = invCode.equals("-") ? "'" + inventory + "'" : invCode;
-        //Sales Income
-        for (String tmp : process) {
-            switch (tmp) {
-                case "os" -> {
-                    try {
-                        String sql = "select tran_date,coa_code,curr_code,dept_code,sum(amount)amount,comp_code,\n"
-                                + "" + sortOrder + "," + macId + ",'" + reqCurrency + "'\n"
-                                + "	from stock_op_value\n"
-                                + "	where coa_code in(" + inventory + ")\n"
-                                + "    and date(tran_date) =(select max(tran_date)\n"
-                                + "	from stock_op_value\n"
-                                + "	where date(tran_date) <'" + stDate + "'\n"
-                                + "    )\n"
-                                + "and (dept_code in (" + dept + "))\n"
-                                + "and (comp_code ='" + comp + "' or '-' ='" + comp + "')\n"
-                                + "group by tran_date,coa_code,curr_code";
-                        ResultSet rs = dao.executeSql(sql);
-                        if (rs.next()) {
-                            dao.execSQLRpt(strInsert + "\n" + sql);
-                        } else {
-                            String sql1 = "select op_date,source_acc_id coa_code,cur_code,dept_code,\n"
-                                    + "sum(dr_amt) op_amt,comp_code," + sortOrder + "," + macId + ",'" + reqCurrency + "'\n"
-                                    + "	from coa_opening \n"
-                                    + "	where source_acc_id in(" + inventory + ")\n"
-                                    + "	and date(op_date) ='" + stDate + "'\n"
-                                    + " and (dept_code in (" + dept + "))\n"
-                                    + "	and (comp_code ='" + comp + "' or '-' ='" + comp + "')\n"
-                                    + "group by op_date, coa_code,cur_code,comp_code";
-                            dao.execSQLRpt(strInsert + "\n" + sql1);
-                        }
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Multiple Opening Problem.Fix in Journal Stock Opening.");
-                    }
-                }
-                case "cs" -> {
-                    try {
-                        String strCS = "select tran_date,coa_code,curr_code,dept_code,sum(amount) amount,\n"
-                                + "'" + comp + "'," + sortOrder + "," + macId + ",'" + reqCurrency + "'\n"
-                                + "from stock_op_value\n"
-                                + "where  coa_code in (" + inventory + ")\n"
-                                + "and (dept_code in (" + dept + "))\n"
-                                + "and comp_code = '" + comp + "'\n"
-                                + "and date(tran_date) = '" + enDate + "'\n"
-                                + "group by tran_date,coa_code,curr_code";
-                        dao.execSQLRpt(strInsert + "\n" + strCS);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Closing Calculation Error.");
-                    }
-                }
-                default -> {
-                    try {
-                        String sql = "select gl_date,coa_code,curr_id,ifnull(dept_code,'-'),if(dr_amt>0,dr_amt*-1,cr_amt) acc_total,\n"
-                                + "'" + comp + "'," + sortOrder + "," + macId + ",'" + reqCurrency + "'\n"
-                                + "from tmp_tri_detail\n"
-                                + "where mac_id = " + macId + " \n"
-                                + "and dept_code in (" + dept + ")\n"
-                                + "and coa_code in (select coa_code from v_coa_lv3 where coa_code_3 = '" + tmp + "' and comp_code = '" + comp + "')";
-                        dao.execSQLRpt(strInsert + "\n" + sql);
-                    } catch (Exception e) {
-                        throw new IllegalStateException("Profit And Lost Error.");
-                    }
-                }
-            }
-            sortOrder++;
-        }
-        String convertSql = "insert into tmp_profit_lost(acc_code, curr_code, acc_total, comp_code, sort_order, mac_id, dept_code,ex_cur)\n"
-                + "select acc_code,curr_code,sum(ifnull(tmp_amt,acc_total)) acc_total,comp_code,sort_order,mac_id,dept_code,ex_cur \n"
-                + "from (\n"
-                + "select tmp.gl_date,tmp.acc_code,tmp.dept_code,tmp.curr_code,tmp.ex_cur,\n"
-                + "tmp.acc_total,(tmp.acc_total*ifnull(r.avg_rate,1)) tmp_amt,ifnull(r.avg_rate,1) avg_rate,\n"
-                + "tmp.sort_order,tmp.mac_id,tmp.comp_code\n"
-                + "from tmp_profit_lost_detail tmp \n"
-                + "left  join v_cur_rate r\n"
-                + "on tmp.curr_code = r.currency and \n"
-                + "tmp.gl_date = r.ex_date \n"
-                + "where tmp.mac_id = " + macId + "\n"
-                + ")a\n"
-                + "group by acc_code,ex_cur,comp_code";
-        dao.execSQLRpt(convertSql);
-        long end = new GregorianCalendar().getTimeInMillis();
-        log.info(String.format("getProfitLostMultiCurrency %s ms", end - start));
-
-    }
 
     @Override
     public void genBalanceSheetDetail(String toDate, String compCode, String curr, String macId, String blProcess,
@@ -896,36 +740,47 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Gl> getIncomeAndExpenditure(String incomeGroup, String expenseGroup, Integer macId) {
-        String[] i = incomeGroup.split(",");
-        String[] e = expenseGroup.split(",");
+    public List<Financial> getIncomeAndExpenditure(String process, boolean detail, Integer macId) {
+        String[] in = process.split(",");
+        List<Financial> list = new ArrayList<>();
         String delSql = "delete from tmp_in_ex where mac_id = " + macId + "";
         dao.execSQLRpt(delSql);
-        for (String coa : i) {
-            String sql = "insert into tmp_in_ex(sort_order,coa_code,cur_code,acc_total,dept_code,mac_id)\n" +
-                    "select 1,tmp.coa_code, tmp.curr_id, (tmp.cr_amt-tmp.dr_amt) amt, tmp.dept_code,tmp.mac_id\n" +
-                    "from tmp_tri tmp join chart_of_account coa\n" +
-                    "on tmp.coa_code = coa.coa_code\n" +
-                    "join chart_of_account coa1 \n" +
-                    "on coa.coa_parent = coa1.coa_code\n" +
-                    "where tmp.mac_id = " + macId + "\n" +
-                    "and (dr_amt > 0 or cr_amt >0)\n" +
-                    "and coa1.coa_parent = '" + coa + "'";
-            dao.execSQLRpt(sql);
+        double ttlIncome = 0.0;
+        double ttlExpense = 0.0;
+        for (int i = 0; i < in.length; i++) {
+            String head = in[i];
+            String sql = detail ? getHeadSqlDetail(head, macId) : getHeadSqlSummary(head, macId);
+            ResultSet rs = dao.executeSql(sql);
+            if (rs != null) {
+                try {
+                    while (rs.next()) {
+                        Financial f = new Financial();
+                        f.setCurCode(rs.getString("curr_id"));
+                        f.setAmount(rs.getDouble("amount"));
+                        if (detail) {
+                            f.setCoaName(rs.getString("coa_name_eng"));
+                        }
+                        f.setGroupName(rs.getString("group_name"));
+                        f.setHeadName(rs.getString("head_name"));
+                        if (i < 2) {
+                            ttlIncome += f.getAmount();
+                            f.setTranGroup("Income");
+                        } else {
+                            ttlExpense += f.getAmount();
+                            f.setTranGroup("Expense");
+                        }
+                        list.add(f);
+                    }
+                    if (!list.isEmpty()) {
+                        list.get(0).setTotalIncome(ttlIncome);
+                        list.get(0).setTotalExpense(ttlExpense * -1);
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
         }
-        for (String coa : e) {
-            String sql = "insert into tmp_in_ex(sort_order,coa_code,cur_code,acc_total,dept_code,mac_id)\n" +
-                    "select 2,tmp.coa_code, tmp.curr_id, (tmp.dr_amt -tmp.cr_amt) amt, tmp.dept_code,tmp.mac_id\n" +
-                    "from tmp_tri tmp join chart_of_account coa\n" +
-                    "on tmp.coa_code = coa.coa_code\n" +
-                    "join chart_of_account coa1 \n" +
-                    "on coa.coa_parent = coa1.coa_code\n" +
-                    "where tmp.mac_id = " + macId + "\n" +
-                    "and (dr_amt > 0 or cr_amt >0)\n" +
-                    "and coa1.coa_parent = '" + coa + "'";
-            dao.execSQLRpt(sql);
-        }
-        return null;
+        return list;
     }
 
     @Override
@@ -967,5 +822,41 @@ public class ReportServiceImpl implements ReportService {
             log.error("getTraderLastBalance: " + e.getMessage());
         }
         return lastBalance;
+    }
+
+    private String getHeadSqlDetail(String head, Integer macId) {
+        return "select tmp.curr_id, tmp.cr_amt-tmp.dr_amt amount,\n" +
+                "coa1.coa_name_eng,coa2.coa_name_eng group_name,coa3.coa_name_eng head_name\n" +
+                "from tmp_tri tmp \n" +
+                "join chart_of_account coa1\n" +
+                "on tmp.coa_code = coa1.coa_code\n" +
+                "and tmp.comp_code = coa1.comp_code\n" +
+                "join chart_of_account coa2\n" +
+                "on coa1.coa_parent = coa2.coa_code\n" +
+                "and coa1.comp_code = coa2.comp_code\n" +
+                "join chart_of_account coa3\n" +
+                "on coa2.coa_parent = coa3.coa_code\n" +
+                "and coa2.comp_code = coa3.comp_code\n" +
+                "where tmp.mac_id =" + macId + "\n" +
+                "and coa2.coa_parent='" + head + "'\n" +
+                "order by coa3.coa_code_usr,coa2.coa_code_usr,coa3.coa_code_usr,amount desc";
+    }
+
+    private String getHeadSqlSummary(String head, Integer macId) {
+        return "select tmp.curr_id, sum(tmp.cr_amt-tmp.dr_amt) amount,coa2.coa_name_eng group_name,coa3.coa_name_eng head_name\n" +
+                "from tmp_tri tmp \n" +
+                "join chart_of_account coa1\n" +
+                "on tmp.coa_code = coa1.coa_code\n" +
+                "and tmp.comp_code = coa1.comp_code\n" +
+                "join chart_of_account coa2\n" +
+                "on coa1.coa_parent = coa2.coa_code\n" +
+                "and coa1.comp_code = coa2.comp_code\n" +
+                "join chart_of_account coa3\n" +
+                "on coa2.coa_parent = coa3.coa_code\n" +
+                "and coa2.comp_code = coa3.comp_code\n" +
+                "where tmp.mac_id =" + macId + "\n" +
+                "and coa2.coa_parent='" + head + "'\n" +
+                "group by group_name\n" +
+                "order by coa2.coa_code_usr,coa3.coa_code_usr,amount desc";
     }
 }

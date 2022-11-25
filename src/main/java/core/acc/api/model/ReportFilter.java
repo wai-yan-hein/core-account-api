@@ -16,7 +16,6 @@ public class ReportFilter {
     private String acc;
     private String curCode;
     private String reference;
-    private String dept;
     private String refNo;
     private String compCode;
     private String tranSource;
@@ -26,10 +25,9 @@ public class ReportFilter {
     private String traderType;
     private String coaLv2;
     private String coaLv1;
+    private String incomeExpenseProcess;
     private Integer macId;
-    private String incomeGroup;
-    private String expenseGroup;
     private boolean closing;
-    private List<String> departments;
+    private List<String> listDepartment;
     private String deptCode;
 }
