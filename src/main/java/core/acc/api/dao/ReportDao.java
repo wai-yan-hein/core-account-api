@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 
 public interface ReportDao {
 
-    void execSQLRpt(String... strSql);
+    void exeSql(String... strSql);
 
     ResultSet executeSql(String sql);
 

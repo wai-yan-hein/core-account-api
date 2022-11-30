@@ -1,12 +1,13 @@
 package core.acc.api.controller;
 
-import core.acc.api.common.ReturnObject;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReportFilter;
+import core.acc.api.model.ReturnObject;
+import core.acc.api.model.TraderBalance;
 import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import java.util.List;
 public class ReportController {
     @Autowired
     private ReportService reportService;
-    private final ReturnObject ro = new ReturnObject();
+    private ReturnObject ro = new ReturnObject();
 
     @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
     public @ResponseBody ReturnObject getReport(@RequestBody ReportFilter filter) {
@@ -44,6 +45,9 @@ public class ReportController {
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String ieProcess = Util1.isNull(filter.getIncomeExpenseProcess(), "-");
+        String plProcess = Util1.isNull(filter.getPlProcess(), "-");
+        String bsProcess = Util1.isNull(filter.getBsProcess(), "-");
+        String invGroup = Util1.isNull(filter.getInvGroup(), "-");
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
@@ -59,7 +63,7 @@ public class ReportController {
                     Util1.writeJsonFile(list, exportPath);
                 }
                 case "Income&ExpenditureDetail" -> {
-                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", true, macId);
+                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
@@ -71,9 +75,31 @@ public class ReportController {
                     List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
                     Util1.writeJsonFile(Gls, exportPath);
                 }
+                case "Profit&LossDetail" -> {
+                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, true, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "Profit&LossSummary" -> {
+                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, false, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+
+                }
+                case "BalanceSheetDetail" -> {
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, plProcess, bsProcess, true, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "BalanceSheetSummary" -> {
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, plProcess, bsProcess, false, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "CreditDetail" -> {
+                    List<TraderBalance> data = reportService.getTraderBalance(traderCode, coaCode, curCode, fromDate, toDate, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
             }
             try (FileInputStream in = new FileInputStream(exportPath)) {
                 byte[] bytes = in.readAllBytes();
+                ro = reportService.getReportResult(macId);
                 ro.setFile(bytes);
             }
 
@@ -82,6 +108,26 @@ public class ReportController {
             log.error(String.format("getReport: %s", e.getMessage()));
         }
         return ro;
+    }
+
+    private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate,
+                                  String invGroup, boolean detail, String compCode, Integer macId) {
+        return reportService.getProfitLost(plProcess, opDate, fromDate, toDate, invGroup, detail, compCode, macId);
+    }
+
+    private List<Financial> calBS(String fromDate, String toDate, String opDate, String invGroup, String plProcess,
+                                  String bsProcess, boolean detail, String compCode, Integer macId) {
+        double prvProfit = 0.0;
+        if (!fromDate.equals(opDate)) {
+            prvProfit = reportService.getProfit(opDate, opDate, Util1.minusDay(fromDate, 1), invGroup, plProcess, compCode, macId);
+        }
+        double curProfit = reportService.getProfit(opDate, fromDate, toDate, invGroup, plProcess, compCode, macId);
+        return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, detail, prvProfit, curProfit, compCode, macId);
+    }
+
+    @GetMapping(path = "/get-report-result")
+    public ResponseEntity<?> getResult(@RequestParam Integer macId) {
+        return ResponseEntity.ok(reportService.getReportResult(macId));
     }
 
     @PostMapping(path = "/get-tri-balance")
@@ -97,7 +143,7 @@ public class ReportController {
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, netChange, macId);
+        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-", netChange, macId);
         List<VTriBalance> triBalance = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
         return ResponseEntity.ok(triBalance);
     }

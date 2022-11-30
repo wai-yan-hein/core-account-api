@@ -30,7 +30,7 @@ public class COAOpening {
     @Column(name = "created_date")
     private Date createdDate;
     @Column(name = "dept_code")
-    private String depCode;
+    private String deptCode;
     @Column(name = "trader_code")
     private String traderCode;
     @Transient

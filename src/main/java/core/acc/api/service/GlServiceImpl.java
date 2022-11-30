@@ -1,6 +1,5 @@
 package core.acc.api.service;
 
-import core.acc.api.common.ReturnObject;
 import core.acc.api.common.Util1;
 import core.acc.api.dao.GlDao;
 import core.acc.api.dao.ReportDao;
@@ -8,6 +7,7 @@ import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VDescription;
 import core.acc.api.entity.VRef;
+import core.acc.api.model.ReturnObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,17 +65,26 @@ public class GlServiceImpl implements GlService {
             String tranSource = tmp.getTranSource();
             String compCode = tmp.getKey().getCompCode();
             boolean delete = tmp.isDeleted();
+            String glVouNo = tmp.getGlVouNo();
+            if (tranSource.equals("GV")) {
+                if (Util1.isNullOrEmpty(glVouNo)) {
+                    glVouNo = getVouNo(tmp.getMacId(), tmp.getKey().getCompCode());
+                }
+            }
             glDao.deleteGl(vouNo, tranSource);
             if (!delete) {
                 for (Gl gl : glList) {
-                    if (Util1.isMultiCur()) {
-                        if (gl.isCash()) {
-                            gl.setSrcAccCode(Util1.getProperty(gl.getCurCode()));
+                    if (gl.getSrcAccCode() != null) {
+                        if (Util1.isMultiCur()) {
+                            if (gl.isCash()) {
+                                gl.setSrcAccCode(Util1.getProperty(gl.getCurCode()));
+                            }
                         }
-                    }
-                    double amt = Util1.getDouble(gl.getDrAmt()) + Util1.getDouble(gl.getCrAmt());
-                    if (amt > 0) {
-                        save(gl);
+                        double amt = Util1.getDouble(gl.getDrAmt()) + Util1.getDouble(gl.getCrAmt());
+                        if (amt > 0) {
+                            gl.setGlVouNo(glVouNo);
+                            save(gl);
+                        }
                     }
                 }
             }
@@ -107,23 +116,17 @@ public class GlServiceImpl implements GlService {
         return glDao.getReference(str, compCode);
     }
 
+    @Override
+    public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
+        return glDao.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId);
+    }
+
+    @Override
+    public List<Gl> getJournal(String glVouNo, String compCode) {
+        return glDao.getJournal(glVouNo, compCode);
+    }
+
     private void backupGl(Gl gl, String option) {
-        String userCode = gl.getModifyBy();
-        Integer macId = gl.getMacId();
-        String logCode = getGLLogCode(macId, gl.getKey().getCompCode());
-        String sql = "insert into gl_log(gl_code, gl_date, created_date, modify_date, modify_by, \n"
-                + "description, source_ac_id, account_id, cur_code, dr_amt, cr_amt, \n"
-                + "reference, dept_code, voucher_no, user_code, trader_code, comp_code, \n"
-                + "tran_source, gl_vou_no, split_id, intg_upd_status, remark, \n"
-                + "ref_no, mac_id,log_status,log_user_code,log_mac_id,log_gl_code)\n"
-                + "select gl_code, gl_date, created_date, modify_date, modify_by, \n"
-                + "description, source_ac_id, account_id, cur_code, dr_amt, cr_amt, \n"
-                + "reference, dept_code, voucher_no, user_code, trader_code, comp_code, \n"
-                + "tran_source, gl_vou_no, split_id, intg_upd_status, remark, \n"
-                + "ref_no, mac_id,'" + option + "','" + userCode + "'," + macId + ",'" + logCode + "'\n"
-                + "from gl\n"
-                + "where gl_code = '" + gl.getKey().getGlCode() + "'";
-        reportDao.execSQLRpt(sql);
     }
 
 
@@ -131,6 +134,13 @@ public class GlServiceImpl implements GlService {
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         return String.format("%0" + 3 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
+    }
+
+    private String getVouNo(Integer macId, String compCode) {
+        String type = "GV";
+        String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
+        int seqNo = seqService.getSequence(macId, "GV", period, compCode);
+        return type + "-" + String.format("%0" + 5 + "d", seqNo) + period;
     }
 
     private String getGLLogCode(Integer macId, String compCode) {

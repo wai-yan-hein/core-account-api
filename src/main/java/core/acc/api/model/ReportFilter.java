@@ -26,6 +26,9 @@ public class ReportFilter {
     private String coaLv2;
     private String coaLv1;
     private String incomeExpenseProcess;
+    private String plProcess;
+    private String bsProcess;
+    private String invGroup;
     private Integer macId;
     private boolean closing;
     private List<String> listDepartment;

@@ -1,9 +1,9 @@
 package core.acc.api.controller;
 
-import core.acc.api.common.ReturnObject;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
 import core.acc.api.model.ReportFilter;
+import core.acc.api.model.ReturnObject;
 import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -241,4 +241,21 @@ public class AccountController {
         return ResponseEntity.ok(null);
     }
 
+    @PostMapping(path = "/search-journal")
+    public ResponseEntity<?> searchJournal(@RequestBody ReportFilter filter) {
+        Integer macId = filter.getMacId();
+        String fromDate = filter.getFromDate();
+        String toDate = filter.getToDate();
+        String vouNo = Util1.isNull(filter.getGlVouNo(), "-");
+        String description = Util1.isAll(filter.getDesp());
+        String reference = Util1.isAll(filter.getReference());
+        String compCode = filter.getCompCode();
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId));
+    }
+
+    @GetMapping(path = "/get-journal")
+    public ResponseEntity<?> getJournal(@RequestParam String glVouNo, @RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getJournal(glVouNo, compCode));
+    }
 }

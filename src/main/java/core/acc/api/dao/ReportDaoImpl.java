@@ -6,8 +6,8 @@ import java.sql.ResultSet;
 @Repository
 public class ReportDaoImpl extends AbstractDao<String, Object> implements ReportDao {
     @Override
-    public void execSQLRpt(String... strSql) {
-        execSQL(strSql);
+    public void exeSql(String... strSql) {
+        execSql(strSql);
     }
 
     @Override

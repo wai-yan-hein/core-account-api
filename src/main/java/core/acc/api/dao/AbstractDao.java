@@ -66,7 +66,7 @@ public abstract class AbstractDao<PK extends Serializable, T> {
         return query.executeUpdate();
     }
 
-    public void execSQL(String... strSql) {
+    public void execSql(String... strSql) {
         for (String sql : strSql) {
             getSession().createNativeQuery(sql).executeUpdate();
         }

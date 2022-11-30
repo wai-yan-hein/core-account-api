@@ -19,4 +19,7 @@ public interface GlDao {
     List<VDescription> getDescription(String str, String compCode);
 
     List<VRef> getReference(String str, String compCode);
+    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode,Integer macId);
+    List<Gl> getJournal(String glVouNo,String compCode);
+
 }

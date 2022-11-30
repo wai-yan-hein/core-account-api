@@ -29,7 +29,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
         String filter = "where active =1\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
-        String sql = "select code,user_code,trader_name\n" +
+        String sql = "select code,user_code,trader_name,account_code,discriminator\n" +
                 "from trader\n" +
                 "" + filter + "\n" +
                 "limit 20\n";
@@ -45,6 +45,8 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                     t.setKey(key);
                     t.setUserCode(rs.getString("user_code"));
                     t.setTraderName(rs.getString("trader_name"));
+                    t.setAccCode(rs.getString("account_code"));
+                    t.setTraderType(rs.getString("discriminator"));
                     list.add(t);
                 }
             }
@@ -69,6 +71,6 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
     @Override
     public void delete(TraderKey key) {
         String sql = "delete from trader where comp_code ='" + key.getCompCode() + "' and code ='" + key.getCode() + "'";
-        execSQL(sql);
+        execSql(sql);
     }
 }

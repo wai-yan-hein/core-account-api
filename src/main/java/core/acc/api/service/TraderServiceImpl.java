@@ -33,7 +33,7 @@ public class TraderServiceImpl implements TraderService {
 
     @Override
     public List<Trader> getTrader(String text, String compCode) {
-        return getTrader(text,compCode);
+        return traderDao.getTrader(text,compCode);
     }
 
     @Override

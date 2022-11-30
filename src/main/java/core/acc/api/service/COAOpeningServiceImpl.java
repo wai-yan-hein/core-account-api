@@ -83,7 +83,8 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and (c2.coa_parent ='" + coaLv1 + "' or '-'='" + coaLv1 + "')\n" +
                 "and (op.cur_code ='" + curCode + "' or '-'='" + curCode + "')\n" +
                 "and op.comp_code ='" + compCode + "'\n" +
-                "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')";
+                "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')\n" +
+                "order by c1.coa_code_usr";
         ResultSet rs = coaOpeningDao.getResult(sql);
         List<COAOpening> list = new ArrayList<>();
         try {
@@ -104,7 +105,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                     coa.setCrAmt(rs.getDouble("cr_amt"));
                     coa.setUserCode(rs.getString("user_code"));
                     coa.setCreatedDate(rs.getDate("created_date"));
-                    coa.setDepCode(rs.getString("dept_code"));
+                    coa.setDeptCode(rs.getString("dept_code"));
                     coa.setTraderCode(rs.getString("trader_code"));
                     coa.setSrcAccName(rs.getString("coa_name_eng"));
                     coa.setTraderName(rs.getString("trader_name"));

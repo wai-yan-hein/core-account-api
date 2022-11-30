@@ -14,8 +14,10 @@ import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,6 +36,17 @@ public class Util1 {
         }
         return status;
 
+    }
+
+    public static String minusDay(String sqlFormat, int minusDay) {
+        LocalDate date = LocalDate.parse(sqlFormat);
+        LocalDate minusDays = date.minusDays(minusDay);
+        return minusDays.toString();
+    }
+
+    public static String getPercent(Double d) {
+        DecimalFormat format = new DecimalFormat("#,##0.00%");
+        return format.format(d);
     }
 
     public static boolean isNullOrEmpty(Object obj) {
@@ -114,6 +127,23 @@ public class Util1 {
         return strDate;
     }
 
+    public static String toDateStr(String strDate, String inFormat, String outFormat) {
+        SimpleDateFormat formatter = new SimpleDateFormat(outFormat);
+        String date = null;
+
+        try {
+            date = formatter.format(toDate(strDate, inFormat));
+        } catch (Exception ex) {
+            try {
+                date = formatter.format(toDate(strDate, outFormat));
+            } catch (Exception ex1) {
+                log.info("toDateStr : " + ex1.getMessage());
+            }
+        }
+
+        return date;
+    }
+
     public static Double toNull(double value) {
         return value == 0 ? null : value;
     }
@@ -150,6 +180,15 @@ public class Util1 {
         }
 
         return tmp;
+    }
+
+    public static String isAll(String value) {
+        if (value != null) {
+            if (value.equals("All")) {
+                return "-";
+            }
+        }
+        return Util1.isNull(value, "-");
     }
 
     public static String isNull(String strValue, String value) {
