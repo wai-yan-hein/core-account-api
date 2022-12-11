@@ -2,7 +2,6 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.GlDao;
-import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VDescription;
@@ -12,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,8 +22,6 @@ public class GlServiceImpl implements GlService {
     private GlDao glDao;
     @Autowired
     private SeqTableService seqService;
-    @Autowired
-    private ReportDao reportDao;
 
     @Override
     public Gl save(Gl gl) throws Exception {
@@ -124,6 +122,26 @@ public class GlServiceImpl implements GlService {
     @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         return glDao.getJournal(glVouNo, compCode);
+    }
+
+    @Override
+    public List<Gl> unUpload(String syncDate) {
+        return glDao.unUpload(syncDate);
+    }
+
+    @Override
+    public Date getMaxDate() {
+        return glDao.getMaxDate();
+    }
+
+    @Override
+    public List<Gl> search(String updatedDate,String deptCode) {
+        return glDao.search(updatedDate, deptCode);
+    }
+
+    @Override
+    public void truncate(GlKey key) {
+        glDao.truncate(key);
     }
 
     private void backupGl(Gl gl, String option) {

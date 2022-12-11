@@ -1,6 +1,7 @@
 package core.acc.api.dao;
 
 
+import core.acc.api.common.Util1;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.entity.VDescription;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -170,5 +172,83 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
             log.error(e.getMessage());
         }
         return list;
+    }
+
+    @Override
+    public List<Gl> unUpload(String syncDate) {
+        String hql = "select o from Gl o where o.intgUpdStatus is null and date(o.glDate) >= '" + syncDate + "'";
+        return findHSQL(hql);
+    }
+
+    @Override
+    public Date getMaxDate() {
+        String sql = "select max(updated_date) date from gl";
+        ResultSet rs = getResultSet(sql);
+        try {
+            if (rs.next()) {
+                Date date = rs.getTimestamp("date");
+                if (date != null) {
+                    return date;
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return Util1.getSyncDate();
+    }
+
+    @Override
+    public List<Gl> search(String updatedDate, String deptCode) {
+        List<Gl> list = new ArrayList<>();
+        String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.updated_date > '" + updatedDate + "'";
+        ResultSet rs = getResultSet(sql);
+        if (rs != null) {
+            try {
+                //gl_code, gl_date, created_date, modify_date, modify_by, description, source_ac_id,
+                // account_id, cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, user_code,
+                // trader_code, comp_code, tran_source, gl_vou_no, split_id, intg_upd_status, remark, naration, ref_no, mac_id, exchange_id
+                while (rs.next()) {
+                    Gl gl = new Gl();
+                    GlKey key = new GlKey();
+                    key.setCompCode(rs.getString("comp_code"));
+                    key.setGlCode(rs.getString("gl_code"));
+                    gl.setKey(key);
+                    gl.setGlDate(rs.getDate("gl_date"));
+                    gl.setCreatedDate(rs.getTimestamp("created_date"));
+                    gl.setModifyDate(rs.getTimestamp("update_date"));
+                    gl.setModifyBy(rs.getString("modify_by"));
+                    gl.setDescription(rs.getString("description"));
+                    gl.setSrcAccCode(rs.getString("source_ac_id"));
+                    gl.setAccCode(rs.getString("account_id"));
+                    gl.setCurCode(rs.getString("cur_code"));
+                    gl.setDrAmt(rs.getDouble("dr_amt"));
+                    gl.setCrAmt(rs.getDouble("cr_amt"));
+                    gl.setReference(rs.getString("reference"));
+                    gl.setDeptCode(rs.getString("dept_code"));
+                    gl.setVouNo(rs.getString("vou_no"));
+                    gl.setCreatedBy(rs.getString("user_code"));
+                    gl.setTraderCode(rs.getString("trader_code"));
+                    gl.setTranSource(rs.getString("tran_source"));
+                    gl.setGlVouNo(rs.getString("gl_vou_no"));
+                    gl.setSplitId(rs.getInt("split_id"));
+                    gl.setIntgUpdStatus(rs.getString("intg_upd_status"));
+                    gl.setRemark(rs.getString("remark"));
+                    gl.setRefNo(rs.getString("ref_no"));
+                    gl.setMacId(rs.getInt("mac_id"));
+                    list.add(gl);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+
+
+        return list;
+    }
+
+    @Override
+    public void truncate(GlKey key) {
+        String sql = "delete from gl where gl_code ='" + key.getCompCode() + "' and comp_code ='" + key.getGlCode() + "'";
+        execSql(sql);
     }
 }

@@ -6,6 +6,7 @@ import core.acc.api.entity.VDescription;
 import core.acc.api.entity.VRef;
 import core.acc.api.model.ReturnObject;
 
+import java.util.Date;
 import java.util.List;
 
 public interface GlService {
@@ -21,9 +22,17 @@ public interface GlService {
 
     List<VRef> getReference(String str, String compCode);
 
-    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode,Integer macId);
+    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
 
-    List<Gl> getJournal(String glVouNo,String compCode);
+    List<Gl> getJournal(String glVouNo, String compCode);
+
+    List<Gl> unUpload(String syncDate);
+
+    Date getMaxDate();
+
+    List<Gl> search(String updatedDate, String deptCode);
+
+    void truncate(GlKey key);
 
 
 }

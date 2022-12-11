@@ -1,7 +1,6 @@
 package core.acc.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
+import lombok.Data;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -76,4 +75,12 @@ public class Gl {
     private String srcAccName;
     @Transient
     private String accName;
+
+    public Gl(Date modifyDate, String deptCode) {
+        this.modifyDate = modifyDate;
+        this.deptCode = deptCode;
+    }
+
+    public Gl() {
+    }
 }
