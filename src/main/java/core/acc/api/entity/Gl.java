@@ -60,8 +60,6 @@ public class Gl {
     private Integer macId;
     @Column(name = "ref_no")
     private String refNo;
-    @Column(name = "exchange_id")
-    private Integer exchangeId;
     @Transient
     private List<String> delList;
     @Transient
@@ -76,4 +74,6 @@ public class Gl {
     private String srcAccName;
     @Transient
     private String accName;
+    @Transient
+    private String vouDate;
 }

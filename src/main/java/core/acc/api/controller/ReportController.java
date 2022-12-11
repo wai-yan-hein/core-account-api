@@ -72,8 +72,8 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "IndividualLedger" -> {
-                    List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
-                    Util1.writeJsonFile(Gls, exportPath);
+                    List<Gl> data = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+                    Util1.writeJsonFile(data, exportPath);
                 }
                 case "Profit&LossDetail" -> {
                     List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, true, compCode, macId);

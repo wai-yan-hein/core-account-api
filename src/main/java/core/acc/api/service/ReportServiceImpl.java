@@ -112,7 +112,7 @@ public class ReportServiceImpl implements ReportService {
                 "" + filter + "\n" +
                 "order by gl_date,tran_source,gl_code\n";
         ResultSet rs = dao.executeSql(sql);
-        List<Gl> Gls = new ArrayList<>();
+        List<Gl> list = new ArrayList<>();
         if (!Objects.isNull(rs)) {
             while (rs.next()) {
                 Gl v = new Gl();
@@ -121,6 +121,7 @@ public class ReportServiceImpl implements ReportService {
                 key.setGlCode(rs.getString("gl_code"));
                 v.setKey(key);
                 v.setGlDate(rs.getDate("gl_date"));
+                v.setVouDate(Util1.toDateStr(v.getGlDate(), "dd/MM/yyyy"));
                 v.setDescription((rs.getString("description")));
                 v.setSrcAccCode(rs.getString("source_ac_id"));
                 v.setAccCode(rs.getString("account_id"));
@@ -138,25 +139,25 @@ public class ReportServiceImpl implements ReportService {
                 v.setGlVouNo(rs.getString("gl_vou_no"));
                 v.setSrcAccName(rs.getString("src_acc_name"));
                 v.setAccName(rs.getString("acc_name"));
-                Gls.add(v);
+                list.add(v);
             }
         }
-        if (!Gls.isEmpty()) {
-            Gls.forEach(Gl -> {
-                String account = Util1.isNull(Gl.getAccCode(), "-");
+        if (!list.isEmpty()) {
+            list.forEach(gl -> {
+                String account = Util1.isNull(gl.getAccCode(), "-");
                 if (account.equals(srcAcc)) {
                     //swap amt
-                    double tmpDrAmt = Util1.getDouble(Gl.getDrAmt());
-                    Gl.setDrAmt(Gl.getCrAmt());
-                    Gl.setCrAmt(tmpDrAmt);
+                    double tmpDrAmt = Util1.getDouble(gl.getDrAmt());
+                    gl.setDrAmt(gl.getCrAmt());
+                    gl.setCrAmt(tmpDrAmt);
                     //swap acc
-                    String tmpStr = Gl.getAccName();
-                    Gl.setAccName(Gl.getSrcAccName());
-                    Gl.setSrcAccName(tmpStr);
+                    String tmpStr = gl.getAccName();
+                    gl.setAccName(gl.getSrcAccName());
+                    gl.setSrcAccName(tmpStr);
                 }
             });
         }
-        return Gls;
+        return list;
     }
 
     private void deleteTmp(String tableName, Integer macId) {
