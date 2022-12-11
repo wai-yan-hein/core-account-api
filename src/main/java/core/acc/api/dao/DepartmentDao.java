@@ -19,4 +19,6 @@ public interface DepartmentDao {
     int delete(String code);
 
     List<Department> findAll(String compCode);
+    List<Department> findAll();
+
 }

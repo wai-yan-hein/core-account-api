@@ -139,6 +139,7 @@ public class ReportServiceImpl implements ReportService {
                 v.setGlVouNo(rs.getString("gl_vou_no"));
                 v.setSrcAccName(rs.getString("src_acc_name"));
                 v.setAccName(rs.getString("acc_name"));
+                v.setMacId(rs.getInt("mac_id"));
                 list.add(v);
             }
         }
