@@ -182,7 +182,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public Date getMaxDate() {
-        String sql = "select max(updated_date) date from gl";
+        String sql = "select max(modify_date) date from gl";
         ResultSet rs = getResultSet(sql);
         try {
             if (rs.next()) {

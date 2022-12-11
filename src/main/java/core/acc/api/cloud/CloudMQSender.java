@@ -219,6 +219,7 @@ public class CloudMQSender {
     }
 
     private void uploadGl() {
+        log.info(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         if (!list.isEmpty()) log.info("upload gl : " + list.size());
         list.forEach(o -> saveMessage("GL", gson.toJson(o), serverQ));

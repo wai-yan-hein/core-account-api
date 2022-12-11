@@ -5,8 +5,10 @@ import com.google.gson.GsonBuilder;
 import core.acc.api.common.Util1;
 import core.acc.api.config.ActiveMqCondition;
 import core.acc.api.entity.Gl;
+import core.acc.api.entity.GlKey;
 import core.acc.api.repo.UserRepo;
 import core.acc.api.service.GlService;
+import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +43,8 @@ public class CloudMQReceiver {
     private UserRepo userRepo;
     @Autowired
     private GlService glService;
+    @Autowired
+    private ReportService service;
 
     private void responseSetup(String entity, String distQ, String data) {
         MessageCreator mc = (Session session) -> {
@@ -131,7 +135,15 @@ public class CloudMQReceiver {
     }
 
     private void update(Gl gl) {
-
+        GlKey key = gl.getKey();
+        String sql = "update gl set intg_upd_status ='" + SAVE + "'\n"
+                + "where gl_code ='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        try {
+            service.executeSql(sql);
+        } catch (Exception e) {
+            log.error("update Gl : " + e.getMessage());
+        }
+        log.info("update gl.");
     }
 
     private void save(Gl gl) {
