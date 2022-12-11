@@ -1,5 +1,6 @@
 package core.acc.api.controller;
 
+import core.acc.api.cloud.CloudMQSender;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
 import core.acc.api.model.ReportFilter;
@@ -34,6 +35,8 @@ public class AccountController {
     private CurrencyService currencyService;
     @Autowired
     private ReportService reportService;
+    @Autowired(required = false)
+    private CloudMQSender cloudMQSender;
 
     @GetMapping(path = "/get-department")
     public ResponseEntity<?> getDepartment(@RequestParam String compCode) {
@@ -177,7 +180,10 @@ public class AccountController {
 
     @PostMapping(path = "/save-gl")
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
-        return ResponseEntity.ok(glService.save(gl));
+        gl = glService.save(gl);
+        //sent to cloud
+        cloudMQSender.send(gl);
+        return ResponseEntity.ok(gl);
     }
 
     @PostMapping(path = "/save-gl-list")
@@ -187,6 +193,7 @@ public class AccountController {
 
     @PostMapping(path = "/delete-gl")
     public ResponseEntity<Boolean> deleteGL(@RequestBody GlKey key) {
+        cloudMQSender.delete(key);
         return ResponseEntity.ok(glService.delete(key));
     }
 

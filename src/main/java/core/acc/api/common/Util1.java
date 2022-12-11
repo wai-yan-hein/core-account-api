@@ -28,6 +28,7 @@ import java.util.HashMap;
 @Slf4j
 public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
+    public static String SYNC_DATE;
 
     public static boolean getBoolean(String obj) {
         boolean status = false;
@@ -277,5 +278,10 @@ public class Util1 {
     public static String getProperty(String key) {
         return hmSysProp.get(key);
     }
+
+    public static Date getSyncDate() {
+        return Util1.toDate(SYNC_DATE);
+    }
+
 
 }
