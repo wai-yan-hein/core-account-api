@@ -73,10 +73,8 @@ public class Gl {
     private String srcAccName;
     @Transient
     private String accName;
-<<<<<<< HEAD
     @Transient
     private String vouDate;
-=======
 
     public Gl(Date modifyDate, String deptCode) {
         this.modifyDate = modifyDate;
@@ -85,5 +83,4 @@ public class Gl {
 
     public Gl() {
     }
->>>>>>> a5a77f9c41af1f879f8bd6aefaf8a5bb1378a781
 }
