@@ -1,5 +1,6 @@
 package core.acc.api.repo;
 
+import core.acc.api.model.DepartmentUser;
 import core.acc.api.model.PropertyKey;
 import core.acc.api.model.SystemProperty;
 import lombok.extern.slf4j.Slf4j;
@@ -12,11 +13,14 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
 public class UserRepo {
     private final HashMap<String, String> hmKey = new HashMap<>();
+    private List<DepartmentUser> listDept;
+
     int min = 1;
     @Autowired
     private WebClient userApi;
@@ -32,7 +36,16 @@ public class UserRepo {
                 .bodyToMono(SystemProperty.class);
         return result.block(Duration.ofMinutes(min));
     }
-
+    public List<DepartmentUser> getDepartment() {
+        if (listDept == null) {
+            Mono<ResponseEntity<List<DepartmentUser>>> result = userApi.get()
+                    .uri(builder -> builder.path("/user/get-department")
+                            .build())
+                    .retrieve().toEntityList(DepartmentUser.class);
+            listDept = Objects.requireNonNull(result.block(Duration.ofMinutes(min))).getBody();
+        }
+        return listDept;
+    }
     public String getProperty(String key) {
         if (hmKey.isEmpty()) {
             Mono<ResponseEntity<List<SystemProperty>>> result = userApi.get()

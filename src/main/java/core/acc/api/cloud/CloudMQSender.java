@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import core.acc.api.common.Util1;
 import core.acc.api.config.ActiveMqCondition;
+import core.acc.api.entity.Department;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
+import core.acc.api.model.DepartmentUser;
 import core.acc.api.repo.UserRepo;
+import core.acc.api.service.DepartmentService;
 import core.acc.api.service.GlService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import javax.jms.*;
 import java.text.DateFormat;
+import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -37,11 +41,15 @@ public class CloudMQSender {
     @Autowired
     private GlService glService;
     @Autowired
+    private DepartmentService departmentService;
+    @Autowired
     private JmsTemplate cloudMQTemplate;
     @Autowired
     private JmsTemplate topicSender;
     @Autowired
     private UserRepo userRepo;
+    private final HashMap<String, String> hmQueue = new HashMap<>();
+
     //service
     private boolean client;
     private String serverQ;
@@ -51,7 +59,7 @@ public class CloudMQSender {
     private void uploadToServer() {
         initQueue();
         client = Util1.getBoolean(userRepo.getProperty("cloud.upload.server"));
-        serverQ = userRepo.getProperty("cloud.activemq.server.queue");
+        serverQ = userRepo.getProperty("cloud.activemq.account.server.queue");
         if (client) {
             log.info("ActiveMQ Server Q : " + serverQ);
             if (!progress) {
@@ -67,7 +75,17 @@ public class CloudMQSender {
     }
 
     private void initQueue() {
-
+        List<DepartmentUser> listDep = userRepo.getDepartment();
+        HashMap<Integer, String> hmDep = new HashMap<>();
+        listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getQueueName()));
+        List<Department> list =departmentService.findAll();
+        if (!list.isEmpty()) {
+            for (Department l : list) {
+                String deptCode = l.getKey().getDeptCode();
+                Integer deptId = l.getMapDeptId();
+                hmQueue.put(deptCode, hmDep.get(deptId));
+            }
+        }
     }
 
     private void saveMessage(String entity, String data, String queue) {
@@ -210,8 +228,11 @@ public class CloudMQSender {
 
     public void send(Gl gl) {
         if (gl != null) {
-            saveMessage("GL", gson.toJson(gl), serverQ);
+            saveMessage("GL", gson.toJson(gl), getQueue(gl));
         }
+    }
+    private String getQueue(Gl sh) {
+        return client ? serverQ : hmQueue.get(sh.getDeptCode());
     }
 
     public void delete(GlKey key) {
