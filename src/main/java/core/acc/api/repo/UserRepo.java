@@ -1,8 +1,10 @@
 package core.acc.api.repo;
 
+import core.acc.api.entity.Department;
 import core.acc.api.model.DepartmentUser;
 import core.acc.api.model.PropertyKey;
 import core.acc.api.model.SystemProperty;
+import core.acc.api.service.DepartmentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +22,13 @@ import java.util.Objects;
 public class UserRepo {
     private final HashMap<String, String> hmKey = new HashMap<>();
     private List<DepartmentUser> listDept;
+    @Autowired
+    private DepartmentService departmentService;
 
     int min = 1;
     @Autowired
     private WebClient userApi;
-    private List<String> location;
+    private String deptCode;
     public SystemProperty findProperty(String key, String compCode) {
         PropertyKey p = new PropertyKey();
         p.setPropKey(key);
@@ -45,6 +49,17 @@ public class UserRepo {
             listDept = Objects.requireNonNull(result.block(Duration.ofMinutes(min))).getBody();
         }
         return listDept;
+    }
+    public String getDepCode() {
+        if (deptCode == null) {
+            List<DepartmentUser> list = getDepartment();
+            if (list != null) {
+                Integer deptId = list.get(0).getDeptId();
+                return departmentService.getDepartment(deptId);
+
+            }
+        }
+        return deptCode;
     }
     public String getProperty(String key) {
         if (hmKey.isEmpty()) {

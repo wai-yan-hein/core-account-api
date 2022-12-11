@@ -110,5 +110,11 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     public List<Department> findAll() {
         return findHSQL("select o from Department o");
     }
+
+    @Override
+    public String getDepartment(Integer deptId) {
+        List<Department> list =findHSQL("select o from Department o where o.mapDeptId = "+deptId+"");
+        return list.isEmpty()?null:list.get(0).getKey().getDeptCode();
+    }
 }
 

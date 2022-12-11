@@ -36,8 +36,6 @@ public class CloudMQSender {
             .create();
     @Value("${cloud.activemq.listen.queue}")
     private String listenQ;
-    @Value("${cloud.department}")
-    private String deptCode;
     @Autowired
     private GlService glService;
     @Autowired
@@ -78,7 +76,7 @@ public class CloudMQSender {
         List<DepartmentUser> listDep = userRepo.getDepartment();
         HashMap<Integer, String> hmDep = new HashMap<>();
         listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getQueueName()));
-        List<Department> list =departmentService.findAll();
+        List<Department> list = departmentService.findAll();
         if (!list.isEmpty()) {
             for (Department l : list) {
                 String deptCode = l.getKey().getDeptCode();
@@ -213,7 +211,7 @@ public class CloudMQSender {
     }
 
     private void downloadTransaction() {
-        requestTran("GL", gson.toJson(new Gl(glService.getMaxDate(), deptCode)));
+        requestTran("GL", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
     }
 
     private void uploadTransaction() {
@@ -231,6 +229,7 @@ public class CloudMQSender {
             saveMessage("GL", gson.toJson(gl), getQueue(gl));
         }
     }
+
     private String getQueue(Gl sh) {
         return client ? serverQ : hmQueue.get(sh.getDeptCode());
     }

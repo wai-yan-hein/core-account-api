@@ -20,5 +20,6 @@ public interface DepartmentDao {
 
     List<Department> findAll(String compCode);
     List<Department> findAll();
+    String getDepartment(Integer deptId);
 
 }

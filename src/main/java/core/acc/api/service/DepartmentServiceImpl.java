@@ -61,6 +61,11 @@ public class DepartmentServiceImpl implements DepartmentService {
         return dao.findAll();
     }
 
+    @Override
+    public String getDepartment(Integer deptId) {
+        return dao.getDepartment(deptId);
+    }
+
     private String getDepCode(Integer macId, String compCode) {
         int seqNo = seqService.getSequence(macId, "DEP", "-", compCode);
         return String.format("%0" + 3 + "d", macId) + "-" + String.format("%0" + 4 + "d", seqNo);
