@@ -7,7 +7,8 @@ public class DepartmentUser {
     private Integer deptId;
     private String userCode;
     private String deptName;
-    private String queueName;
+    private String inventoryQ;
+    private String accountQ;
 
 
 }

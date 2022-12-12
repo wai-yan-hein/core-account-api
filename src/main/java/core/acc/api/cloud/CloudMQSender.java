@@ -75,7 +75,7 @@ public class CloudMQSender {
     private void initQueue() {
         List<DepartmentUser> listDep = userRepo.getDepartment();
         HashMap<Integer, String> hmDep = new HashMap<>();
-        listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getQueueName()));
+        listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getAccountQ()));
         List<Department> list = departmentService.findAll();
         if (!list.isEmpty()) {
             for (Department l : list) {
