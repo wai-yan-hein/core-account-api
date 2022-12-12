@@ -31,7 +31,6 @@ public class CloudMQReceiver {
     private final String SAVE = "SAVE";
     private final String REC = "REC";
     private final Gson gson = new GsonBuilder()
-            .serializeNulls()
             .setDateFormat(DateFormat.FULL, DateFormat.FULL)
             .create();
     @Value("${cloud.activemq.listen.queue}")
@@ -147,7 +146,11 @@ public class CloudMQReceiver {
     }
 
     private void save(Gl gl) {
-
+        try {
+            glService.save(gl);
+        } catch (Exception e) {
+            log.error("save Gl : " + e.getMessage());
+        }
     }
 
     private void sendReceiveMessage(String senderQ, String entity, String data) {
