@@ -146,7 +146,11 @@ public class CloudMQReceiver {
     }
 
     private void save(Gl gl) {
-
+        try {
+            glService.save(gl);
+        } catch (Exception e) {
+            log.error("save Gl : " + e.getMessage());
+        }
     }
 
     private void sendReceiveMessage(String senderQ, String entity, String data) {
