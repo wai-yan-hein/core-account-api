@@ -31,7 +31,6 @@ public class CloudMQReceiver {
     private final String SAVE = "SAVE";
     private final String REC = "REC";
     private final Gson gson = new GsonBuilder()
-            .serializeNulls()
             .setDateFormat(DateFormat.FULL, DateFormat.FULL)
             .create();
     @Value("${cloud.activemq.listen.queue}")
