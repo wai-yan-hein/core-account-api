@@ -5,6 +5,7 @@
 package core.acc.api.common;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 
@@ -12,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -27,6 +29,9 @@ import java.util.HashMap;
 public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
     public static String SYNC_DATE;
+    public static final Gson gson = new GsonBuilder()
+            .setDateFormat(DateFormat.FULL, DateFormat.FULL)
+            .create();
 
     public static boolean getBoolean(String obj) {
         boolean status = false;
@@ -254,7 +259,6 @@ public class Util1 {
 
     public static void writeJsonFile(Object data, String exportPath) throws IOException {
         try (Writer writer = new FileWriter(exportPath, StandardCharsets.UTF_8)) {
-            Gson gson = new Gson();
             gson.toJson(data, writer);
         }
     }

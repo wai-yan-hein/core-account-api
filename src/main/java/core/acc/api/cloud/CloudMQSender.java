@@ -103,7 +103,7 @@ public class CloudMQSender {
     }
 
     private void fileMessage(String option, Object data, String queue) {
-        String path = String.format("config%s%s", File.separator, "Gl.json");
+        String path = String.format("temp%s%s", File.separator, "Gl.json");
         try {
             Util1.writeJsonFile(data, path);
             byte[] file = Util1.zipJsonFile(path);
