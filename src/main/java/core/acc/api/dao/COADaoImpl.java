@@ -191,6 +191,45 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         return list;
     }
 
+    @Override
+    public List<ChartOfAccount> search(String updatedDate) {
+        List<ChartOfAccount> list = new ArrayList<>();
+        String sql = "select * from chart_of_account where modify_date > '" + updatedDate + "'";
+        ResultSet rs = getResultSet(sql);
+        if (rs != null) {
+            try {
+                //coa_code, coa_code_usr, coa_name_eng, coa_name_mya, active, created_date, modify_date, sort_order_id, created_by, updated_by, coa_parent,
+                // coa_option, comp_code, coa_level, parent_usr_code, app_short_name, mig_code, mac_id, cur_code, marked, dept_code, deleted
+                while (rs.next()) {
+                    ChartOfAccount coa = new ChartOfAccount();
+                    COAKey key = new COAKey();
+                    key.setCoaCode(rs.getString("coa_code"));
+                    key.setCompCode(rs.getString("comp_code"));
+                    coa.setKey(key);
+                    coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
+                    coa.setCoaNameEng(rs.getString("coa_name_eng"));
+                    coa.setCoaNameMya(rs.getString("coa_name_mya"));
+                    coa.setActive(rs.getBoolean("active"));
+                    coa.setCreatedDate(rs.getTimestamp("created_date"));
+                    coa.setModifiedDate(rs.getTimestamp("modify_date"));
+                    coa.setCreatedBy(rs.getString("created_by"));
+                    coa.setModifiedBy(rs.getString("updated_by"));
+                    coa.setCoaParent(rs.getString("coa_parent"));
+                    coa.setOption(rs.getString("coa_option"));
+                    coa.setCoaLevel(rs.getInt("coa_level"));
+                    coa.setCurCode(rs.getString("cur_code"));
+                    coa.setMarked(rs.getBoolean("marked"));
+                    coa.setDeptCode(rs.getString("dept_code"));
+                    coa.setDeleted(rs.getBoolean("deleted"));
+                    list.add(coa);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
+        }
+        return list;
+    }
+
     private void getChild(List<ChartOfAccount> listAllChild, String parent, String compCode) {
         String strSql = "select o from ChartOfAccount o where o.key.compCode = '"
                 + compCode + "' and o.coaParent = '" + parent + "'";
