@@ -139,13 +139,14 @@ public class CloudMQReceiver {
                             }.getType());
                             List<ChartOfAccount> objList = new ArrayList<>();
                             if (!list.isEmpty()) {
-                                list.forEach(gl -> {
+                                list.forEach(c -> {
                                     try {
-                                        coaService.save(gl);
+                                        c.setIntgUpdStatus(SAVE);
+                                        coaService.save(c);
                                         ChartOfAccount obj = new ChartOfAccount();
-                                        obj.setKey(gl.getKey());
+                                        obj.setKey(c.getKey());
                                         objList.add(obj);
-                                        log.info("saved coa : " + gl.getKey().getCoaCode());
+                                        log.info("saved coa : " + c.getKey().getCoaCode());
                                     } catch (Exception e) {
                                         log.error("save coa : " + e.getMessage());
                                     }
@@ -153,6 +154,13 @@ public class CloudMQReceiver {
                             }
                             if (!objList.isEmpty()) {
                                 fileMessage("COA_RESPONSE", objList, senderQ);
+                            }
+                        }
+                        case "COA_REQUEST" -> {
+                            ChartOfAccount obj = gson.fromJson(data, ChartOfAccount.class);
+                            List<ChartOfAccount> list = coaService.search(Util1.toDateStr(obj.getModifiedDate(), dateTimeFormat));
+                            if (!list.isEmpty()) {
+                                fileMessage("COA", list, senderQ);
                             }
                         }
                         case "COA_RESPONSE" -> {

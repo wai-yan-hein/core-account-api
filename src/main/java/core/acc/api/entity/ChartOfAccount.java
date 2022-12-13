@@ -51,6 +51,8 @@ public class ChartOfAccount implements java.io.Serializable {
  private String deptCode;
  @Column(name = "boolean")
  private boolean deleted;
+ @Column(name = "intg_upd_status")
+ private String intgUpdStatus;
  @Transient
  private String groupCode;
  @Transient
