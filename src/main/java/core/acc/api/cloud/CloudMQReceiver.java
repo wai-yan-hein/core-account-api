@@ -117,99 +117,110 @@ public class CloudMQReceiver {
         byte[] file = message.getBytes("DATA_FILE");
         String senderQ = message.getString("SENDER_QUEUE");
         String path = String.format("temp%s%s", File.separator, "Gl");
-            try {
-                log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
-                String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-                switch (entity) {
-                    case "GL" -> {
-                        Gl obj = gson.fromJson(data, Gl.class);
-                        switch (option) {
-                            case "SAVE" -> save(obj);
-                            case "RECEIVE" -> update(obj);
-                            case "DELETE" -> glService.delete(obj.getKey());
+        try {
+            log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
+            String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+            switch (entity) {
+                case "GL" -> {
+                    Gl obj = gson.fromJson(data, Gl.class);
+                    switch (option) {
+                        case "SAVE" -> save(obj);
+                        case "RECEIVE" -> update(obj);
+                        case "DELETE" -> glService.delete(obj.getKey());
+
+                    }
+                }
+                case "FILE" -> {
+                    Util1.extractZipToJson(file, path);
+                    Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
+                    switch (option) {
+                        case "COA" -> {
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            List<ChartOfAccount> objList = new ArrayList<>();
+                            if (!list.isEmpty()) {
+                                list.forEach(gl -> {
+                                    try {
+                                        coaService.save(gl);
+                                        ChartOfAccount obj = new ChartOfAccount();
+                                        obj.setKey(gl.getKey());
+                                        objList.add(obj);
+                                        log.info("saved coa : " + gl.getKey().getCoaCode());
+                                    } catch (Exception e) {
+                                        log.error("save coa : " + e.getMessage());
+                                    }
+                                });
+                            }
+                            if (!objList.isEmpty()) {
+                                fileMessage("COA_RESPONSE", objList, senderQ);
+                            }
+                        }
+                        case "COA_RESPONSE" -> {
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            for (ChartOfAccount obj : list) {
+                                update(obj);
+                            }
+                        }
+                        case "GL_REQUEST" -> {
+                            Gl obj = gson.fromJson(data, Gl.class);
+                            List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
+                            if (!list.isEmpty()) {
+                                fileMessage("GL", list, senderQ);
+                            }
+                        }
+                        case "GL" -> {
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            List<Gl> objList = new ArrayList<>();
+                            if (!list.isEmpty()) {
+                                log.info("gl list size :" + list.size());
+                                list.forEach(gl -> {
+                                    try {
+                                        gl.setIntgUpdStatus(SAVE);
+                                        glService.save(gl);
+                                        Gl obj = new Gl();
+                                        obj.setKey(gl.getKey());
+                                        objList.add(obj);
+                                        log.info("saved : " + gl.getKey().getGlCode());
+                                        sleep();
+                                    } catch (Exception e) {
+                                        log.error("save Gl : " + e.getMessage());
+                                    }
+                                });
+                            }
+                            if (!objList.isEmpty()) {
+                                fileMessage("GL_RESPONSE", objList, senderQ);
+                            }
+
+                        }
+                        case "Gl_RESPONSE" -> {
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            for (Gl obj : list) {
+                                update(obj);
+                            }
 
                         }
                     }
-                    case "FILE" -> {
-                        Util1.extractZipToJson(file, path);
-                        Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
-                        switch (option) {
-                            case "COA" -> {
-                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                                }.getType());
-                                List<ChartOfAccount> objList = new ArrayList<>();
-                                if (!list.isEmpty()) {
-                                    list.forEach(gl -> {
-                                        try {
-                                            coaService.save(gl);
-                                            ChartOfAccount obj = new ChartOfAccount();
-                                            obj.setKey(gl.getKey());
-                                            objList.add(obj);
-                                            log.info("saved coa : " + gl.getKey().getCoaCode());
-                                        } catch (Exception e) {
-                                            log.error("save coa : " + e.getMessage());
-                                        }
-                                    });
-                                }
-                                if (!objList.isEmpty()) {
-                                    fileMessage("COA_RESPONSE", objList, senderQ);
-                                }
-                            }
-                            case "COA_RESPONSE" -> {
-                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                                }.getType());
-                                for (ChartOfAccount obj : list) {
-                                    update(obj);
-                                }
-                            }
-                            case "GL_REQUEST" -> {
-                                Gl obj = gson.fromJson(data, Gl.class);
-                                List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
-                                if (!list.isEmpty()) {
-                                    fileMessage("GL", list, senderQ);
-                                }
-                            }
-                            case "GL" -> {
-                                List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                                }.getType());
-                                List<Gl> objList = new ArrayList<>();
-                                if (!list.isEmpty()) {
-                                    list.forEach(gl -> {
-                                        try {
-                                            glService.save(gl);
-                                            Gl obj = new Gl();
-                                            obj.setKey(gl.getKey());
-                                            objList.add(obj);
-                                            log.info("saved : " + gl.getKey().getGlCode());
-                                        } catch (Exception e) {
-                                            log.error("save Gl : " + e.getMessage());
-                                        }
-                                    });
-                                }
-                                if (!objList.isEmpty()) {
-                                    fileMessage("GL_RESPONSE", objList, senderQ);
-                                }
-
-                            }
-                            case "Gl_RESPONSE" -> {
-                                List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                                }.getType());
-                                for (Gl obj : list) {
-                                    update(obj);
-                                }
-
-                            }
-                        }
-                    }
                 }
-                if (option.equals("SAVE")) {
-                    sendReceiveMessage(senderQ, entity, data);
-                }
-
-            } catch (Exception e) {
-                log.error(String.format("%s : %s", entity, e.getMessage()));
+            }
+            if (option.equals("SAVE")) {
+                sendReceiveMessage(senderQ, entity, data);
             }
 
+        } catch (Exception e) {
+            log.error(String.format("%s : %s", entity, e.getMessage()));
+        }
+
+    }
+
+    private void sleep() {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void fileMessage(String option, Object data, String queue) {
