@@ -23,6 +23,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.jms.*;
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
@@ -98,6 +100,28 @@ public class CloudMQSender {
         if (queue != null) {
             cloudMQTemplate.send(queue, mc);
         }
+    }
+
+    private void fileMessage(String option, Object data, String queue) {
+        String path = String.format("config%s%s", File.separator, "Gl.json");
+        try {
+            Util1.writeJsonFile(data, path);
+            byte[] file = Util1.zipJsonFile(path);
+            MessageCreator mc = (Session session) -> {
+                MapMessage mm = session.createMapMessage();
+                mm.setString("SENDER_QUEUE", listenQ);
+                mm.setString("ENTITY", "FILE");
+                mm.setString("OPTION", option);
+                mm.setBytes("DATA_FILE", file);
+                return mm;
+            };
+            if (queue != null) {
+                cloudMQTemplate.send(queue, mc);
+            }
+        } catch (IOException e) {
+            log.error("File Message : " + e.getMessage());
+        }
+
     }
 
     private void deleteMessage(String entity, String data, String queue) {
@@ -221,8 +245,10 @@ public class CloudMQSender {
     private void uploadGl() {
         log.info(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
-        if (!list.isEmpty()) log.info("upload gl : " + list.size());
-        list.forEach(o -> saveMessage("GL", gson.toJson(o), serverQ));
+        if (!list.isEmpty()) {
+            log.info("upload gl : " + list.size());
+            fileMessage("GL", list, getQueue(list.get(0)));
+        }
     }
 
     public void send(Gl gl) {

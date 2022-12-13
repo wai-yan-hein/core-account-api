@@ -200,7 +200,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> search(String updatedDate, String deptCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.updated_date > '" + updatedDate + "'";
+        String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.modify_date > '" + updatedDate + "'";
         ResultSet rs = getResultSet(sql);
         if (rs != null) {
             try {

@@ -2,6 +2,7 @@ package core.acc.api.cloud;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import core.acc.api.common.Util1;
 import core.acc.api.config.ActiveMqCondition;
 import core.acc.api.entity.Gl;
@@ -21,7 +22,12 @@ import org.springframework.stereotype.Component;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Session;
+import java.io.File;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -102,7 +108,9 @@ public class CloudMQReceiver {
         String entity = message.getString("ENTITY");
         String option = message.getString("OPTION");
         String data = message.getString("DATA");
+        byte[] file = message.getBytes("DATA_FILE");
         String senderQ = message.getString("SENDER_QUEUE");
+        String path = String.format("config%s%s", File.separator, "Gl");
         if (data != null) {
             try {
                 log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
@@ -118,6 +126,25 @@ public class CloudMQReceiver {
                                 List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
                                 if (!list.isEmpty()) {
                                     list.forEach(v -> responseTran(entity, senderQ, gson.toJson(v)));
+                                }
+                            }
+                        }
+                    }
+                    case "FILE" -> {
+                        switch (option) {
+                            case "GL" -> {
+                                Util1.extractZipToJson(file, path);
+                                Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
+                                List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                                }.getType());
+                                if (!list.isEmpty()) {
+                                    list.forEach(gl -> {
+                                        try {
+                                            glService.save(gl);
+                                        } catch (Exception e) {
+                                            log.error("save Gl : " + e.getMessage());
+                                        }
+                                    });
                                 }
                             }
                         }

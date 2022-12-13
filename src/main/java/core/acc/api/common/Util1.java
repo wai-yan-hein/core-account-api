@@ -5,7 +5,6 @@
 package core.acc.api.common;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 
@@ -13,7 +12,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -253,18 +251,34 @@ public class Util1 {
         return dialog;
     }
 
+
     public static void writeJsonFile(Object data, String exportPath) throws IOException {
         try (Writer writer = new FileWriter(exportPath, StandardCharsets.UTF_8)) {
-            //Gson gson = new GsonBuilder().serializeNulls().create();
-            Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();
+            Gson gson = new Gson();
             gson.toJson(data, writer);
+        }
+    }
+
+    public static void extractZipToJson(byte[] zipData, String exportPath) {
+        try {
+            File file = new File(exportPath.concat(".zip"));
+            try (FileOutputStream stream = new FileOutputStream(file)) {
+                stream.write(zipData);
+            }
+            try (ZipFile zf = new ZipFile(exportPath.concat(".zip"))) {
+                zf.extractAll("temp");
+            }
+        } catch (IOException ex) {
+            log.error("extractZipToJson : " + ex.getMessage());
         }
     }
 
     public static byte[] zipJsonFile(String exportPath) throws IOException {
         String zipPath = exportPath.replace(".json", ".zip");
         File file = new File(exportPath);
-        new ZipFile(zipPath).addFile(file);
+        try (ZipFile fr = new ZipFile(zipPath)) {
+            fr.addFile(file);
+        }
         FileInputStream stream = new FileInputStream(zipPath);
         byte[] data = stream.readAllBytes();
         stream.close();
