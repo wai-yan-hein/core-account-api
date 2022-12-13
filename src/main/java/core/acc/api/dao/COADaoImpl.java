@@ -1,11 +1,13 @@
 package core.acc.api.dao;
 
+import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -228,6 +230,23 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
             }
         }
         return list;
+    }
+
+    @Override
+    public Date getMaxDate() {
+        String sql = "select max(modify_date) date from chart_of_account";
+        ResultSet rs = getResultSet(sql);
+        try {
+            if (rs.next()) {
+                Date date = rs.getTimestamp("date");
+                if (date != null) {
+                    return date;
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return Util1.getOldDate();
     }
 
     private void getChild(List<ChartOfAccount> listAllChild, String parent, String compCode) {

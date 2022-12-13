@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import core.acc.api.common.Util1;
 import core.acc.api.config.ActiveMqCondition;
+import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.entity.Department;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.model.DepartmentUser;
 import core.acc.api.repo.UserRepo;
+import core.acc.api.service.COAService;
 import core.acc.api.service.DepartmentService;
 import core.acc.api.service.GlService;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +42,8 @@ public class CloudMQSender {
     private String listenQ;
     @Autowired
     private GlService glService;
+    @Autowired
+    private COAService coaService;
     @Autowired
     private DepartmentService departmentService;
     @Autowired
@@ -231,7 +235,7 @@ public class CloudMQSender {
     }
 
     private void downloadSetup() {
-
+        requestTran("FILE", "COA_REQUEST", gson.toJson(new ChartOfAccount(coaService.getMaxDate())));
     }
 
     private void downloadTransaction() {

@@ -11,7 +11,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
 @Table(name = "chart_of_account")
-public class ChartOfAccount implements java.io.Serializable {
+public class ChartOfAccount {
 
  @EmbeddedId
  private COAKey key;
@@ -49,7 +49,7 @@ public class ChartOfAccount implements java.io.Serializable {
  private String curCode;
  @Column(name = "dept_code")
  private String deptCode;
- @Column(name = "boolean")
+ @Column(name = "deleted")
  private boolean deleted;
  @Column(name = "intg_upd_status")
  private String intgUpdStatus;
@@ -67,4 +67,11 @@ public class ChartOfAccount implements java.io.Serializable {
  private String headName;
  @Transient
  private List<ChartOfAccount> child;
+
+ public ChartOfAccount() {
+ }
+
+ public ChartOfAccount(Date modifiedDate) {
+  this.modifiedDate = modifiedDate;
+ }
 }

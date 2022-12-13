@@ -3,6 +3,7 @@ package core.acc.api.service;
 import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
 
+import java.util.Date;
 import java.util.List;
 
 public interface COAService {
@@ -26,4 +27,6 @@ public interface COAService {
     List<ChartOfAccount> getTraderCOA(String compCode);
 
     List<ChartOfAccount> search(String updatedDate);
+
+    Date getMaxDate();
 }

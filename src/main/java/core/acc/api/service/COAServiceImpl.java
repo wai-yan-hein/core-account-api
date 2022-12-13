@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -85,6 +86,11 @@ public class COAServiceImpl implements COAService {
     @Override
     public List<ChartOfAccount> search(String updatedDate) {
         return dao.search(updatedDate);
+    }
+
+    @Override
+    public Date getMaxDate() {
+        return dao.getMaxDate();
     }
 
 }

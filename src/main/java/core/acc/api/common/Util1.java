@@ -300,6 +300,8 @@ public class Util1 {
     public static Date getSyncDate() {
         return Util1.toDate(SYNC_DATE);
     }
-
+    public static Date getOldDate() {
+        return Util1.toDate("1998-10-07");
+    }
 
 }
