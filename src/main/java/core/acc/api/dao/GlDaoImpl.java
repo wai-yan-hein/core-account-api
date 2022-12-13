@@ -215,7 +215,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     gl.setKey(key);
                     gl.setGlDate(rs.getDate("gl_date"));
                     gl.setCreatedDate(rs.getTimestamp("created_date"));
-                    gl.setModifyDate(rs.getTimestamp("update_date"));
+                    gl.setModifyDate(rs.getTimestamp("modify_date"));
                     gl.setModifyBy(rs.getString("modify_by"));
                     gl.setDescription(rs.getString("description"));
                     gl.setSrcAccCode(rs.getString("source_ac_id"));
@@ -225,7 +225,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     gl.setCrAmt(rs.getDouble("cr_amt"));
                     gl.setReference(rs.getString("reference"));
                     gl.setDeptCode(rs.getString("dept_code"));
-                    gl.setVouNo(rs.getString("vou_no"));
+                    gl.setVouNo(rs.getString("voucher_no"));
                     gl.setCreatedBy(rs.getString("user_code"));
                     gl.setTraderCode(rs.getString("trader_code"));
                     gl.setTranSource(rs.getString("tran_source"));
