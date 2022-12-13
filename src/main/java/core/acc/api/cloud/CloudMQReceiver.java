@@ -275,11 +275,11 @@ public class CloudMQReceiver {
     private void update(ChartOfAccount coa) {
         COAKey key = coa.getKey();
         String sql = "update chart_of_account set intg_upd_status ='" + SAVE + "'\n"
-                + "where gl_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
+                + "where coa_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
         try {
             service.executeSql(sql);
         } catch (Exception e) {
-            log.error("update Gl : " + e.getMessage());
+            log.error("update coa : " + e.getMessage());
         }
         log.info("update coa.");
     }
