@@ -129,7 +129,6 @@ public class CloudMQReceiver {
                         case "DELETE" -> glService.delete(obj.getKey());
 
                     }
-<<<<<<< HEAD
                 }
                 case "FILE" -> {
                     Util1.extractZipToJson(file, path);
@@ -161,51 +160,6 @@ public class CloudMQReceiver {
                             }.getType());
                             for (ChartOfAccount obj : list) {
                                 update(obj);
-=======
-                    case "FILE" -> {
-                        Reader reader = null;
-                        if (file!=null) {
-                            Util1.extractZipToJson(file, path);
-                            reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
-                        }
-                        switch (option) {
-                            case "COA" -> {
-                                assert reader != null;
-                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                                }.getType());
-                                List<ChartOfAccount> objList = new ArrayList<>();
-                                if (!list.isEmpty()) {
-                                    list.forEach(gl -> {
-                                        try {
-                                            coaService.save(gl);
-                                            ChartOfAccount obj = new ChartOfAccount();
-                                            obj.setKey(gl.getKey());
-                                            objList.add(obj);
-                                            log.info("saved coa : " + gl.getKey().getCoaCode());
-                                        } catch (Exception e) {
-                                            log.error("save coa : " + e.getMessage());
-                                        }
-                                    });
-                                }
-                                if (!objList.isEmpty()) {
-                                    fileMessage("COA_RESPONSE", objList, senderQ);
-                                }
-                            }
-                            case "COA_REQUEST" -> {
-                                ChartOfAccount obj = gson.fromJson(data, ChartOfAccount.class);
-                                List<ChartOfAccount> list = coaService.search(Util1.toDateStr(obj.getModifiedDate(), dateTimeFormat));
-                                if (!list.isEmpty()) {
-                                    fileMessage("COA", list, senderQ);
-                                }
-                            }
-                            case "COA_RESPONSE" -> {
-                                assert reader != null;
-                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                                }.getType());
-                                for (ChartOfAccount obj : list) {
-                                    update(obj);
-                                }
->>>>>>> 7c9b102b47570993d85d2cb447f773a1a3405026
                             }
                         }
                         case "GL_REQUEST" -> {
@@ -214,7 +168,6 @@ public class CloudMQReceiver {
                             if (!list.isEmpty()) {
                                 fileMessage("GL", list, senderQ);
                             }
-<<<<<<< HEAD
                         }
                         case "GL" -> {
                             List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
@@ -238,30 +191,6 @@ public class CloudMQReceiver {
                             }
                             if (!objList.isEmpty()) {
                                 fileMessage("GL_RESPONSE", objList, senderQ);
-=======
-                            case "GL" -> {
-                                assert reader != null;
-                                List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                                }.getType());
-                                List<Gl> objList = new ArrayList<>();
-                                if (!list.isEmpty()) {
-                                    list.forEach(gl -> {
-                                        try {
-                                            glService.save(gl);
-                                            Gl obj = new Gl();
-                                            obj.setKey(gl.getKey());
-                                            objList.add(obj);
-                                            log.info("saved : " + gl.getKey().getGlCode());
-                                        } catch (Exception e) {
-                                            log.error("save Gl : " + e.getMessage());
-                                        }
-                                    });
-                                }
-                                if (!objList.isEmpty()) {
-                                    fileMessage("GL_RESPONSE", objList, senderQ);
-                                }
-
->>>>>>> 7c9b102b47570993d85d2cb447f773a1a3405026
                             }
 
                         }
