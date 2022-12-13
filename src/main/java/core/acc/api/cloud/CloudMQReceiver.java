@@ -5,9 +5,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import core.acc.api.common.Util1;
 import core.acc.api.config.ActiveMqCondition;
+import core.acc.api.entity.COAKey;
+import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.repo.UserRepo;
+import core.acc.api.service.COAService;
 import core.acc.api.service.GlService;
 import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +25,6 @@ import org.springframework.stereotype.Component;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Session;
-import javax.persistence.Cache;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -50,6 +52,8 @@ public class CloudMQReceiver {
     private UserRepo userRepo;
     @Autowired
     private GlService glService;
+    @Autowired
+    private COAService coaService;
     @Autowired
     private ReportService service;
 
@@ -120,21 +124,51 @@ public class CloudMQReceiver {
                     case "GL" -> {
                         Gl obj = gson.fromJson(data, Gl.class);
                         switch (option) {
-                            case "SAVE", "RESPONSE_TRAN" -> save(obj);
+                            case "SAVE" -> save(obj);
                             case "RECEIVE" -> update(obj);
                             case "DELETE" -> glService.delete(obj.getKey());
-                            case "REQUEST_TRAN" -> {
-                                List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
-                                if (!list.isEmpty()) {
-                                    list.forEach(v -> responseTran(entity, senderQ, gson.toJson(v)));
-                                }
-                            }
+
                         }
                     }
                     case "FILE" -> {
                         Util1.extractZipToJson(file, path);
                         Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
                         switch (option) {
+                            case "COA" -> {
+                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                                }.getType());
+                                List<ChartOfAccount> objList = new ArrayList<>();
+                                if (!list.isEmpty()) {
+                                    list.forEach(gl -> {
+                                        try {
+                                            coaService.save(gl);
+                                            ChartOfAccount obj = new ChartOfAccount();
+                                            obj.setKey(gl.getKey());
+                                            objList.add(obj);
+                                            log.info("saved coa : " + gl.getKey().getCoaCode());
+                                        } catch (Exception e) {
+                                            log.error("save coa : " + e.getMessage());
+                                        }
+                                    });
+                                }
+                                if (!objList.isEmpty()) {
+                                    fileMessage("COA_RESPONSE", objList, senderQ);
+                                }
+                            }
+                            case "COA_RESPONSE" -> {
+                                List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                                }.getType());
+                                for (ChartOfAccount obj : list) {
+                                    update(obj);
+                                }
+                            }
+                            case "GL_REQUEST" -> {
+                                Gl obj = gson.fromJson(data, Gl.class);
+                                List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
+                                if (!list.isEmpty()) {
+                                    fileMessage("GL", list, senderQ);
+                                }
+                            }
                             case "GL" -> {
                                 List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                                 }.getType());
@@ -146,17 +180,24 @@ public class CloudMQReceiver {
                                             Gl obj = new Gl();
                                             obj.setKey(gl.getKey());
                                             objList.add(obj);
-                                            fileMessage("GL_RESPONSE", entity, gson.toJson(gl));
+                                            log.info("saved : " + gl.getKey().getGlCode());
                                         } catch (Exception e) {
                                             log.error("save Gl : " + e.getMessage());
                                         }
                                     });
                                 }
+                                if (!objList.isEmpty()) {
+                                    fileMessage("GL_RESPONSE", objList, senderQ);
+                                }
+
                             }
-                            case "Gl_RESPONSE"->{
+                            case "Gl_RESPONSE" -> {
                                 List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                                 }.getType());
-                                list.forEach(this::update);
+                                for (Gl obj : list) {
+                                    update(obj);
+                                }
+
                             }
                         }
                     }
@@ -203,6 +244,18 @@ public class CloudMQReceiver {
             log.error("update Gl : " + e.getMessage());
         }
         log.info("update gl.");
+    }
+
+    private void update(ChartOfAccount coa) {
+        COAKey key = coa.getKey();
+        String sql = "update chart_of_account set intg_upd_status ='" + SAVE + "'\n"
+                + "where gl_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        try {
+            service.executeSql(sql);
+        } catch (Exception e) {
+            log.error("update Gl : " + e.getMessage());
+        }
+        log.info("update coa.");
     }
 
     private void save(Gl gl) {

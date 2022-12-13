@@ -212,12 +212,12 @@ public class CloudMQSender {
         }
     }
 
-    private void requestTran(String entity, String date) {
+    private void requestTran(String entity, String option, String date) {
         MessageCreator mc = (Session session) -> {
             MapMessage mm = session.createMapMessage();
             mm.setString("SENDER_QUEUE", listenQ);
             mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "REQUEST_TRAN");
+            mm.setString("OPTION", option);
             mm.setString("DATA", date);
             return mm;
         };
@@ -235,7 +235,7 @@ public class CloudMQSender {
     }
 
     private void downloadTransaction() {
-        requestTran("GL", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
+        requestTran("FILE", "GL_REQUEST", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
     }
 
     private void uploadTransaction() {
