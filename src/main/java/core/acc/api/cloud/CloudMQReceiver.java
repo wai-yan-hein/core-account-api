@@ -22,7 +22,9 @@ import org.springframework.stereotype.Component;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import javax.jms.Session;
+import javax.persistence.Cache;
 import java.io.File;
+import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -110,8 +112,7 @@ public class CloudMQReceiver {
         String data = message.getString("DATA");
         byte[] file = message.getBytes("DATA_FILE");
         String senderQ = message.getString("SENDER_QUEUE");
-        String path = String.format("config%s%s", File.separator, "Gl");
-        if (data != null) {
+        String path = String.format("temp%s%s", File.separator, "Gl");
             try {
                 log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
                 String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
@@ -131,21 +132,31 @@ public class CloudMQReceiver {
                         }
                     }
                     case "FILE" -> {
+                        Util1.extractZipToJson(file, path);
+                        Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
                         switch (option) {
                             case "GL" -> {
-                                Util1.extractZipToJson(file, path);
-                                Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
                                 List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                                 }.getType());
+                                List<Gl> objList = new ArrayList<>();
                                 if (!list.isEmpty()) {
                                     list.forEach(gl -> {
                                         try {
                                             glService.save(gl);
+                                            Gl obj = new Gl();
+                                            obj.setKey(gl.getKey());
+                                            objList.add(obj);
+                                            fileMessage("GL_RESPONSE", entity, gson.toJson(gl));
                                         } catch (Exception e) {
                                             log.error("save Gl : " + e.getMessage());
                                         }
                                     });
                                 }
+                            }
+                            case "Gl_RESPONSE"->{
+                                List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                                }.getType());
+                                list.forEach(this::update);
                             }
                         }
                     }
@@ -157,7 +168,29 @@ public class CloudMQReceiver {
             } catch (Exception e) {
                 log.error(String.format("%s : %s", entity, e.getMessage()));
             }
+
+    }
+
+    private void fileMessage(String option, Object data, String queue) {
+        String path = String.format("config%s%s", File.separator, "Gl.json");
+        try {
+            Util1.writeJsonFile(data, path);
+            byte[] file = Util1.zipJsonFile(path);
+            MessageCreator mc = (Session session) -> {
+                MapMessage mm = session.createMapMessage();
+                mm.setString("SENDER_QUEUE", listenQ);
+                mm.setString("ENTITY", "FILE");
+                mm.setString("OPTION", option);
+                mm.setBytes("DATA_FILE", file);
+                return mm;
+            };
+            if (queue != null) {
+                cloudMQTemplate.send(queue, mc);
+            }
+        } catch (IOException e) {
+            log.error("File Message : " + e.getMessage());
         }
+
     }
 
     private void update(Gl gl) {
