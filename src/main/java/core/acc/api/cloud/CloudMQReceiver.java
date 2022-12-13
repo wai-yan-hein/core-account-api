@@ -131,10 +131,14 @@ public class CloudMQReceiver {
                     }
                 }
                 case "FILE" -> {
-                    Util1.extractZipToJson(file, path);
-                    Reader reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
+                    Reader reader = null;
+                    if (file != null) {
+                        Util1.extractZipToJson(file, path);
+                        reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
+                    }
                     switch (option) {
                         case "COA" -> {
+                            assert reader != null;
                             List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
                             }.getType());
                             List<ChartOfAccount> objList = new ArrayList<>();
@@ -164,6 +168,7 @@ public class CloudMQReceiver {
                             }
                         }
                         case "COA_RESPONSE" -> {
+                            assert reader != null;
                             List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
                             }.getType());
                             for (ChartOfAccount obj : list) {
@@ -178,6 +183,7 @@ public class CloudMQReceiver {
                             }
                         }
                         case "GL" -> {
+                            assert reader != null;
                             List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                             }.getType());
                             List<Gl> objList = new ArrayList<>();
@@ -203,6 +209,7 @@ public class CloudMQReceiver {
 
                         }
                         case "Gl_RESPONSE" -> {
+                            assert reader != null;
                             List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                             }.getType());
                             for (Gl obj : list) {
