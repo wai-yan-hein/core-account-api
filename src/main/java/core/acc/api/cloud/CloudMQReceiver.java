@@ -153,7 +153,7 @@ public class CloudMQReceiver {
                                     });
                                 }
                             }
-                            case "Gl_RESPONSE"->{
+                            case "GL_RESPONSE"->{
                                 List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                                 }.getType());
                                 list.forEach(this::update);
