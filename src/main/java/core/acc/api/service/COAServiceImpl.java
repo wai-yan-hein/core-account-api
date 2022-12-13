@@ -82,4 +82,9 @@ public class COAServiceImpl implements COAService {
         return dao.getTraderCOA(compCode);
     }
 
+    @Override
+    public List<ChartOfAccount> search(String updatedDate) {
+        return dao.search(updatedDate);
+    }
+
 }
