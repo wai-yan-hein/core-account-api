@@ -135,8 +135,18 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<Gl> search(String updatedDate,String deptCode) {
+    public List<Gl> search(String updatedDate, String deptCode) {
         return glDao.search(updatedDate, deptCode);
+    }
+
+    @Override
+    public List<Gl> search(String vouNo, String tranSource, String compCode) {
+        return glDao.search(vouNo, tranSource, compCode);
+    }
+
+    @Override
+    public void deleteGl(String vouNo, String tranSource) {
+        glDao.deleteGl(vouNo, tranSource);
     }
 
     @Override

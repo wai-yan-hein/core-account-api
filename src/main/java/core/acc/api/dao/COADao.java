@@ -19,7 +19,7 @@ public interface COADao {
 
     List<ChartOfAccount> getCOAChild(String parentCode, String compCode);
 
-    List<ChartOfAccount> searchCOA3(String str, String compCode);
+    List<ChartOfAccount> searchCOA(String str,Integer level, String compCode);
 
     List<ChartOfAccount> getCOATree(String compCode);
 

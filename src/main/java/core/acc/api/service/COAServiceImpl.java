@@ -58,14 +58,14 @@ public class COAServiceImpl implements COAService {
         return dao.delete(code, compCode);
     }
 
+    @Override
+    public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
+        return dao.searchCOA(str, level, compCode);
+    }
+
     private String getCOACode(Integer macId, String compCode) {
         int seqNo = seqService.getSequence(macId, "COA", "-", compCode);
         return String.format("%0" + 3 + "d", macId) + "-" + String.format("%0" + 5 + "d", seqNo);
-    }
-
-    @Override
-    public List<ChartOfAccount> searchCOA3(String str, String compCode) {
-        return dao.searchCOA3(str,compCode);
     }
 
     @Override

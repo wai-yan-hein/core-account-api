@@ -82,7 +82,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getUnusedCOA(String compCode) {
-        return  null;
+        return null;
     }
 
     @Override
@@ -92,7 +92,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
-    public List<ChartOfAccount> searchCOA3(String str, String compCode) {
+    public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
         String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
                 "from (\n" +
@@ -100,15 +100,15 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "from chart_of_account\n" +
                 "where active = 1\n" +
                 "and deleted = 0\n" +
-                "and coa_level >=3\n" +
+                "and coa_level =" + level + "\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
                 "limit 20\n" +
                 ")a\n" +
-                "join chart_of_account c1\n" +
+                "left join chart_of_account c1\n" +
                 "on a.coa_parent = c1.coa_code\n" +
                 "and a.comp_code = c1.comp_code\n" +
-                "join chart_of_account c2\n" +
+                "left join chart_of_account c2\n" +
                 "on c1.coa_parent = c2.coa_code\n" +
                 "and c1.comp_code = c2.comp_code";
         try {
@@ -165,7 +165,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "from (\n" +
                 "select distinct account_code,comp_code\n" +
                 "from trader \n" +
-                "where comp_code='"+compCode+"' \n" +
+                "where comp_code='" + compCode + "' \n" +
                 "and account_code is not null\n" +
                 ")a\n" +
                 "join chart_of_account coa on a.account_code = coa.coa_code\n" +

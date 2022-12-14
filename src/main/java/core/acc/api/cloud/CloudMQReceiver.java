@@ -124,7 +124,9 @@ public class CloudMQReceiver {
                 case "GL" -> {
                     Gl obj = gson.fromJson(data, Gl.class);
                     switch (option) {
-                        case "SAVE" -> save(obj);
+                        case "SAVE" -> {
+                            save(obj);
+                        }
                         case "RECEIVE" -> update(obj);
                         case "DELETE" -> glService.delete(obj.getKey());
 
@@ -256,7 +258,6 @@ public class CloudMQReceiver {
         } catch (IOException e) {
             log.error("File Message : " + e.getMessage());
         }
-
     }
 
     private void update(Gl gl) {
@@ -285,6 +286,10 @@ public class CloudMQReceiver {
 
     private void save(Gl gl) {
         try {
+            String vouNo = gl.getRefNo();
+            if (vouNo != null) {
+                glService.deleteGl(vouNo, gl.getTranSource());
+            }
             glService.save(gl);
         } catch (Exception e) {
             log.error("save Gl : " + e.getMessage());
