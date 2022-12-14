@@ -143,6 +143,7 @@ public class CloudMQReceiver {
                             }.getType());
                             List<ChartOfAccount> objList = new ArrayList<>();
                             if (!list.isEmpty()) {
+                                log.info("coa list size :" + list.size());
                                 list.forEach(c -> {
                                     try {
                                         c.setIntgUpdStatus(SAVE);
@@ -206,7 +207,6 @@ public class CloudMQReceiver {
                             if (!objList.isEmpty()) {
                                 fileMessage("GL_RESPONSE", objList, senderQ);
                             }
-
                         }
                         case "Gl_RESPONSE" -> {
                             assert reader != null;
@@ -215,7 +215,6 @@ public class CloudMQReceiver {
                             for (Gl obj : list) {
                                 update(obj);
                             }
-
                         }
                     }
                 }
