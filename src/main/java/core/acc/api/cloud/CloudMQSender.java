@@ -9,6 +9,7 @@ import core.acc.api.entity.Department;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.model.DepartmentUser;
+import core.acc.api.model.ReturnObject;
 import core.acc.api.repo.UserRepo;
 import core.acc.api.service.COAService;
 import core.acc.api.service.DepartmentService;
@@ -69,9 +70,8 @@ public class CloudMQSender {
             if (!progress) {
                 progress = true;
                 destroyQ(serverQ);
-                uploadSetup();
-                uploadTransaction();
                 downloadSetup();
+                uploadTransaction();
                 downloadTransaction();
                 progress = false;
             }
@@ -107,7 +107,7 @@ public class CloudMQSender {
     }
 
     private void fileMessage(String option, Object data, String queue) {
-        String path = String.format("temp%s%s", File.separator, "Gl.json");
+        String path = String.format("temp%s%s", File.separator, option + ".json");
         try {
             Util1.writeJsonFile(data, path);
             byte[] file = Util1.zipJsonFile(path);
@@ -216,11 +216,11 @@ public class CloudMQSender {
         }
     }
 
-    private void requestTran(String entity, String option, String date) {
+    private void requestFile(String option, String date) {
         MessageCreator mc = (Session session) -> {
             MapMessage mm = session.createMapMessage();
             mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
+            mm.setString("ENTITY", "FILE");
             mm.setString("OPTION", option);
             mm.setString("DATA", date);
             return mm;
@@ -230,16 +230,13 @@ public class CloudMQSender {
         }
     }
 
-    private void uploadSetup() {
-
-    }
 
     private void downloadSetup() {
-        requestTran("FILE", "COA_REQUEST", gson.toJson(new ChartOfAccount(coaService.getMaxDate())));
+        requestFile("COA_REQUEST", gson.toJson(new ChartOfAccount(coaService.getMaxDate())));
     }
 
     private void downloadTransaction() {
-        requestTran("FILE", "GL_REQUEST", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
+        requestFile("GL_REQUEST", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
     }
 
     private void uploadTransaction() {
@@ -258,6 +255,15 @@ public class CloudMQSender {
     public void send(Gl gl) {
         if (gl != null) {
             saveMessage("GL", gson.toJson(gl), getQueue(gl));
+        }
+    }
+
+    public void send(ReturnObject ro) {
+        if (ro != null) {
+            List<Gl> list = glService.search(ro.getVouNo(), ro.getTranSource(), ro.getCompCode());
+            if (!list.isEmpty()) {
+                fileMessage("GL", list, getQueue(list.get(0)));
+            }
         }
     }
 

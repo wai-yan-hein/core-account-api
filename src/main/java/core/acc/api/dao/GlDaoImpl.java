@@ -247,6 +247,12 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public List<Gl> search(String vouNo, String tranSource, String compCode) {
+        String hsql = "select o from Gl o where o.refNo ='" + vouNo + "' and o.tranSource ='" + tranSource + "' and o.key.compCode ='" + compCode + "'";
+        return findHSQL(hsql);
+    }
+
+    @Override
     public void truncate(GlKey key) {
         String sql = "delete from gl where gl_code ='" + key.getCompCode() + "' and comp_code ='" + key.getGlCode() + "'";
         execSql(sql);

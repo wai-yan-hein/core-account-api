@@ -96,9 +96,9 @@ public class AccountController {
         return ResponseEntity.ok(chart);
     }
 
-    @GetMapping(path = "/get-coa-lv3")
-    public ResponseEntity<?> getCOALv3(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(coaService.searchCOA3(str, compCode));
+    @GetMapping(path = "/search-coa")
+    public ResponseEntity<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
+        return ResponseEntity.ok(coaService.searchCOA(str, level, compCode));
     }
 
     @GetMapping(path = "/get-trader-coa")
@@ -188,7 +188,9 @@ public class AccountController {
 
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
-        return ResponseEntity.ok(glService.save(gl));
+        ReturnObject ro = glService.save(gl);
+        cloudMQSender.send(ro);
+        return ResponseEntity.ok(ro);
     }
 
     @PostMapping(path = "/delete-gl")
@@ -215,9 +217,10 @@ public class AccountController {
     public ResponseEntity<List<Trader>> getTrader(@RequestParam String compCode) {
         return ResponseEntity.ok(traderService.getTrader(compCode));
     }
+
     @GetMapping(path = "/search-trader")
-    public ResponseEntity<List<Trader>> getTrader(@RequestParam String text,@RequestParam String compCode) {
-        return ResponseEntity.ok(traderService.getTrader(text,compCode));
+    public ResponseEntity<List<Trader>> getTrader(@RequestParam String text, @RequestParam String compCode) {
+        return ResponseEntity.ok(traderService.getTrader(text, compCode));
     }
 
     @GetMapping(path = "/get-supplier")
