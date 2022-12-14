@@ -145,6 +145,7 @@ public class CloudMQReceiver {
                             }.getType());
                             List<ChartOfAccount> objList = new ArrayList<>();
                             if (!list.isEmpty()) {
+                                log.info("coa list size :" + list.size());
                                 list.forEach(c -> {
                                     try {
                                         c.setIntgUpdStatus(SAVE);
@@ -194,21 +195,20 @@ public class CloudMQReceiver {
                                 list.forEach(gl -> {
                                     try {
                                         gl.setIntgUpdStatus(SAVE);
-                                        glService.save(gl);
+                                        save(gl);
                                         Gl obj = new Gl();
                                         obj.setKey(gl.getKey());
                                         objList.add(obj);
-                                        log.info("saved : " + gl.getKey().getGlCode());
                                         sleep();
                                     } catch (Exception e) {
                                         log.error("save Gl : " + e.getMessage());
                                     }
                                 });
+                                log.info("gl done.");
                             }
                             if (!objList.isEmpty()) {
                                 fileMessage("GL_RESPONSE", objList, senderQ);
                             }
-
                         }
                         case "GL_RESPONSE" -> {
                             assert reader != null;
@@ -217,7 +217,6 @@ public class CloudMQReceiver {
                             for (Gl obj : list) {
                                 update(obj);
                             }
-
                         }
                     }
                 }
@@ -241,7 +240,7 @@ public class CloudMQReceiver {
     }
 
     private void fileMessage(String option, Object data, String queue) {
-        String path = String.format("config%s%s", File.separator, "Gl.json");
+        String path = String.format("temp%s%s", File.separator, option + ".json");
         try {
             Util1.writeJsonFile(data, path);
             byte[] file = Util1.zipJsonFile(path);
