@@ -182,16 +182,26 @@ public class CloudMQReceiver {
                             Gl obj = gson.fromJson(data, Gl.class);
                             List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
                             if (!list.isEmpty()) {
-                                fileMessage("GL", list, senderQ);
+                                fileMessage("GL_RESPONSE", list, senderQ);
                             }
                         }
-                        case "GL" -> {
+                        case "GL_RESPONSE" -> {
+                            assert reader != null;
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            log.info("gl list size : " + list.size());
+                            for (Gl obj : list) {
+                                save(obj);
+                            }
+                            log.info("gl done.");
+                        }
+                        case "GL_UPLOAD" -> {
                             assert reader != null;
                             List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                             }.getType());
                             List<Gl> objList = new ArrayList<>();
                             if (!list.isEmpty()) {
-                                log.info("gl list size :" + list.size());
+                                log.info("gl list size :" + list.size() + " from " + senderQ);
                                 list.forEach(gl -> {
                                     try {
                                         gl.setIntgUpdStatus(SAVE);
@@ -207,17 +217,18 @@ public class CloudMQReceiver {
                                 log.info("gl done.");
                             }
                             if (!objList.isEmpty()) {
-                                fileMessage("GL_RESPONSE", objList, senderQ);
+                                fileMessage("GL_RECEIVED", objList, senderQ);
                             }
                         }
-                        case "GL_RESPONSE" -> {
+                        case "GL_RECEIVED" -> {
                             assert reader != null;
                             List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                             }.getType());
-                            for (Gl obj : list) {
-                                update(obj);
+                            if (!list.isEmpty()) {
+                                list.forEach(this::update);
                             }
                         }
+
                     }
                 }
             }

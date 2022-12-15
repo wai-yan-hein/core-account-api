@@ -17,6 +17,7 @@ import core.acc.api.service.GlService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTempQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Conditional;
@@ -69,7 +70,7 @@ public class CloudMQSender {
             log.info("ActiveMQ Server Q : " + serverQ);
             if (!progress) {
                 progress = true;
-                destroyQ(serverQ);
+                //destroyQ(serverQ);
                 downloadSetup();
                 uploadTransaction();
                 downloadTransaction();
@@ -106,7 +107,7 @@ public class CloudMQSender {
         }
     }
 
-    private void fileMessage(String option, Object data, String queue) {
+    private void uploadFile(String option, Object data, String queue) {
         String path = String.format("temp%s%s", File.separator, option + ".json");
         try {
             Util1.writeJsonFile(data, path);
@@ -178,7 +179,7 @@ public class CloudMQSender {
                 if (factory != null) {
                     Connection connection = factory.createConnection();
                     if (connection instanceof ActiveMQConnection con) {
-                        con.destroyDestination(new ActiveMQQueue(queue));
+                        con.deleteTempDestination(new ActiveMQTempQueue(queue));
                     }
 
                 }
@@ -248,7 +249,7 @@ public class CloudMQSender {
         List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         if (!list.isEmpty()) {
             log.info("upload gl : " + list.size());
-            fileMessage("GL", list, getQueue(list.get(0)));
+            uploadFile("GL", list, getQueue(list.get(0)));
         }
     }
 
@@ -262,7 +263,7 @@ public class CloudMQSender {
         if (ro != null) {
             List<Gl> list = glService.search(ro.getVouNo(), ro.getTranSource(), ro.getCompCode());
             if (!list.isEmpty()) {
-                fileMessage("GL", list, getQueue(list.get(0)));
+                uploadFile("GL", list, getQueue(list.get(0)));
             }
         }
     }
