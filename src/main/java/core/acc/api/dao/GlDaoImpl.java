@@ -31,7 +31,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public boolean delete(GlKey key) {
-        String sql = "delete from gl where gl_code = '" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        String sql = "delete from gl where gl_code = '" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "' and dept_id =" + key.getDeptId() + "";
         execSql(sql);
         return true;
     }
@@ -230,7 +230,6 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     gl.setTraderCode(rs.getString("trader_code"));
                     gl.setTranSource(rs.getString("tran_source"));
                     gl.setGlVouNo(rs.getString("gl_vou_no"));
-                    gl.setSplitId(rs.getInt("split_id"));
                     gl.setIntgUpdStatus(rs.getString("intg_upd_status"));
                     gl.setRemark(rs.getString("remark"));
                     gl.setRefNo(rs.getString("ref_no"));

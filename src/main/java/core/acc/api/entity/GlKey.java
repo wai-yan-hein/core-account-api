@@ -1,5 +1,6 @@
 package core.acc.api.entity;
 
+import io.swagger.models.auth.In;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -13,5 +14,6 @@ public class GlKey implements Serializable {
     private String glCode;
     @Column(name = "comp_code")
     private String compCode;
-
+    @Column(name = "dept_id")
+    private Integer deptId;
 }

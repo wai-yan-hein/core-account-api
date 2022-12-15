@@ -28,7 +28,7 @@ public class GlServiceImpl implements GlService {
         if (Util1.isNull(gl.getKey().getGlCode())) {
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
-            String glCode = getGLCode(macId, compCode);
+            String glCode = getGLCode(gl.getKey().getDeptId(), macId, compCode);
             GlKey key = new GlKey();
             key.setGlCode(glCode);
             key.setCompCode(compCode);
@@ -66,7 +66,7 @@ public class GlServiceImpl implements GlService {
             String glVouNo = tmp.getGlVouNo();
             if (tranSource.equals("GV")) {
                 if (Util1.isNullOrEmpty(glVouNo)) {
-                    glVouNo = getVouNo(tmp.getMacId(), tmp.getKey().getCompCode());
+                    glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode());
                 }
             }
             glDao.deleteGl(vouNo, tranSource);
@@ -158,22 +158,19 @@ public class GlServiceImpl implements GlService {
     }
 
 
-    private String getGLCode(Integer macId, String compCode) {
+    private String getGLCode(Integer deptId, Integer macId, String compCode) {
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
-        return String.format("%0" + 3 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
+        String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
+        return deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
     }
 
-    private String getVouNo(Integer macId, String compCode) {
+    private String getVouNo(Integer deptId, Integer macId, String compCode) {
         String type = "GV";
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
         int seqNo = seqService.getSequence(macId, "GV", period, compCode);
-        return type + "-" + String.format("%0" + 5 + "d", seqNo) + period;
+        String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
+        return deptCode + type + "-" + String.format("%0" + 5 + "d", seqNo) + period;
     }
 
-    private String getGLLogCode(Integer macId, String compCode) {
-        String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
-        int seqNo = seqService.getSequence(macId, "GL-LOG", period, compCode);
-        return String.format("%0" + 3 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
-    }
 }

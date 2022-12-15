@@ -49,8 +49,6 @@ public class Gl {
     private String tranSource;
     @Column(name = "gl_vou_no")
     private String glVouNo;
-    @Column(name = "split_id")
-    private Integer splitId;
     @Column(name = "intg_upd_status")
     private String intgUpdStatus; //For integration update status
     @Column(name = "remark")
