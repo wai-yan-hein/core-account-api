@@ -19,15 +19,19 @@ public interface COADao {
 
     List<ChartOfAccount> getCOAChild(String parentCode, String compCode);
 
-    List<ChartOfAccount> searchCOA(String str,Integer level, String compCode);
+    List<ChartOfAccount> searchCOA(String str, Integer level, String compCode);
 
     List<ChartOfAccount> getCOATree(String compCode);
 
     List<ChartOfAccount> getAllChild(String parent, String compCode);
-    List<ChartOfAccount> getTraderCOA(String compCode);
-    List<ChartOfAccount> search(String updatedDate);
-    Date getMaxDate();
 
+    List<ChartOfAccount> getTraderCOA(String compCode);
+
+    List<ChartOfAccount> search(String updatedDate);
+
+    List<ChartOfAccount> unUpload();
+
+    Date getMaxDate();
 
 
 }

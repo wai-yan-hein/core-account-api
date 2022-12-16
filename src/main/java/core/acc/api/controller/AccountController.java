@@ -151,14 +151,14 @@ public class AccountController {
     @PostMapping(path = "/get-coa-opening")
     public ResponseEntity<List<TmpOpening>> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
         String opDate = filter.getOpeningDate();
-        String clDate = filter.getClosingDate();
+        String fromDate = filter.getFromDate();
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
         List<String> department = filter.getListDepartment();
-        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, clDate, 3, curCode, compCode, department, macId, traderCode));
+        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, 3, curCode, compCode, department, macId, traderCode));
     }
 
     @PostMapping(path = "/get-opening")
@@ -182,14 +182,14 @@ public class AccountController {
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
         gl = glService.save(gl);
         //sent to cloud
-        cloudMQSender.send(gl);
+        if (cloudMQSender != null) cloudMQSender.send(gl);
         return ResponseEntity.ok(gl);
     }
 
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
-        cloudMQSender.send(ro);
+        if (cloudMQSender != null) cloudMQSender.send(ro);
         return ResponseEntity.ok(ro);
     }
 

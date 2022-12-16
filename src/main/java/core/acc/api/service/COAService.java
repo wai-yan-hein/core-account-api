@@ -18,7 +18,7 @@ public interface COAService {
 
     int delete(String code, String compCode);
 
-    List<ChartOfAccount> searchCOA(String str,Integer level, String compCode);
+    List<ChartOfAccount> searchCOA(String str, Integer level, String compCode);
 
     List<ChartOfAccount> getCOATree(String compCode);
 
@@ -27,6 +27,8 @@ public interface COAService {
     List<ChartOfAccount> getTraderCOA(String compCode);
 
     List<ChartOfAccount> search(String updatedDate);
+
+    List<ChartOfAccount> unUpload();
 
     Date getMaxDate();
 }

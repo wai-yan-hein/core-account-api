@@ -106,7 +106,7 @@ public class ReportServiceImpl implements ReportService {
         String sql = "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
                 "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no,\n" +
                 "dep_usr_code, trader_code,trader_name, comp_code, tran_source, gl_vou_no,\n" +
-                "remark, mac_id, ref_no, trader_name, discriminator, \n" +
+                "remark, mac_id, ref_no, trader_name, discriminator,dept_id, \n" +
                 "src_usr_code, src_acc_name, src_parent_2, src_parent_1, acc_usr_code, acc_name, acc_parent_2, acc_parent_1\n" +
                 "from v_gl \n" +
                 "" + filter + "\n" +
@@ -119,6 +119,7 @@ public class ReportServiceImpl implements ReportService {
                 GlKey key = new GlKey();
                 key.setCompCode(compCode);
                 key.setGlCode(rs.getString("gl_code"));
+                key.setDeptId(rs.getInt("dept_id"));
                 v.setKey(key);
                 v.setGlDate(rs.getDate("gl_date"));
                 v.setVouDate(Util1.toDateStr(v.getGlDate(), "dd/MM/yyyy"));

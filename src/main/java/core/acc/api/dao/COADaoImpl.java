@@ -233,6 +233,12 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
+    public List<ChartOfAccount> unUpload() {
+        String hsql = "select o from ChartOfAccount o where o.intgUpdStatus is null";
+        return findHSQL(hsql);
+    }
+
+    @Override
     public Date getMaxDate() {
         String sql = "select max(modify_date) date from chart_of_account";
         ResultSet rs = getResultSet(sql);

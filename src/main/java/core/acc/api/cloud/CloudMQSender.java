@@ -72,8 +72,9 @@ public class CloudMQSender {
                 progress = true;
                 //destroyQ(serverQ);
                 downloadSetup();
-                uploadTransaction();
+                uploadSetup();
                 downloadTransaction();
+                uploadTransaction();
                 progress = false;
             }
         }
@@ -240,16 +241,27 @@ public class CloudMQSender {
         requestFile("GL_REQUEST", gson.toJson(new Gl(glService.getMaxDate(), userRepo.getDepCode())));
     }
 
+    private void uploadSetup() {
+        uploadCOA();
+    }
+
     private void uploadTransaction() {
         uploadGl();
     }
 
     private void uploadGl() {
-        log.info(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
         if (!list.isEmpty()) {
             log.info("upload gl : " + list.size());
-            uploadFile("GL", list, getQueue(list.get(0)));
+            uploadFile("GL_UPLOAD", list, serverQ);
+        }
+    }
+
+    private void uploadCOA() {
+        List<ChartOfAccount> list = coaService.unUpload();
+        if (!list.isEmpty()) {
+            log.info("upload coa : " + list.size());
+            uploadFile("COA_UPLOAD", list, serverQ);
         }
     }
 

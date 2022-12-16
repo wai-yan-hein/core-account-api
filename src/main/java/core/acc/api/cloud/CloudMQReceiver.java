@@ -127,7 +127,10 @@ public class CloudMQReceiver {
                         case "SAVE" -> {
                             save(obj);
                         }
-                        case "RECEIVE" -> update(obj);
+                        case "RECEIVE" -> {
+                            update(obj);
+                            log.info("gl transaction successfully delivered to server : " + obj.getKey().getGlCode());
+                        }
                         case "DELETE" -> glService.delete(obj.getKey());
 
                     }
@@ -139,28 +142,38 @@ public class CloudMQReceiver {
                         reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
                     }
                     switch (option) {
-                        case "COA" -> {
+                        case "COA_UPLOAD" -> {
                             assert reader != null;
                             List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
                             }.getType());
                             List<ChartOfAccount> objList = new ArrayList<>();
                             if (!list.isEmpty()) {
-                                log.info("coa list size :" + list.size());
-                                list.forEach(c -> {
+                                log.info("coa list size :" + list.size() + " from " + senderQ);
+                                list.forEach(gl -> {
                                     try {
-                                        c.setIntgUpdStatus(SAVE);
-                                        coaService.save(c);
+                                        gl.setIntgUpdStatus(SAVE);
+                                        save(gl);
                                         ChartOfAccount obj = new ChartOfAccount();
-                                        obj.setKey(c.getKey());
+                                        obj.setKey(gl.getKey());
                                         objList.add(obj);
-                                        log.info("saved coa : " + c.getKey().getCoaCode());
+                                        sleep();
                                     } catch (Exception e) {
                                         log.error("save coa : " + e.getMessage());
                                     }
                                 });
+                                log.info("coa done.");
                             }
                             if (!objList.isEmpty()) {
-                                fileMessage("COA_RESPONSE", objList, senderQ);
+                                fileMessage("COA_RECEIVED", objList, senderQ);
+                            }
+                        }
+                        case "COA_RECEIVED" -> {
+                            assert reader != null;
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            if (!list.isEmpty()) {
+                                list.forEach(this::update);
+                                log.info("coa setup successfully delivered to server : " + list.size());
                             }
                         }
                         case "COA_REQUEST" -> {
@@ -226,6 +239,7 @@ public class CloudMQReceiver {
                             }.getType());
                             if (!list.isEmpty()) {
                                 list.forEach(this::update);
+                                log.info("gl transaction successfully delivered to server : " + list.size());
                             }
                         }
 
@@ -280,7 +294,6 @@ public class CloudMQReceiver {
         } catch (Exception e) {
             log.error("update Gl : " + e.getMessage());
         }
-        log.info("update gl.");
     }
 
     private void update(ChartOfAccount coa) {
@@ -304,6 +317,14 @@ public class CloudMQReceiver {
             glService.save(gl);
         } catch (Exception e) {
             log.error("save Gl : " + e.getMessage());
+        }
+    }
+
+    private void save(ChartOfAccount coa) {
+        try {
+            coaService.save(coa);
+        } catch (Exception e) {
+            log.error("save COA : " + e.getMessage());
         }
     }
 
