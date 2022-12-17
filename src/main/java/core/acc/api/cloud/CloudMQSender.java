@@ -61,7 +61,7 @@ public class CloudMQSender {
     private String serverQ;
     private boolean progress = false;
 
-    @Scheduled(fixedRate = 10000000)
+    @Scheduled(fixedRate = 5 * 60 * 1000)
     private void uploadToServer() {
         initQueue();
         client = Util1.getBoolean(userRepo.getProperty("cloud.upload.server"));
