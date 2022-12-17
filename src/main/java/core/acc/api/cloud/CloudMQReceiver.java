@@ -116,7 +116,7 @@ public class CloudMQReceiver {
         String data = message.getString("DATA");
         byte[] file = message.getBytes("DATA_FILE");
         String senderQ = message.getString("SENDER_QUEUE");
-        String path = String.format("temp%s%s", File.separator, "Gl");
+        String path = String.format("temp%s%s", File.separator, option);
         try {
             log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
             String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
@@ -305,7 +305,6 @@ public class CloudMQReceiver {
         } catch (Exception e) {
             log.error("update coa : " + e.getMessage());
         }
-        log.info("update coa.");
     }
 
     private void save(Gl gl) {

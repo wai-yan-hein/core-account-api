@@ -273,10 +273,7 @@ public class CloudMQSender {
 
     public void send(ReturnObject ro) {
         if (ro != null) {
-            List<Gl> list = glService.search(ro.getVouNo(), ro.getTranSource(), ro.getCompCode());
-            if (!list.isEmpty()) {
-                uploadFile("GL", list, getQueue(list.get(0)));
-            }
+            uploadGl();
         }
     }
 
