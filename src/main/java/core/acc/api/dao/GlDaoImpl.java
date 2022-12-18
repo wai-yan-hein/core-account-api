@@ -175,6 +175,25 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public List<Gl> getTranSource(String compCode) {
+        List<Gl> list = new ArrayList<>();
+        String sql = "select distinct tran_source from gl where comp_code='" + compCode + "'";
+        ResultSet rs = getResultSet(sql);
+        try {
+            if (rs != null) {
+                while (rs.next()) {
+                    Gl g = new Gl();
+                    g.setTranSource(rs.getString("tran_source"));
+                    list.add(g);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
     public List<Gl> unUpload(String syncDate) {
         String hql = "select o from Gl o where o.intgUpdStatus is null and date(o.glDate) >= '" + syncDate + "'";
         return findHSQL(hql);

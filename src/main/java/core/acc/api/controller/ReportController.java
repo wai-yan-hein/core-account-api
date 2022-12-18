@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +26,8 @@ import java.util.List;
 public class ReportController {
     @Autowired
     private ReportService reportService;
+    private final String exportPath = "temp/";
+
     private ReturnObject ro = new ReturnObject();
 
     @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -54,14 +57,6 @@ public class ReportController {
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         try {
             switch (reportName) {
-                case "TriBalance" -> {
-                    List<VTriBalance> triBalance = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
-                    Util1.writeJsonFile(triBalance, exportPath);
-                }
-                case "ARAP" -> {
-                    List<VApar> list = reportService.genArAp(compCode, opDate, toDate, curCode, traderCode, coaCode, macId);
-                    Util1.writeJsonFile(list, exportPath);
-                }
                 case "Income&ExpenditureDetail" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
@@ -102,7 +97,6 @@ public class ReportController {
                 ro = reportService.getReportResult(macId);
                 ro.setFile(bytes);
             }
-
         } catch (Exception e) {
             ro.setErrorMessage(e.getMessage());
             log.error(String.format("getReport: %s", e.getMessage()));
@@ -131,7 +125,7 @@ public class ReportController {
     }
 
     @PostMapping(path = "/get-tri-balance")
-    public ResponseEntity<List<VTriBalance>> getTriBalance(@RequestBody ReportFilter filter) {
+    public ResponseEntity<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
         String coaCode = filter.getCoaCode();
         String coaLv1 = filter.getCoaLv1();
         String coaLv2 = filter.getCoaLv2();
@@ -144,12 +138,16 @@ public class ReportController {
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-", netChange, macId);
-        List<VTriBalance> triBalance = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
-        return ResponseEntity.ok(triBalance);
+        List<VTriBalance> list = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
+        String fileName = "TRI" + macId.toString() + ".json";
+        String path = exportPath + fileName;
+        Util1.writeJsonFile(list, path);
+        ro.setFile(Util1.zipJsonFile(path));
+        return ResponseEntity.ok(ro);
     }
 
     @PostMapping(path = "/get-arap")
-    public ResponseEntity<List<VApar>> getArap(@RequestBody ReportFilter filter) {
+    public ResponseEntity<?> getArap(@RequestBody ReportFilter filter) throws IOException {
         String compCode = filter.getCompCode();
         String enDate = filter.getToDate();
         String opDate = reportService.getOpeningDate(compCode);
@@ -158,7 +156,12 @@ public class ReportController {
         Integer macId = filter.getMacId();
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        return ResponseEntity.ok(reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId));
+        List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId);
+        String fileName = "ARAP" + macId.toString() + ".json";
+        String path = exportPath + fileName;
+        Util1.writeJsonFile(list, path);
+        ro.setFile(Util1.zipJsonFile(path));
+        return ResponseEntity.ok(ro);
     }
 
     @GetMapping(path = "/get-trader-balance")

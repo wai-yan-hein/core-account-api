@@ -127,8 +127,8 @@ public class ReportServiceImpl implements ReportService {
                 v.setSrcAccCode(rs.getString("source_ac_id"));
                 v.setAccCode(rs.getString("account_id"));
                 v.setCurCode(rs.getString("cur_code"));
-                v.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
-                v.setCrAmt((Util1.toNull(rs.getDouble("cr_amt"))));
+                v.setDrAmt(rs.getDouble("dr_amt"));
+                v.setCrAmt(rs.getDouble("cr_amt"));
                 v.setReference(rs.getString("reference"));
                 v.setRefNo(rs.getString("ref_no"));
                 v.setDeptCode(rs.getString("dept_code"));
@@ -157,6 +157,8 @@ public class ReportServiceImpl implements ReportService {
                     gl.setAccName(gl.getSrcAccName());
                     gl.setSrcAccName(tmpStr);
                 }
+                gl.setDrAmt(Util1.toNull(gl.getDrAmt()));
+                gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
             });
         }
         return list;

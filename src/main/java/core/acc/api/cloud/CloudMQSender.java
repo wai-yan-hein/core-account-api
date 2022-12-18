@@ -16,7 +16,6 @@ import core.acc.api.service.DepartmentService;
 import core.acc.api.service.GlService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.ActiveMQConnection;
-import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTempQueue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,7 +56,7 @@ public class CloudMQSender {
     private final HashMap<String, String> hmQueue = new HashMap<>();
 
     //service
-    private boolean client;
+    private boolean client =false;
     private String serverQ;
     private boolean progress = false;
 
@@ -67,7 +66,7 @@ public class CloudMQSender {
         client = Util1.getBoolean(userRepo.getProperty("cloud.upload.server"));
         serverQ = userRepo.getProperty("cloud.activemq.account.server.queue");
         if (client) {
-            log.info("ActiveMQ Server Q : " + serverQ);
+            log.info("This program is running as a client.");
             if (!progress) {
                 progress = true;
                 //destroyQ(serverQ);
@@ -77,6 +76,8 @@ public class CloudMQSender {
                 uploadTransaction();
                 progress = false;
             }
+        } else {
+            log.info("This program is running as a server.");
         }
     }
 
@@ -282,8 +283,10 @@ public class CloudMQSender {
     }
 
     public void delete(GlKey key) {
-        Gl obj = new Gl();
-        obj.setKey(key);
-        deleteMessage("GL", gson.toJson(obj), serverQ);
+        if (client) {
+            Gl obj = new Gl();
+            obj.setKey(key);
+            deleteMessage("GL", gson.toJson(obj), serverQ);
+        }
     }
 }

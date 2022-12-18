@@ -125,6 +125,11 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
+    public List<Gl> getTranSource(String compCode) {
+        return glDao.getTranSource(compCode);
+    }
+
+    @Override
     public List<Gl> unUpload(String syncDate) {
         return glDao.unUpload(syncDate);
     }

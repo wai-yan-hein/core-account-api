@@ -126,7 +126,7 @@ public class AccountController {
     public ResponseEntity<ReturnObject> searchGl(@RequestBody ReportFilter filter) throws SQLException, IOException {
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
-        String desp = Util1.isNull(filter.getDesp(), "-");
+        String des = Util1.isNull(filter.getDesp(), "-");
         String srcAcc = Util1.isNull(filter.getSrcAcc(), "-");
         String acc = Util1.isNull(filter.getAcc(), "-");
         String curCode = Util1.isNull(filter.getCurCode(), "-");
@@ -139,7 +139,7 @@ public class AccountController {
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, desp, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
@@ -158,6 +158,7 @@ public class AccountController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
         List<String> department = filter.getListDepartment();
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, 3, curCode, compCode, department, macId, traderCode));
     }
 
@@ -195,7 +196,7 @@ public class AccountController {
 
     @PostMapping(path = "/delete-gl")
     public ResponseEntity<Boolean> deleteGL(@RequestBody GlKey key) {
-        cloudMQSender.delete(key);
+        if (cloudMQSender != null) cloudMQSender.delete(key);
         return ResponseEntity.ok(glService.delete(key));
     }
 
@@ -247,8 +248,8 @@ public class AccountController {
 
     //TranSource
     @GetMapping(path = "/get-tran-source")
-    public ResponseEntity<List<VTranSource>> getTranSource(@RequestParam String compCode) {
-        return ResponseEntity.ok(null);
+    public ResponseEntity<?> getTranSource(@RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getTranSource(compCode));
     }
 
     @PostMapping(path = "/search-journal")

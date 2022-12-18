@@ -26,6 +26,8 @@ public interface GlService {
 
     List<Gl> getJournal(String glVouNo, String compCode);
 
+    List<Gl> getTranSource(String compCode);
+
     List<Gl> unUpload(String syncDate);
 
     Date getMaxDate();
@@ -33,6 +35,7 @@ public interface GlService {
     List<Gl> search(String updatedDate, String deptCode);
 
     List<Gl> search(String vouNo, String tranSource, String compCode);
+
     void deleteGl(String vouNo, String tranSource);
 
     void truncate(GlKey key);

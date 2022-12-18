@@ -24,6 +24,7 @@ public interface GlDao {
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
 
     List<Gl> getJournal(String glVouNo, String compCode);
+    List<Gl> getTranSource(String compCode);
 
     List<Gl> unUpload(String syncDate);
 
