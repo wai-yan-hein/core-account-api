@@ -2,10 +2,8 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.GlDao;
-import core.acc.api.entity.Gl;
-import core.acc.api.entity.GlKey;
-import core.acc.api.entity.VDescription;
-import core.acc.api.entity.VRef;
+import core.acc.api.dao.GlLogDao;
+import core.acc.api.entity.*;
 import core.acc.api.model.ReturnObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,8 @@ import java.util.Objects;
 public class GlServiceImpl implements GlService {
     @Autowired
     private GlDao glDao;
+    @Autowired
+    private GlLogDao logDao;
     @Autowired
     private SeqTableService seqService;
 
@@ -39,7 +39,7 @@ public class GlServiceImpl implements GlService {
                 throw new IllegalStateException("Duplication Occur in Gl");
             }
         } else {
-            backupGl(gl, "EDIT");
+            backupGl(findByCode(gl.getKey()), false);
         }
         if (gl.getDelList() != null) {
             for (String code : gl.getDelList()) {
@@ -47,7 +47,7 @@ public class GlServiceImpl implements GlService {
                 key.setCompCode(gl.getKey().getCompCode());
                 key.setGlCode(code);
                 Gl gv = findByCode(key);
-                backupGl(gv, "GV_DELETE");
+                backupGl(gv, true);
                 glDao.delete(key);
             }
         }
@@ -100,7 +100,7 @@ public class GlServiceImpl implements GlService {
 
     @Override
     public boolean delete(GlKey key) {
-        backupGl(glDao.findByCode(key), "DELETE");
+        backupGl(glDao.findByCode(key), true);
         return glDao.delete(key);
     }
 
@@ -159,15 +159,55 @@ public class GlServiceImpl implements GlService {
         glDao.truncate(key);
     }
 
-    private void backupGl(Gl gl, String option) {
+    private void backupGl(Gl gl, boolean del) {
+        if (gl != null) {
+            Integer deptId = gl.getKey().getDeptId();
+            String compCode = gl.getKey().getCompCode();
+            Integer macId = gl.getMacId();
+            String type = gl.getTranSource();
+            GlLog l = new GlLog();
+            GlLogKey key = new GlLogKey();
+            key.setLogGlCode(getGlLogCode(deptId, macId, compCode));
+            key.setDeptId(deptId);
+            key.setCompCode(compCode);
+            l.setKey(key);
+            l.setTraderCode(gl.getTraderCode());
+            l.setTranSource(gl.getTranSource());
+            l.setSrcAccCode(gl.getSrcAccCode());
+            l.setAccCode(gl.getAccCode());
+            l.setCrAmt(gl.getCrAmt());
+            l.setDrAmt(gl.getDrAmt());
+            l.setCreatedBy(gl.getCreatedBy());
+            l.setCreatedDate(gl.getCreatedDate());
+            l.setCurCode(gl.getCurCode());
+            l.setDeptCode(gl.getDeptCode());
+            l.setDescription(gl.getDescription());
+            l.setGlCode(gl.getKey().getGlCode());
+            l.setGlDate(gl.getGlDate());
+            l.setGlVouNo(gl.getGlVouNo());
+            l.setReference(gl.getReference());
+            l.setRefNo(gl.getRefNo());
+            l.setLogDate(Util1.getTodayDate());
+            l.setLogMac(macId);
+            l.setMacId(gl.getMacId());
+            l.setLogStatus(del ? "DEL-" + type : "EDIT-" + type);
+            l.setLogUser(gl.getModifyBy());
+            logDao.save(l);
+        }
     }
-
 
     private String getGLCode(Integer deptId, Integer macId, String compCode) {
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
         return deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
+    }
+
+    private String getGlLogCode(Integer deptId, Integer macId, String compCode) {
+        String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
+        int seqNo = seqService.getSequence(macId, "GL-LOG", period, compCode);
+        String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
+        return "L-" + deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
     }
 
     private String getVouNo(Integer deptId, Integer macId, String compCode) {

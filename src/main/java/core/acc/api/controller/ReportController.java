@@ -1,6 +1,7 @@
 package core.acc.api.controller;
 
 import core.acc.api.common.Util1;
+import core.acc.api.entity.COAOpening;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
@@ -51,12 +52,17 @@ public class ReportController {
         String plProcess = Util1.isNull(filter.getPlProcess(), "-");
         String bsProcess = Util1.isNull(filter.getBsProcess(), "-");
         String invGroup = Util1.isNull(filter.getInvGroup(), "-");
+        String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         try {
             switch (reportName) {
+                case "OpeningTri" -> {
+                    List<COAOpening> list = reportService.getOpeningTri(opDate, deptCode, curCode, compCode);
+                    Util1.writeJsonFile(list, exportPath);
+                }
                 case "Income&ExpenditureDetail" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);

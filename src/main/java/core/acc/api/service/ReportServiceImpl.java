@@ -2,10 +2,7 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.ReportDao;
-import core.acc.api.entity.Gl;
-import core.acc.api.entity.GlKey;
-import core.acc.api.entity.VApar;
-import core.acc.api.entity.VTriBalance;
+import core.acc.api.entity.*;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
 import core.acc.api.model.TraderBalance;
@@ -36,11 +33,13 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void insertTmp(List<String> listStr, Integer macId, String taleName) {
         try {
-            deleteTmp(taleName, macId);
-            for (String str : listStr) {
-                String sql = "insert into " + taleName + "(dept_code,mac_id)\n" +
-                        "select '" + str + "'," + macId + "";
-                executeSql(sql);
+            if (listStr != null) {
+                deleteTmp(taleName, macId);
+                for (String str : listStr) {
+                    String sql = "insert into " + taleName + "(dept_code,mac_id)\n" +
+                            "select '" + str + "'," + macId + "";
+                    executeSql(sql);
+                }
             }
         } catch (Exception e) {
             log.error(String.format("insertTmp: %s", e.getMessage()));
@@ -72,45 +71,60 @@ public class ReportServiceImpl implements ReportService {
                                        String acc, String curCode, String reference,
                                        String compCode, String tranSource, String traderCode, String traderType,
                                        String coaLv2, String coaLv1, Integer macId) throws SQLException {
-        String filter = "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
-                "and comp_code = '" + compCode + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n";
-        if (!acc.equals("-")) {
-            filter += "and (account_id = '" + acc + "' or source_ac_id ='" + acc + "')\n";
-        }
+        String filter = "where  (a.trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n";
         if (!coaLv2.equals("-")) {
-            filter += "and (src_parent_2 = '" + coaLv2 + "' or  acc_parent_2 ='" + coaLv2 + "')\n";
+            filter += "and coa3.coa_parent = '" + coaLv2 + "'\n";
         }
         if (!coaLv1.equals("-")) {
-            filter += "and (src_parent_1 = '" + coaLv1 + "'  or acc_parent_1 = '" + coaLv1 + "')\n";
+            filter += "and coa2.coa_parent = '" + coaLv1 + "'\n";
         }
         if (!tranSource.equals("-")) {
-            filter += "and tran_source = '" + tranSource + "'\n";
+            filter += "and a.tran_source = '" + tranSource + "'\n";
         }
         if (!reference.equals("-")) {
-            filter += "and reference like '" + reference + "%'\n";
+            filter += "and a.reference like '" + reference + "%'\n";
         }
         if (!desp.equals("-")) {
-            filter += "and description like '" + desp + "%'\n";
+            filter += "and a.description like '" + desp + "%'\n";
         }
-        if (!traderCode.equals("-")) {
-            filter += "and  trader_code ='" + traderCode + "'\n";
+        if (!acc.equals("-")) {
+            filter += "and (a.account_id = '" + acc + "' or a.source_ac_id ='" + acc + "')";
         }
         if (!traderType.equals("-")) {
-            filter += "and  discriminator ='" + traderType + "' \n";
+            filter += "and  a.discriminator ='" + traderType + "' \n";
         }
         if (!curCode.equals("-")) {
-            filter += "and cur_code ='" + curCode + "'\n";
+            filter += "and a.cur_code ='" + curCode + "'\n";
         }
-        String sql = "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
-                "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no,\n" +
-                "dep_usr_code, trader_code,trader_name, comp_code, tran_source, gl_vou_no,\n" +
-                "remark, mac_id, ref_no, trader_name, discriminator,dept_id, \n" +
-                "src_usr_code, src_acc_name, src_parent_2, src_parent_1, acc_usr_code, acc_name, acc_parent_2, acc_parent_1\n" +
-                "from v_gl \n" +
+        String sql = "select a.*,dep.usr_code d_user_code,t.user_code t_user_code,t.discriminator,t.trader_name,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" +
+                "from (\n" +
+                "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
+                "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, trader_code, comp_code, tran_source, gl_vou_no,\n" +
+                "remark, mac_id, ref_no,dept_id\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
+                "order by gl_date,tran_source,gl_code\n" +
+                ")a\n" +
+                "join department dep\n" +
+                "on a.dept_code = dep.dept_code\n" +
+                "and a.comp_code = dep.comp_code\n" +
+                "left join trader t on \n" +
+                "a.trader_code = t.code\n" +
+                "and a.comp_code = t.comp_code\n" +
+                "join chart_of_account coa\n" +
+                "on a.source_ac_id = coa.coa_code\n" +
+                "and a.comp_code = coa.comp_code\n" +
+                "left join chart_of_account coa3\n" +
+                "on a.account_id = coa3.coa_code\n" +
+                "and a.comp_code = coa3.comp_code\n" +
+                "left join chart_of_account coa2\n" +
+                "on coa3.coa_parent = coa2.coa_code\n" +
+                "and coa3.comp_code = coa2.comp_code\n" +
                 "" + filter + "\n" +
-                "order by gl_date,tran_source,gl_code\n";
+                "order by a.gl_date,a.tran_source,a.gl_code\n";
         ResultSet rs = dao.executeSql(sql);
         List<Gl> list = new ArrayList<>();
         if (!Objects.isNull(rs)) {
@@ -133,7 +147,7 @@ public class ReportServiceImpl implements ReportService {
                 v.setRefNo(rs.getString("ref_no"));
                 v.setDeptCode(rs.getString("dept_code"));
                 v.setVouNo(rs.getString("voucher_no"));
-                v.setDeptUsrCode(rs.getString("dep_usr_code"));
+                v.setDeptUsrCode(rs.getString("d_user_code"));
                 v.setTraderCode(rs.getString("trader_code"));
                 v.setTraderName(rs.getString("trader_name"));
                 v.setTranSource(rs.getString("tran_source"));
@@ -444,68 +458,6 @@ public class ReportServiceImpl implements ReportService {
         return list;
     }
 
-    @Override
-    public double genOpBalance(String process, String opDate,
-                               String clDate,
-                               String endDate,
-                               String curr, String compCode,
-                               String dept, String macId) throws Exception {
-        String[] coaCodes = process.split(",");
-        double ttlOP = 0;
-        if (coaCodes.length > 0) {
-            for (String coaCode : coaCodes) {
-                String opSql = "insert into tmp_op_cl(coa_code, cur_code,opening,mac_id) \n"
-                        + "select a.acc_code, a.cur_code, sum(a.balance) balance, " + macId + "\n"
-                        + "from (\n"
-                        + "select source_acc_id acc_code,cur_code,sum(ifnull(dr_amt,0))-sum(ifnull(cr_amt,0)) balance,\n"
-                        + "		sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,trader_code\n"
-                        + "	from coa_opening \n"
-                        + "	where source_acc_id = '" + coaCode + "'\n"
-                        + "        and (dept_code in (" + dept + "))\n"
-                        + "        and comp_code = '" + compCode + "'\n"
-                        + "        and date(op_date) = '" + opDate + "'\n"
-                        + "        and (cur_code = '" + curr + "' or '-' ='" + curr + "')\n"
-                        + "      group by acc_code,cur_code\n"
-                        + "             union all\n"
-                        + "select '" + coaCode + "' acc_code ,cur_code cur_code, sum(get_dr_cr_amt(source_ac_id, account_id, '" + coaCode + "', \n"
-                        + "		ifnull(dr_amt,0), ifnull(cr_amt,0), 'DR')-get_dr_cr_amt(source_ac_id, \n"
-                        + "             account_id, '" + coaCode + "', ifnull(dr_amt,0), ifnull(cr_amt,0), 'CR')) balance, \n"
-                        + "		sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,trader_code \n"
-                        + "     from gl\n"
-                        + "	where  (source_ac_id = '" + coaCode + "' or account_id = '" + coaCode + "') \n"
-                        + "		and date(gl_date)>= '" + opDate + "'\n"
-                        + "        and date(gl_date) < '" + clDate + "' \n"
-                        + "        and (dept_code in (" + dept + "))\n"
-                        + "        and comp_code = '" + compCode + "'\n"
-                        + "        and (cur_code = '" + curr + "' or '-' ='" + curr + "')\n"
-                        + "	group by acc_code,cur_code) a \n"
-                        + "group by a.acc_code, a.cur_code";
-                dao.exeSql(opSql);
-            }
-
-            String strSql = "insert into tmp_tri(coa_code, curr_id, dept_code, mac_id, dr_amt, cr_amt)\n"
-                    + "select toc.coa_code, toc.cur_code, gl.dept_code, " + macId + " as mac_id,\n"
-                    + "sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, toc.coa_code, gl.dr_amt, gl.cr_amt, 'DR')) dr_amt,\n"
-                    + "sum(get_dr_cr_amt(gl.source_ac_id, gl.account_id, toc.coa_code, gl.dr_amt, gl.cr_amt, 'CR')) cr_amt\n"
-                    + "from tmp_op_cl toc\n"
-                    + "join gl on (toc.coa_code = gl.source_ac_id or toc.coa_code = gl.account_id) and toc.cur_code = gl.cur_code\n"
-                    + "where gl.gl_date between '" + clDate + "' and '" + endDate + "' and toc.mac_id = " + macId + " \n"
-                    + "group by toc.coa_code, toc.cur_code, gl.dept_code";
-            dao.exeSql(strSql);
-
-            strSql = "select sum(ifnull(opening,0)) as ttl_op\n"
-                    + "from tmp_op_cl\n"
-                    + "where mac_id = " + macId;
-            ResultSet rs = dao.executeSql(strSql);
-
-            if (rs != null) {
-                if (rs.next()) {
-                    ttlOP = rs.getDouble("ttl_op");
-                }
-            }
-        }
-        return ttlOP;
-    }
 
     @Override
     public void executeSql(String... sql) {
@@ -641,7 +593,7 @@ public class ReportServiceImpl implements ReportService {
                     b.setCoaCode(rs.getString("coa_code"));
                     b.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
                     b.setCrAmt(Util1.toNull(rs.getDouble("cr_amt")));
-                    b.setUsrCoaCode(rs.getString("coa_code_usr"));
+                    b.setCoaUsrCode(rs.getString("coa_code_usr"));
                     b.setCoaName(rs.getString("coa_name_eng"));
                     balances.add(b);
                 }
@@ -655,8 +607,6 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency,
                                String traderCode, String coaCode, Integer macId) {
-        String delSql = "delete from tmp_op_cl_apar where mac_id = " + macId + "";
-        dao.exeSql(delSql);
         String coaFilter = "select distinct account_code from trader where comp_code='" + compCode + "' and account_code is not null";
         if (!coaCode.equals("-")) {
             coaFilter = "'" + coaCode + "'";
@@ -873,6 +823,48 @@ public class ReportServiceImpl implements ReportService {
             log.error(String.format("getTraderBalance :%s", ex.getMessage()));
         }
         return balances;
+    }
+
+    @Override
+    public List<COAOpening> getOpeningTri(String opDate, String deptCode, String curCode, String compCode) {
+        List<COAOpening> list = new ArrayList<>();
+        String sql = "select a.cur_code,coa.coa_code_usr,coa.coa_name_eng,dep.usr_code,if(dr_amt-cr_amt>0,dr_amt-cr_amt,0) dr_amt,if(dr_amt-cr_amt<0,(dr_amt-cr_amt)*-1,0) cr_amt\n" +
+                "from (\n" +
+                "select source_acc_id,cur_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt,dept_code,comp_code\n" +
+                "from coa_opening \n" +
+                "where comp_code ='" + compCode + "'\n" +
+                "and date(op_date)='" + opDate + "'\n" +
+                "and (cur_code ='" + curCode + "' or '-' ='" + curCode + "')\n" +
+                "and (dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
+                "group by source_acc_id,dept_code,cur_code\n" +
+                ")a\n" +
+                "join chart_of_account coa\n" +
+                "on a.source_acc_id = coa.coa_code\n" +
+                "and a.comp_code = coa.comp_code\n" +
+                "join department dep\n" +
+                "on a.dept_code = dep.dept_code\n" +
+                "and a.comp_code = dep.comp_code\n" +
+                "where (a.dr_amt >0 or a.cr_amt>0)\n" +
+                "order by coa.coa_code_usr";
+        ResultSet rs = dao.executeSql(sql);
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    //source_acc_id, cur_code, dr_amt, cr_amt, dept_code, comp_code, coa_name_eng, usr_code
+                    COAOpening op = new COAOpening();
+                    op.setCoaUsrCode(rs.getString("coa_code_usr"));
+                    op.setSrcAccName(rs.getString("coa_name_eng"));
+                    op.setDeptUsrCode(rs.getString("usr_code"));
+                    op.setCurCode(rs.getString("cur_code"));
+                    op.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
+                    op.setCrAmt(Util1.toNull(rs.getDouble("cr_amt")));
+                    list.add(op);
+                }
+            } catch (Exception e) {
+                log.error("getOpeningTri : " + e.getMessage());
+            }
+        }
+        return list;
     }
 
     private String getHeadSqlDetail(String head, Integer macId) {

@@ -1,5 +1,6 @@
 package core.acc.api.service;
 
+import core.acc.api.entity.COAOpening;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
@@ -28,8 +29,6 @@ public interface ReportService {
     List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,
                                     boolean detail, double prvProfit, double curProfit, String compCode, Integer macId);
 
-    double genOpBalance(String process, String opDate, String clDate,
-                        String endDate, String curr, String compCode, String dept, String macId) throws Exception;
 
     void executeSql(String... sql) throws Exception;
 
@@ -50,4 +49,5 @@ public interface ReportService {
     ReturnObject getReportResult(Integer macId);
     List<TraderBalance> getTraderBalance(String traderCode, String accCode,
                                          String curCode, String fromDate, String toDate, String compCode, Integer macId);
+    List<COAOpening> getOpeningTri(String opDate,String deptCode,String curCode,String compCode);
 }

@@ -11,5 +11,5 @@ public interface COAOpeningDao {
     COAOpening save(COAOpening op);
     void executeSql(String... sql);
 
-    List<TmpOpening> getOpening(String coaCode, Integer macId);
+
 }
