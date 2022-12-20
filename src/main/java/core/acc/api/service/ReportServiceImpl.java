@@ -394,6 +394,7 @@ public class ReportServiceImpl implements ReportService {
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and date(tran_date) between '" + opDate + "' and '" + enDate + "'\n" +
                 "and comp_code ='" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "group by tran_date,coa_code,curr_code\n" +
                 ")a\n" +
                 "join chart_of_account coa on a.source_acc_id = coa.coa_code\n" +
@@ -435,6 +436,7 @@ public class ReportServiceImpl implements ReportService {
                 "and op.comp_code = coa.comp_code\n" +
                 "where date(tran_date)='" + enDate + "'\n" +
                 "and op.comp_code ='" + compCode + "'\n" +
+                "and op.deleted =0\n" +
                 "and op.coa_code in (select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "')\n" +
                 "and op.dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "group by op.coa_code\n";
