@@ -1,6 +1,5 @@
 package core.acc.api.entity;
 
-import io.swagger.models.auth.In;
 import lombok.Data;
 
 import javax.persistence.Column;

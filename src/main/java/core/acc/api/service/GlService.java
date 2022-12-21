@@ -16,6 +16,7 @@ public interface GlService {
 
     Gl findByCode(GlKey key);
 
+    boolean delete(GlKey key,String modifyBy);
     boolean delete(GlKey key);
 
     List<VDescription> getDescription(String str, String compCode);
@@ -23,6 +24,7 @@ public interface GlService {
     List<VRef> getReference(String str, String compCode);
 
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+    boolean deleteJournal(String glVouNo,String compCode,String modifyBy);
 
     List<Gl> getJournal(String glVouNo, String compCode);
 

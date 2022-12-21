@@ -33,4 +33,5 @@ public class ReportFilter {
     private boolean closing;
     private List<String> listDepartment;
     private String deptCode;
+    private boolean summary;
 }

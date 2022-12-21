@@ -30,6 +30,43 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public Gl findWithSql(GlKey key) {
+        try {
+            String sql = "select * from gl where gl_code='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
+            ResultSet rs = getResultSet(sql);
+            if (rs != null) {
+                if (rs.next()) {
+                    Gl gl = new Gl();
+                    gl.setKey(key);
+                    gl.setGlDate(rs.getDate("gl_date"));
+                    gl.setCreatedDate(rs.getDate("created_date"));
+                    gl.setModifyDate(rs.getDate("modify_date"));
+                    gl.setModifyBy(rs.getString("modify_by"));
+                    gl.setDescription(rs.getString("description"));
+                    gl.setSrcAccCode(rs.getString("source_ac_id"));
+                    gl.setAccCode(rs.getString("account_id"));
+                    gl.setCurCode(rs.getString("cur_code"));
+                    gl.setDrAmt(rs.getDouble("dr_amt"));
+                    gl.setCrAmt(rs.getDouble("cr_amt"));
+                    gl.setReference(rs.getString("reference"));
+                    gl.setDeptCode(rs.getString("dept_code"));
+                    gl.setVouNo(rs.getString("voucher_no"));
+                    gl.setTraderCode(rs.getString("trader_code"));
+                    gl.setTranSource(rs.getString("tran_source"));
+                    gl.setGlVouNo(rs.getString("gl_vou_no"));
+                    gl.setRemark(rs.getString("remark"));
+                    gl.setRefNo(rs.getString("ref_no"));
+                    gl.setMacId(rs.getInt("mac_id"));
+                    return gl;
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public boolean delete(GlKey key) {
         String sql = "delete from gl where gl_code = '" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "' and dept_id =" + key.getDeptId() + "";
         execSql(sql);
@@ -123,6 +160,13 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
             log.error(e.getMessage());
         }
         return list;
+    }
+
+    @Override
+    public boolean deleteJournal(String glVouNo, String compCode) {
+        String sql = "delete from gl where gl_vou_no ='" + glVouNo + "' and comp_code ='" + compCode + "'";
+        execSql(sql);
+        return true;
     }
 
     @Override

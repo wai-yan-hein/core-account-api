@@ -59,10 +59,6 @@ public class GlLog {
     private String tranSource;
     @Column(name = "gl_vou_no")
     private String glVouNo; //For general voucher system id
-    @Column(name = "split_id")
-    private Integer splitId;
-    @Column(name = "intg_upd_status")
-    private String intgUpdStatus; //For integration update status
     @Column(name = "remark")
     private String remark;
     @Column(name = "mac_id")

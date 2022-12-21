@@ -2,7 +2,6 @@ package core.acc.api.controller;
 
 import core.acc.api.common.Util1;
 import core.acc.api.entity.COAOpening;
-import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
@@ -70,10 +69,6 @@ public class ReportController {
                 }
                 case "Income&ExpenditureSummary" -> {
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, false, macId);
-                    Util1.writeJsonFile(data, exportPath);
-                }
-                case "IndividualLedger" -> {
-                    List<Gl> data = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "Profit&LossDetail" -> {

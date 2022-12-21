@@ -3,6 +3,7 @@ package core.acc.api.controller;
 import core.acc.api.cloud.CloudMQSender;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
+import core.acc.api.model.DeleteObj;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
 import core.acc.api.service.*;
@@ -140,8 +141,9 @@ public class AccountController {
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         Integer macId = filter.getMacId();
+        boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, macId);
+        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, summary, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
@@ -197,9 +199,13 @@ public class AccountController {
     }
 
     @PostMapping(path = "/delete-gl")
-    public ResponseEntity<Boolean> deleteGL(@RequestBody GlKey key) {
+    public ResponseEntity<Boolean> deleteGL(@RequestBody DeleteObj obj) {
+        GlKey key = new GlKey();
+        key.setGlCode(obj.getGlCode());
+        key.setCompCode(obj.getCompCode());
+        key.setDeptId(obj.getDeptId());
         if (cloudMQSender != null) cloudMQSender.delete(key);
-        return ResponseEntity.ok(glService.delete(key));
+        return ResponseEntity.ok(glService.delete(key, obj.getModifyBy()));
     }
 
     //Trader
@@ -270,6 +276,11 @@ public class AccountController {
     @GetMapping(path = "/get-journal")
     public ResponseEntity<?> getJournal(@RequestParam String glVouNo, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getJournal(glVouNo, compCode));
+    }
+
+    @PostMapping(path = "/delete-journal")
+    public ResponseEntity<?> getJournal(@RequestBody DeleteObj obj) {
+        return ResponseEntity.ok(glService.deleteJournal(obj.getGlVouNo(), obj.getCompCode(), obj.getModifyBy()));
     }
 
     @PostMapping(path = "/save-stock-op")

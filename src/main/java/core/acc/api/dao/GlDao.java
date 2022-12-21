@@ -13,6 +13,8 @@ public interface GlDao {
 
     Gl findByCode(GlKey key);
 
+    Gl findWithSql(GlKey key);
+
     boolean delete(GlKey key);
 
     void deleteGl(String vouNo, String tranSource);
@@ -22,6 +24,7 @@ public interface GlDao {
     List<VRef> getReference(String str, String compCode);
 
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+    boolean deleteJournal(String glVouNo,String compCode);
 
     List<Gl> getJournal(String glVouNo, String compCode);
     List<Gl> getTranSource(String compCode);

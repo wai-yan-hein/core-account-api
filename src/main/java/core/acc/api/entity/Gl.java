@@ -73,6 +73,9 @@ public class Gl {
     private String accName;
     @Transient
     private String vouDate;
+    @Transient
+    private boolean edit;
+
 
     public Gl(Date modifyDate, String deptCode) {
         this.modifyDate = modifyDate;
