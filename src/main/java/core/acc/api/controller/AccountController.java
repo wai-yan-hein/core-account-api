@@ -35,6 +35,8 @@ public class AccountController {
     private CurrencyService currencyService;
     @Autowired
     private ReportService reportService;
+    @Autowired
+    private StockOPService stockOPService;
     @Autowired(required = false)
     private CloudMQSender cloudMQSender;
 
@@ -269,4 +271,27 @@ public class AccountController {
     public ResponseEntity<?> getJournal(@RequestParam String glVouNo, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getJournal(glVouNo, compCode));
     }
+
+    @PostMapping(path = "/save-stock-op")
+    public ResponseEntity<?> saveStockOP(@RequestBody StockOP op) {
+        return ResponseEntity.ok(stockOPService.save(op));
+    }
+
+    @PostMapping(path = "/delete-stock-op")
+    public ResponseEntity<?> deleteStockOP(@RequestBody StockOPKey key) {
+        stockOPService.delete(key);
+        return ResponseEntity.ok(true);
+    }
+
+    @PostMapping(path = "/search-stock-op")
+    public ResponseEntity<?> searchStockOp(@RequestBody ReportFilter filter) {
+        String fromDate = Util1.isNull(filter.getFromDate(), "-");
+        String toDate = Util1.isNull(filter.getToDate(), "-");
+        String compCode = Util1.isNull(filter.getCompCode(), "-");
+        String curCode = Util1.isNull(filter.getCurCode(), "-");
+        String deptCode = Util1.isNull(filter.getDeptCode(), "-");
+        return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, compCode));
+    }
+
+
 }
