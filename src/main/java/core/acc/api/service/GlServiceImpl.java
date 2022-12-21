@@ -39,7 +39,7 @@ public class GlServiceImpl implements GlService {
                 throw new IllegalStateException("Duplication Occur in Gl");
             }
         } else {
-            backupGl(findByCode(gl.getKey()), false);
+            //backupGl(findByCode(gl.getKey()), false);
         }
         if (gl.getDelList() != null) {
             for (String code : gl.getDelList()) {
@@ -47,7 +47,7 @@ public class GlServiceImpl implements GlService {
                 key.setCompCode(gl.getKey().getCompCode());
                 key.setGlCode(code);
                 Gl gv = findByCode(key);
-                backupGl(gv, true);
+                //backupGl(gv, true);
                 glDao.delete(key);
             }
         }
@@ -160,7 +160,7 @@ public class GlServiceImpl implements GlService {
     }
 
     private void backupGl(Gl gl, boolean del) {
-        if (gl != null) {
+       /* if (gl != null) {
             Integer deptId = gl.getKey().getDeptId();
             String compCode = gl.getKey().getCompCode();
             Integer macId = gl.getMacId();
@@ -193,7 +193,7 @@ public class GlServiceImpl implements GlService {
             l.setLogStatus(del ? "DEL-" + type : "EDIT-" + type);
             l.setLogUser(gl.getModifyBy());
             logDao.save(l);
-        }
+        }*/
     }
 
     private String getGLCode(Integer deptId, Integer macId, String compCode) {
