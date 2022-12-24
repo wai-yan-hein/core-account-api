@@ -50,13 +50,11 @@ public class CloudMQSender {
     @Autowired
     private JmsTemplate cloudMQTemplate;
     @Autowired
-    private JmsTemplate topicSender;
-    @Autowired
     private UserRepo userRepo;
     private final HashMap<String, String> hmQueue = new HashMap<>();
 
     //service
-    private boolean client =false;
+    private boolean client = false;
     private String serverQ;
     private boolean progress = false;
 
@@ -96,16 +94,20 @@ public class CloudMQSender {
     }
 
     private void saveMessage(String entity, String data, String queue) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "SAVE");
-            mm.setString("DATA", data);
-            return mm;
-        };
-        if (queue != null) {
-            cloudMQTemplate.send(queue, mc);
+        try {
+            MessageCreator mc = (Session session) -> {
+                MapMessage mm = session.createMapMessage();
+                mm.setString("SENDER_QUEUE", listenQ);
+                mm.setString("ENTITY", entity);
+                mm.setString("OPTION", "SAVE");
+                mm.setString("DATA", data);
+                return mm;
+            };
+            if (queue != null) {
+                cloudMQTemplate.send(queue, mc);
+            }
+        } catch (Exception e) {
+            log.error(String.format("saveMessage : %s : %s", entity, e.getMessage()));
         }
     }
 
@@ -126,52 +128,29 @@ public class CloudMQSender {
                 cloudMQTemplate.send(queue, mc);
             }
         } catch (IOException e) {
-            log.error("File Message : " + e.getMessage());
+            log.error(String.format("uploadFile : %s : %s", option, e.getMessage()));
         }
 
     }
 
     private void deleteMessage(String entity, String data, String queue) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "DELETE");
-            mm.setString("DATA", data);
-            return mm;
-        };
-        if (queue != null) {
-            cloudMQTemplate.send(queue, mc);
+        try {
+            MessageCreator mc = (Session session) -> {
+                MapMessage mm = session.createMapMessage();
+                mm.setString("SENDER_QUEUE", listenQ);
+                mm.setString("ENTITY", entity);
+                mm.setString("OPTION", "DELETE");
+                mm.setString("DATA", data);
+                return mm;
+            };
+            if (queue != null) {
+                cloudMQTemplate.send(queue, mc);
+            }
+        } catch (Exception e) {
+            log.error(String.format("deleteMessage : %s : %s", entity, e.getMessage()));
         }
     }
 
-    private void truncateMessage(String entity, String data, String queue) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "TRUNCATE");
-            mm.setString("DATA", data);
-            return mm;
-        };
-        if (queue != null) {
-            cloudMQTemplate.send(queue, mc);
-        }
-    }
-
-    private void restoreMessage(String entity, String data, String queue) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "RESTORE");
-            mm.setString("DATA", data);
-            return mm;
-        };
-        if (queue != null) {
-            cloudMQTemplate.send(queue, mc);
-        }
-    }
 
     private void destroyQ(String queue) {
         try {
@@ -191,45 +170,22 @@ public class CloudMQSender {
         }
     }
 
-    private void sendTopicMessage(String entity, String data) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "SETUP");
-            mm.setString("DATA", data);
-            return mm;
-        };
-        if (topicSender != null) {
-            topicSender.send(mc);
-        }
-    }
-
-    private void requestSetup(String entity, String date) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", entity);
-            mm.setString("OPTION", "REQUEST_SETUP");
-            mm.setString("DATA", date);
-            return mm;
-        };
-        if (serverQ != null) {
-            cloudMQTemplate.send(serverQ, mc);
-        }
-    }
 
     private void requestFile(String option, String date) {
-        MessageCreator mc = (Session session) -> {
-            MapMessage mm = session.createMapMessage();
-            mm.setString("SENDER_QUEUE", listenQ);
-            mm.setString("ENTITY", "FILE");
-            mm.setString("OPTION", option);
-            mm.setString("DATA", date);
-            return mm;
-        };
-        if (serverQ != null) {
-            cloudMQTemplate.send(serverQ, mc);
+        try {
+            MessageCreator mc = (Session session) -> {
+                MapMessage mm = session.createMapMessage();
+                mm.setString("SENDER_QUEUE", listenQ);
+                mm.setString("ENTITY", "FILE");
+                mm.setString("OPTION", option);
+                mm.setString("DATA", date);
+                return mm;
+            };
+            if (serverQ != null) {
+                cloudMQTemplate.send(serverQ, mc);
+            }
+        } catch (Exception e) {
+            log.error(String.format("requestFile : %s : %s", option, e.getMessage()));
         }
     }
 

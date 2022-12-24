@@ -129,7 +129,7 @@ public class CloudMQReceiver {
                         }
                         case "RECEIVE" -> {
                             update(obj);
-                            log.info("gl transaction successfully delivered to server : " + obj.getKey().getGlCode());
+                            log.info("gl transaction successfully delivered to " + senderQ + " : " + obj.getKey().getGlCode());
                         }
                         case "DELETE" -> glService.delete(obj.getKey());
 
