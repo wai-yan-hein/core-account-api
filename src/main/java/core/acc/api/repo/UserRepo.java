@@ -1,6 +1,5 @@
 package core.acc.api.repo;
 
-import core.acc.api.entity.Department;
 import core.acc.api.model.DepartmentUser;
 import core.acc.api.model.PropertyKey;
 import core.acc.api.model.SystemProperty;
@@ -42,11 +41,15 @@ public class UserRepo {
     }
     public List<DepartmentUser> getDepartment() {
         if (listDept == null) {
-            Mono<ResponseEntity<List<DepartmentUser>>> result = userApi.get()
-                    .uri(builder -> builder.path("/user/get-department")
-                            .build())
-                    .retrieve().toEntityList(DepartmentUser.class);
-            listDept = Objects.requireNonNull(result.block(Duration.ofMinutes(min))).getBody();
+            try {
+                Mono<ResponseEntity<List<DepartmentUser>>> result = userApi.get()
+                        .uri(builder -> builder.path("/user/get-department")
+                                .build())
+                        .retrieve().toEntityList(DepartmentUser.class);
+                listDept = Objects.requireNonNull(result.block(Duration.ofMinutes(min))).getBody();
+            } catch (Exception e) {
+                log.error("getDepartment : " + e.getMessage());
+            }
         }
         return listDept;
     }
@@ -63,19 +66,23 @@ public class UserRepo {
     }
     public String getProperty(String key) {
         if (hmKey.isEmpty()) {
-            Mono<ResponseEntity<List<SystemProperty>>> result = userApi.get()
-                    .uri(builder -> builder.path("/user/get-system-property")
-                            .queryParam("compCode", "-")
-                            .build())
-                    .retrieve().toEntityList(SystemProperty.class);
-            ResponseEntity<List<SystemProperty>> block = result.block();
-            if (block != null) {
-                List<SystemProperty> list = block.getBody();
-                if (list != null) {
-                    for (SystemProperty s : list) {
-                        hmKey.put(s.getKey().getPropKey(), s.getPropValue());
+            try {
+                Mono<ResponseEntity<List<SystemProperty>>> result = userApi.get()
+                        .uri(builder -> builder.path("/user/get-system-property")
+                                .queryParam("compCode", "-")
+                                .build())
+                        .retrieve().toEntityList(SystemProperty.class);
+                ResponseEntity<List<SystemProperty>> block = result.block(Duration.ofMinutes(1));
+                if (block != null) {
+                    List<SystemProperty> list = block.getBody();
+                    if (list != null) {
+                        for (SystemProperty s : list) {
+                            hmKey.put(s.getKey().getPropKey(), s.getPropValue());
+                        }
                     }
                 }
+            } catch (Exception e) {
+                log.error("getProperty : " + e.getMessage());
             }
         }
         return hmKey.get(key);

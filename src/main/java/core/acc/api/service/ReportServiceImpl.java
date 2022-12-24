@@ -245,7 +245,7 @@ public class ReportServiceImpl implements ReportService {
         List<Financial> list = new ArrayList<>();
         //income,purchase,other income,expense
         if (!plProcess.equals("-")) {
-            String sql = "";
+            String sql;
             String[] process = plProcess.split(",");
             for (int i = 0; i < process.length; i++) {
                 int index = i + 1;
@@ -475,20 +475,27 @@ public class ReportServiceImpl implements ReportService {
 
     private List<Financial> getInvClosingDetail(String enDate, String invGroup, String compCode, Integer macId) {
         List<Financial> list = new ArrayList<>();
-        String sql = "select op.coa_code,coa.coa_name_eng,sum(amount*ifnull(tmp.ex_rate,1))*-1 amount\n" +
-                "from stock_op_value op join chart_of_account coa\n" +
-                "on op.coa_code = coa.coa_code\n" +
-                "left join tmp_ex_rate tmp\n" +
-                "on op.curr_code = tmp.ex_cur\n" +
-                "and op.comp_code = tmp.comp_code\n" +
-                "and tmp.mac_id = " + macId + "\n" +
-                "and op.comp_code = coa.comp_code\n" +
+        String coaFilter = "select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "'";
+        String filter = "and comp_code ='" + compCode + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
+        String sql = "select a.coa_code,coa.coa_name_eng,sum(a.amount*ifnull(tmp.ex_rate,1))*-1 amount\n" +
+                "from(\n" +
+                "select coa_code,curr_code,comp_code,sum(amount) amount\n" +
+                "from stock_op_value\n" +
                 "where date(tran_date)='" + enDate + "'\n" +
-                "and op.comp_code ='" + compCode + "'\n" +
-                "and op.deleted =0\n" +
-                "and op.coa_code in (select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "')\n" +
-                "and op.dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "group by op.coa_code\n";
+                "and deleted =0\n" +
+                "and coa_code in (" + coaFilter + ")\n" +
+                "" + filter + "\n" +
+                "group by coa_code\n" +
+                ")a\n" +
+                "join chart_of_account coa\n" +
+                "on a.coa_code = coa.coa_code\n" +
+                "left join tmp_ex_rate tmp\n" +
+                "on a.curr_code = tmp.ex_cur\n" +
+                "and a.comp_code = tmp.comp_code\n" +
+                "and tmp.mac_id = " + macId + "\n" +
+                "and a.comp_code = coa.comp_code\n" +
+                "group by a.coa_code";
         try {
             ResultSet rs = dao.executeSql(sql);
             if (rs != null) {
@@ -507,6 +514,31 @@ public class ReportServiceImpl implements ReportService {
             log.error(e.getMessage());
         }
         return list;
+    }
+
+    private double getInvJournalAmt(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
+        String sql = "select sum(amount*ifnull(tmp.ex_rate,1))*-1 amount\n" +
+                "from (\n" +
+                "select cur_code,comp_code,sum(dr_amt)-sum(cr_amt) amount\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
+                "and source_ac_id  in (select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "')\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "group by source_ac_id,cur_code\n" +
+                ")a\n" +
+                "left join tmp_ex_rate tmp\n" +
+                "on a.cur_code = tmp.ex_cur\n" +
+                "and a.comp_code = tmp.comp_code\n" +
+                "and tmp.mac_id = " + macId + "";
+        ResultSet rs = dao.executeSql(sql);
+        try {
+            if (rs.next()) {
+                return rs.getDouble("amount");
+            }
+        } catch (Exception e) {
+            log.error("getInvJournalAmt : " + e.getMessage());
+        }
+        return 0;
     }
 
 
@@ -532,7 +564,7 @@ public class ReportServiceImpl implements ReportService {
         } else if (!coaLv2.equals("-")) {
             coaFilter = "select coa_code from chart_of_account where coa_parent ='" + coaLv2 + "' and comp_code='" + compCode + "'";
         }
-        StringBuilder str = new StringBuilder("");
+        StringBuilder str = new StringBuilder();
         if (!plProcess.equals("-")) {
             String[] data = plProcess.split(",");
             for (String coa : data) {
