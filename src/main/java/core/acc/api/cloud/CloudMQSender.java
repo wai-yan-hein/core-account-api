@@ -47,9 +47,9 @@ public class CloudMQSender {
     private COAService coaService;
     @Autowired
     private DepartmentService departmentService;
-    @Autowired
+    @Autowired(required = false)
     private JmsTemplate cloudMQTemplate;
-    @Autowired
+    @Autowired(required = false)
     private JmsTemplate topicSender;
     @Autowired
     private UserRepo userRepo;
@@ -83,14 +83,16 @@ public class CloudMQSender {
 
     private void initQueue() {
         List<DepartmentUser> listDep = userRepo.getDepartment();
-        HashMap<Integer, String> hmDep = new HashMap<>();
-        listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getAccountQ()));
-        List<Department> list = departmentService.findAll();
-        if (!list.isEmpty()) {
-            for (Department l : list) {
-                String deptCode = l.getKey().getDeptCode();
-                Integer deptId = l.getMapDeptId();
-                hmQueue.put(deptCode, hmDep.get(deptId));
+        if (listDep != null) {
+            HashMap<Integer, String> hmDep = new HashMap<>();
+            listDep.forEach(d -> hmDep.put(d.getDeptId(), d.getAccountQ()));
+            List<Department> list = departmentService.findAll();
+            if (!list.isEmpty()) {
+                for (Department l : list) {
+                    String deptCode = l.getKey().getDeptCode();
+                    Integer deptId = l.getMapDeptId();
+                    hmQueue.put(deptCode, hmDep.get(deptId));
+                }
             }
         }
     }
