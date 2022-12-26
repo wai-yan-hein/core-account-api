@@ -78,7 +78,6 @@ public class ReportController {
                 case "Profit&LossSummary" -> {
                     List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, false, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
-
                 }
                 case "BalanceSheetDetail" -> {
                     List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, plProcess, bsProcess, true, compCode, macId);

@@ -217,6 +217,7 @@ public class CloudMQReceiver {
                                 log.info("gl list size :" + list.size() + " from " + senderQ);
                                 list.forEach(gl -> {
                                     try {
+                                        gl.setIntgUpdStatus(SAVE);
                                         save(gl);
                                         Gl obj = new Gl();
                                         obj.setKey(gl.getKey());
@@ -312,8 +313,7 @@ public class CloudMQReceiver {
             if (vouNo != null) {
                 glService.deleteGl(vouNo, gl.getTranSource());
             }
-            gl.setIntgUpdStatus(REC);
-            glService.save(gl);
+            glService.save(gl, false);
         } catch (Exception e) {
             log.error("save Gl : " + e.getMessage());
         }

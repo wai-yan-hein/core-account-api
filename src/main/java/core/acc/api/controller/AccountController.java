@@ -187,7 +187,7 @@ public class AccountController {
 
     @PostMapping(path = "/save-gl")
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
-        gl = glService.save(gl);
+        gl = glService.save(gl,true);
         //sent to cloud
         if (cloudMQSender != null) cloudMQSender.send(gl);
         return ResponseEntity.ok(gl);

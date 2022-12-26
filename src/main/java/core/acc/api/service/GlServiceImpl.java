@@ -24,7 +24,7 @@ public class GlServiceImpl implements GlService {
     private SeqTableService seqService;
 
     @Override
-    public Gl save(Gl gl) throws Exception {
+    public Gl save(Gl gl, boolean backup) throws Exception {
         String updatedBy = gl.getModifyBy();
         if (Util1.isNull(gl.getKey().getGlCode())) {
             Integer macId = gl.getMacId();
@@ -39,7 +39,7 @@ public class GlServiceImpl implements GlService {
                 throw new IllegalStateException("Duplication Occur in Gl");
             }
         } else {
-            if (!gl.getTranSource().equals("GV")) backupGl(gl.getKey(), updatedBy, false);
+            if (backup) backupGl(gl.getKey(), updatedBy, false);
         }
         if (gl.getDelList() != null) {
             for (String code : gl.getDelList()) {
@@ -84,7 +84,7 @@ public class GlServiceImpl implements GlService {
                         double amt = Util1.getDouble(gl.getDrAmt()) + Util1.getDouble(gl.getCrAmt());
                         if (amt > 0) {
                             gl.setGlVouNo(glVouNo);
-                            save(gl);
+                            save(gl, false);
                         }
                     }
                 }

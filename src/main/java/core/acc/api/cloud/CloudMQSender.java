@@ -105,6 +105,7 @@ public class CloudMQSender {
             };
             if (queue != null) {
                 cloudMQTemplate.send(queue, mc);
+                log.info(entity + " sent to " + queue);
             }
         } catch (Exception e) {
             log.error(String.format("saveMessage : %s : %s", entity, e.getMessage()));
