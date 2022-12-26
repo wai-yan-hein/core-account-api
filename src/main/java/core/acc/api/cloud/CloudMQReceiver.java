@@ -313,7 +313,7 @@ public class CloudMQReceiver {
             if (vouNo != null) {
                 glService.deleteGl(vouNo, gl.getTranSource());
             }
-            glService.save(gl);
+            glService.save(gl, false);
         } catch (Exception e) {
             log.error("save Gl : " + e.getMessage());
         }
