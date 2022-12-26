@@ -6,6 +6,8 @@ package core.acc.api.common;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.myanmartools.TransliterateZ2U;
+import com.google.myanmartools.ZawgyiDetector;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 
@@ -28,6 +30,7 @@ import java.util.HashMap;
 @Slf4j
 public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
+    private static final DecimalFormat df0 = new DecimalFormat("0");
     public static String SYNC_DATE;
     public static final Gson gson = new GsonBuilder()
             .setDateFormat(DateFormat.FULL, DateFormat.FULL)
@@ -302,6 +305,16 @@ public class Util1 {
     }
     public static Date getOldDate() {
         return Util1.toDate("1998-10-07");
+    }
+    public static boolean isZGText(String str) {
+        ZawgyiDetector zd = new ZawgyiDetector();
+        Double score = zd.getZawgyiProbability(str);
+        return getBoolean(df0.format(score));
+    }
+
+    public static String convertToUniCode(String str) {
+        TransliterateZ2U z2U = new TransliterateZ2U("Zawgyi to Unicode");
+        return z2U.convert(str);
     }
 
 }

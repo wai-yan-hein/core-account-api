@@ -47,6 +47,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
+    public ResultSet getResult(String sql) {
+        return dao.executeSql(sql);
+    }
+
+
+    @Override
     public String getOpeningDate(String compCode) {
         String opDate = null;
         String sql = "select max(op_date) op_date from coa_opening where comp_code ='" + compCode + "'";

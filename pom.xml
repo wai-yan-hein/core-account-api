@@ -75,6 +75,11 @@
 			<artifactId>zip4j</artifactId>
 			<version>2.11.2</version>
 		</dependency>
+		<dependency>
+			<groupId>com.google.myanmartools</groupId>
+			<artifactId>myanmar-tools</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -8,23 +8,26 @@ import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
 import core.acc.api.model.TraderBalance;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 public interface ReportService {
     void insertTmp(List<String> listStr, Integer macId, String taleName);
 
+    ResultSet getResult(String sql);
+
     String getOpeningDate(String compCode);
 
     List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
                                 String acc, String curCode, String reference,
                                 String compCode, String tranSource, String traderCode, String traderType,
-                                String coaLv2, String coaLv1,boolean summary, Integer macId) throws SQLException;
+                                String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException;
 
     List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate, String invGroup,
                                   boolean detail, String compCode, Integer macId);
 
-    double getProfit(String opDate, String stDate, String enDate, String invGroup,String plProcess, String compCode, Integer macId);
+    double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess, String compCode, Integer macId);
 
     List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,
                                     boolean detail, double prvProfit, double curProfit, String compCode, Integer macId);
@@ -47,7 +50,9 @@ public interface ReportService {
     double getTraderLastBalance(String date, String traderCode, String compCode);
 
     ReturnObject getReportResult(Integer macId);
+
     List<TraderBalance> getTraderBalance(String traderCode, String accCode,
                                          String curCode, String fromDate, String toDate, String compCode, Integer macId);
-    List<COAOpening> getOpeningTri(String opDate,String deptCode,String curCode,String compCode);
+
+    List<COAOpening> getOpeningTri(String opDate, String deptCode, String curCode, String compCode);
 }

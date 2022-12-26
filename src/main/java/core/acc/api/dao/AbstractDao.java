@@ -81,7 +81,8 @@ public abstract class AbstractDao<PK extends Serializable, T> {
         rs = null;
         Work work = (Connection con) -> {
             try {
-                PreparedStatement stmt = con.prepareStatement(strSql);
+                PreparedStatement stmt = con.prepareStatement(strSql, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                        ResultSet.CONCUR_UPDATABLE);
                 rs = stmt.executeQuery();
             } catch (SQLException ex) {
                 throw new IllegalStateException(ex.getMessage());

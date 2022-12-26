@@ -38,6 +38,8 @@ public class AccountController {
     private ReportService reportService;
     @Autowired
     private StockOPService stockOPService;
+    @Autowired
+    private ConverterService converterService;
     @Autowired(required = false)
     private CloudMQSender cloudMQSender;
 
@@ -302,6 +304,12 @@ public class AccountController {
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, compCode));
+    }
+
+    @GetMapping(path = "/convert-to-unicode")
+    public ResponseEntity<?> convertToUniCode() {
+        converterService.convertToUnicode();
+        return ResponseEntity.ok("converted.");
     }
 
 
