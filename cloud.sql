@@ -16,7 +16,10 @@ add column dept_id int not null default 1 after comp_code,
 add column tran_code varchar(15) not null first,
 add column deleted bit(1) not null default 0 after updated_date,
 change column comp_code comp_code varchar(15) not null after tran_code,
-change column tran_date tran_date date not null ,
+change column tran_date tran_date date not null;
+
+
+alter table stock_op_value
 drop primary key,
 add primary key (tran_code, comp_code, dept_id);
 

@@ -258,15 +258,15 @@ public class ReportServiceImpl implements ReportService {
                 //opening
                 if (index == 2) {
                     List<Financial> listOP = getInvOpeningDetail(opDate, stDate, invGroup, compCode, macId);
-                    List<Financial> listJournal = getInvJournal(stDate,enDate,invGroup,compCode,macId);
+                    //List<Financial> listJournal = getInvJournal(stDate,enDate,invGroup,compCode,macId);
                     list.addAll(listOP);
-                    list.addAll(listJournal);
+                    //list.addAll(listJournal);
                     for (Financial f : listOP) {
                         ttlOpInv += f.getAmount();
                     }
-                    for (Financial f : listJournal) {
-                        ttlOpInv += f.getAmount();
-                    }
+                    //for (Financial f : listJournal) {
+                    // ttlOpInv += f.getAmount();
+                    //}
                 }
                 String head = process[i];
                 sql = detail ? getHeadSqlDetail(head, macId) : getHeadSqlSummary(head, macId);
@@ -312,11 +312,12 @@ public class ReportServiceImpl implements ReportService {
                 }
                 //closing
                 if (index == 2) {
-                    List<Financial> listCL = getInvClosingDetail(stDate, enDate, invGroup, compCode, macId);
-                    list.addAll(listCL);
+                    List<Financial> listCL = getInvClosing(stDate, enDate, invGroup, compCode, macId, detail);
                     for (Financial f : listCL) {
+                        f.setAmount(f.getAmount() * -1);
                         ttlClInv += f.getAmount();
                     }
+                    list.addAll(listCL);
                 }
             }
             if (!list.isEmpty()) {
@@ -348,11 +349,9 @@ public class ReportServiceImpl implements ReportService {
         AtomicReference<Double> opAmt = new AtomicReference<>(0.0);
         AtomicReference<Double> clAmt = new AtomicReference<>(0.0);
         List<Financial> opList = getInvOpeningDetail(opDate, stDate, invGroup, compCode, macId);
-        List<Financial> jList =getInvJournal(stDate,enDate,invGroup,compCode,macId);
         opList.forEach(op -> opAmt.updateAndGet(v -> v + op.getAmount()));
-        jList.forEach(op -> opAmt.updateAndGet(v -> v + op.getAmount()));
-        List<Financial> clList = getInvClosingDetail(stDate, enDate, invGroup, compCode, macId);
-        clList.forEach(op -> clAmt.updateAndGet(v -> v + op.getAmount()));
+        List<Financial> clList = getInvClosing(stDate, enDate, invGroup, compCode, macId, false);
+        clList.forEach(op -> clAmt.updateAndGet(v -> v + op.getAmount() * -1));
         double amt = opAmt.get() + clAmt.get();
         String sql = "select sum(dr_amt)-sum(cr_amt)+" + amt + " profit\n" +
                 "from tmp_tri \n" +
@@ -425,11 +424,21 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void updateInvClosing(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
-        List<Financial> list = getInvClosingDetail(stDate, enDate, invGroup, compCode, macId);
+        List<Financial> list = getInvClosing(stDate, enDate, invGroup, compCode, macId, false);
         list.forEach(f -> {
-            double amt = f.getAmount()*-1;
+            double amt = f.getAmount();
             String sql = "update tmp_tri\n" +
                     "set dr_amt = " + amt + "\n" +
+                    "where mac_id =" + macId + "\n" +
+                    "and comp_code ='" + compCode + "'\n" +
+                    "and coa_code ='" + f.getCoaCode() + "'";
+            dao.exeSql(sql);
+        });
+        List<Financial> list1 = getInvJournal(stDate, enDate, invGroup, compCode, macId);
+        list1.forEach(f -> {
+            double amt = f.getAmount()*-1;
+            String sql = "update tmp_tri\n" +
+                    "set cr_amt = " + amt + "\n" +
                     "where mac_id =" + macId + "\n" +
                     "and comp_code ='" + compCode + "'\n" +
                     "and coa_code ='" + f.getCoaCode() + "'";
@@ -494,7 +503,7 @@ public class ReportServiceImpl implements ReportService {
 
     private List<Financial> getInvJournal(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
         List<Financial> list = new ArrayList<>();
-        String sql = "select coa.coa_name_eng,sum(amount)*ifnull(tmp.ex_rate,1) amount\n" +
+        String sql = "select source_ac_id,coa.coa_name_eng,sum(amount)*ifnull(tmp.ex_rate,1) amount\n" +
                 "from(\n" +
                 "select source_ac_id,cur_code,comp_code,sum(dr_amt)-sum(cr_amt) amount\n" +
                 "from gl \n" +
@@ -509,33 +518,37 @@ public class ReportServiceImpl implements ReportService {
                 "on a.cur_code = tmp.ex_cur\n" +
                 "and a.comp_code = tmp.comp_code\n" +
                 "and tmp.mac_id =" + macId + "\n" +
-                "group by source_ac_id\n";
+                "\n";
         try {
             ResultSet rs = dao.executeSql(sql);
             if (rs != null) {
                 while (rs.next()) {
                     Financial f = new Financial();
+                    f.setCoaCode(rs.getString("source_ac_id"));
                     f.setCoaName(rs.getString("coa_name_eng"));
-                    f.setAmount(rs.getDouble("amount")*-1);
+                    f.setAmount(rs.getDouble("amount"));
                     f.setHeadName(COS);
-                    f.setGroupName(OP_INV);
+                    f.setGroupName(CL_INV);
                     f.setTranGroup(GP);
-                    f.setOrder("1");
-                    list.add(f);
+                    if (f.getAmount() != 0) list.add(f);
                 }
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("getInvJournal : " + e.getMessage());
         }
         return list;
     }
 
-    private List<Financial> getInvClosingDetail(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
+    private List<Financial> getInvClosing(String stDate, String enDate, String invGroup, String compCode, Integer macId, boolean detail) {
         List<Financial> list = new ArrayList<>();
+        String groupBy = "group by a.coa_code";
+        if (!detail) {
+            groupBy = "";
+        }
         String coaFilter = "select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "'";
         String filter = "and comp_code ='" + compCode + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
-        String sql = "select a.coa_code,coa.coa_name_eng,sum(a.amount*ifnull(tmp.ex_rate,1))*-1 amount\n" +
+        String sql = "select a.coa_code,coa.coa_name_eng,sum(a.amount*ifnull(tmp.ex_rate,1)) amount\n" +
                 "from(\n" +
                 "select coa_code,curr_code,comp_code,sum(amount) amount\n" +
                 "from stock_op_value\n" +
@@ -544,12 +557,17 @@ public class ReportServiceImpl implements ReportService {
                 "and coa_code in (" + coaFilter + ")\n" +
                 "" + filter + "\n" +
                 "group by coa_code\n" +
-                //"\tunion all\n" +
-                //"select source_ac_id,cur_code,comp_code,sum(dr_amt)-sum(cr_amt)*-1 amount\n" +
-                //"from gl \n" +
-                //"where date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
-                //"and source_ac_id  in (" + coaFilter + ")\n" +
-                //"" + filter + "\n" +
+                "\tunion all\n" +
+                "select source_ac_id,cur_code,comp_code,amount\n" +
+                "from(\n" +
+                "select source_ac_id,cur_code,comp_code,sum(cr_amt)-sum(dr_amt) amount\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
+                "and source_ac_id  in (" + coaFilter + ")\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                ")b\n" +
+                "where b.amount<>0" +
                 ")a\n" +
                 "join chart_of_account coa\n" +
                 "on a.coa_code = coa.coa_code\n" +
@@ -558,7 +576,7 @@ public class ReportServiceImpl implements ReportService {
                 "and a.comp_code = tmp.comp_code\n" +
                 "and tmp.mac_id = " + macId + "\n" +
                 "and a.comp_code = coa.comp_code\n" +
-                "group by a.coa_code";
+                "" + groupBy + "";
         try {
             ResultSet rs = dao.executeSql(sql);
             if (rs != null) {
@@ -1004,7 +1022,7 @@ public class ReportServiceImpl implements ReportService {
                 "and coa2.comp_code = coa3.comp_code\n" +
                 "where tmp.mac_id =" + macId + "\n" +
                 "and coa2.coa_parent='" + head + "'\n" +
-                "and (dr_amt>0 or cr_amt>0)\n" +
+                "and (dr_amt<>0 or cr_amt<>0)\n" +
                 "order by coa3.coa_code_usr,coa2.coa_code_usr,group_name,coa3.coa_code_usr,amount desc";
     }
 
@@ -1022,7 +1040,7 @@ public class ReportServiceImpl implements ReportService {
                 "and coa2.comp_code = coa3.comp_code\n" +
                 "where tmp.mac_id =" + macId + "\n" +
                 "and coa2.coa_parent='" + head + "'\n" +
-                "and (tmp.dr_amt>0 or tmp.cr_amt>0)\n" +
+                "and (tmp.dr_amt<>0 or tmp.cr_amt<>0)\n" +
                 "group by group_name\n" +
                 "order by coa2.coa_code_usr,coa3.coa_code_usr,amount desc";
     }
