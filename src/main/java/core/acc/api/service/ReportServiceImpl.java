@@ -818,8 +818,6 @@ public class ReportServiceImpl implements ReportService {
     public List<Financial> getIncomeAndExpenditure(String process, boolean detail, Integer macId) {
         String[] in = process.split(",");
         List<Financial> list = new ArrayList<>();
-        String delSql = "delete from tmp_in_ex where mac_id = " + macId + "";
-        dao.exeSql(delSql);
         double ttlIncome = 0.0;
         double ttlExpense = 0.0;
         for (int i = 0; i < in.length; i++) {

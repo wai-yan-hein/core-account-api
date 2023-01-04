@@ -19,7 +19,7 @@ public class ConvertServiceImpl implements ConverterService {
     public void convertToUnicode() {
         convertCOA();
         convertTrader();
-        convertGl();
+        //convertGl();
     }
 
     private void convertCOA() {
@@ -30,9 +30,11 @@ public class ConvertServiceImpl implements ConverterService {
             if (rs != null) {
                 while (rs.next()) {
                     String description = rs.getString("coa_name_eng");
-                    if (Util1.isZGText(description)) {
-                        rs.updateString("coa_name_eng", Util1.convertToUniCode(description));
-                        rs.updateRow();
+                    if (!Util1.isNullOrEmpty(description)) {
+                        if (Util1.isZGText(description)) {
+                            rs.updateString("coa_name_eng", Util1.convertToUniCode(description));
+                            rs.updateRow();
+                        }
                     }
                 }
                 log.info("converted coa.");
