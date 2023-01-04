@@ -496,7 +496,7 @@ public class ReportServiceImpl implements ReportService {
                 }
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("getInvOpeningDetail :" + e.getMessage());
         }
         return list;
     }
@@ -592,7 +592,7 @@ public class ReportServiceImpl implements ReportService {
                 }
             }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("getInvClosing : "+e.getMessage());
         }
         return list;
     }
