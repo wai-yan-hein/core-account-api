@@ -274,6 +274,18 @@ public class AccountController {
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId));
     }
+    @PostMapping(path = "/search-voucher")
+    public ResponseEntity<?> searchVoucher(@RequestBody ReportFilter filter) {
+        Integer macId = filter.getMacId();
+        String fromDate = filter.getFromDate();
+        String toDate = filter.getToDate();
+        String vouNo = Util1.isNull(filter.getGlVouNo(), "-");
+        String description = Util1.isAll(filter.getDesp());
+        String reference = Util1.isAll(filter.getReference());
+        String compCode = filter.getCompCode();
+        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        return ResponseEntity.ok(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, compCode, macId));
+    }
 
     @GetMapping(path = "/get-journal")
     public ResponseEntity<?> getJournal(@RequestParam String glVouNo, @RequestParam String compCode) {

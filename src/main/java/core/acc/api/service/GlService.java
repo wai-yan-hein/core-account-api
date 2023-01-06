@@ -24,7 +24,10 @@ public interface GlService {
     List<VRef> getReference(String str, String compCode);
 
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
-    boolean deleteJournal(String glVouNo,String compCode,String modifyBy);
+
+    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+
+    boolean deleteJournal(String glVouNo, String compCode, String modifyBy);
 
     List<Gl> getJournal(String glVouNo, String compCode);
 

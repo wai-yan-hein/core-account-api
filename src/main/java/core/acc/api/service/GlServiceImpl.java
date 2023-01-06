@@ -67,10 +67,11 @@ public class GlServiceImpl implements GlService {
             if (tmp.isEdit()) {
                 backupGl(tmp.getKey(), tmp.getModifyBy(), false);
             }
-            if (tranSource.equals("GV")) {
-                if (Util1.isNullOrEmpty(glVouNo)) {
-                    glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode());
-                }
+            switch (tranSource) {
+                case "GV", "DR", "CR":
+                    if (Util1.isNullOrEmpty(glVouNo)) {
+                        glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
+                    }
             }
             glDao.deleteGl(vouNo, tranSource);
             if (!delete) {
@@ -125,6 +126,11 @@ public class GlServiceImpl implements GlService {
     @Override
     public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
         return glDao.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId);
+    }
+
+    @Override
+    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
+        return glDao.searchVoucher(fromDate, toDate, vouNo, description, reference, compCode, macId);
     }
 
     @Override
@@ -230,8 +236,7 @@ public class GlServiceImpl implements GlService {
         return "L-" + deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
     }
 
-    private String getVouNo(Integer deptId, Integer macId, String compCode) {
-        String type = "GV";
+    private String getVouNo(Integer deptId, Integer macId, String compCode, String type) {
         String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
         int seqNo = seqService.getSequence(macId, "GV", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";

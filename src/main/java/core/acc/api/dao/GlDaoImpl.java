@@ -163,6 +163,48 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
+        List<Gl> list = new ArrayList<>();
+        String filter = " (tran_source ='DR' or tran_source ='CR')\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
+        if (!vouNo.equals("-")) {
+            filter += "and gl_vou_no ='" + vouNo + "'\n";
+        }
+        if (!description.equals("-")) {
+            filter += "and description like '" + description + "%'\n";
+        }
+        if (!reference.equals("-")) {
+            filter += "and reference like '" + reference + "%'\n";
+        }
+        String sql = "select gl_date,description,reference,gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+                "from gl\n" +
+                "where " + filter + "" +
+                "group by gl_vou_no\n" +
+                "order by gl_date";
+        try {
+            ResultSet rs = getResultSet(sql);
+            if (rs != null) {
+                while (rs.next()) {
+                    Gl g = new Gl();
+                    g.setGlDate(rs.getDate("gl_date"));
+                    g.setDescription(rs.getString("description"));
+                    g.setReference(rs.getString("reference"));
+                    g.setGlVouNo(rs.getString("gl_vou_no"));
+                    g.setDrAmt(rs.getDouble("dr_amt"));
+                    g.setCrAmt(rs.getDouble("cr_amt"));
+                    g.setTranSource(rs.getString("tran_source"));
+                    list.add(g);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
     public boolean deleteJournal(String glVouNo, String compCode) {
         String sql = "delete from gl where gl_vou_no ='" + glVouNo + "' and comp_code ='" + compCode + "'";
         execSql(sql);
