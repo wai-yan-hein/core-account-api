@@ -24,11 +24,13 @@ public interface GlDao {
     List<VRef> getReference(String str, String compCode);
 
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
-    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference,String refNo, String compCode, Integer macId);
 
-    boolean deleteJournal(String glVouNo,String compCode);
+    boolean deleteVoucher(String glVouNo,String compCode);
 
     List<Gl> getJournal(String glVouNo, String compCode);
+    List<Gl> getVoucher(String glVouNo, String compCode);
+
     List<Gl> getTranSource(String compCode);
 
     List<Gl> unUpload(String syncDate);

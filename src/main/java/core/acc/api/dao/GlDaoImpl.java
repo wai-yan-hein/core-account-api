@@ -163,7 +163,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
+    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
         String filter = " (tran_source ='DR' or tran_source ='CR')\n" +
                 "and comp_code ='" + compCode + "'\n" +
@@ -178,7 +178,10 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!reference.equals("-")) {
             filter += "and reference like '" + reference + "%'\n";
         }
-        String sql = "select gl_date,description,reference,gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+        if (!refNo.equals("-")) {
+            filter += "and ref_no like '" + refNo + "%'\n";
+        }
+        String sql = "select gl_date,description,reference,ref_no,gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
                 "from gl\n" +
                 "where " + filter + "" +
                 "group by gl_vou_no\n" +
@@ -191,6 +194,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     g.setGlDate(rs.getDate("gl_date"));
                     g.setDescription(rs.getString("description"));
                     g.setReference(rs.getString("reference"));
+                    g.setRefNo(rs.getString("ref_no"));
                     g.setGlVouNo(rs.getString("gl_vou_no"));
                     g.setDrAmt(rs.getDouble("dr_amt"));
                     g.setCrAmt(rs.getDouble("cr_amt"));
@@ -205,7 +209,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public boolean deleteJournal(String glVouNo, String compCode) {
+    public boolean deleteVoucher(String glVouNo, String compCode) {
         String sql = "delete from gl where gl_vou_no ='" + glVouNo + "' and comp_code ='" + compCode + "'";
         execSql(sql);
         return true;
@@ -239,6 +243,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     key.setDeptId(rs.getInt("dept_id"));
                     g.setKey(key);
                     g.setGlDate(rs.getDate("gl_date"));
+                    g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
                     g.setDescription(rs.getString("description"));
                     g.setReference(rs.getString("reference"));
                     g.setGlVouNo(rs.getString("gl_vou_no"));
@@ -257,6 +262,60 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
             }
         } catch (Exception e) {
             log.error(e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
+    public List<Gl> getVoucher(String glVouNo, String compCode) {
+        List<Gl> list = new ArrayList<>();
+        String sql = "select g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" +
+                "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" +
+                "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
+                "d.usr_code d_user_code,coa.coa_name_eng\n" +
+                "from gl g\n" +
+                "join department d on g.dept_code = d.dept_code\n" +
+                "and g.comp_code = d.comp_code\n" +
+                "left join trader t on g.trader_code = t.code\n" +
+                "and g.comp_code = t.comp_code\n" +
+                "join chart_of_account coa on g.account_id = coa.coa_code\n" +
+                "and g.comp_code = coa.comp_code\n" +
+                "where g.comp_code ='" + compCode + "'\n" +
+                "and g.gl_vou_no ='" + glVouNo + "'\n" +
+                "and (g.tran_source ='DR' or g.tran_source='CR')\n" +
+                "order by g.gl_code";
+        try {
+            ResultSet rs = getResultSet(sql);
+            if (rs != null) {
+                while (rs.next()) {
+                    Gl g = new Gl();
+                    GlKey key = new GlKey();
+                    key.setGlCode(rs.getString("gl_code"));
+                    key.setCompCode(compCode);
+                    key.setDeptId(rs.getInt("dept_id"));
+                    g.setKey(key);
+                    g.setGlDate(rs.getDate("gl_date"));
+                    g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
+                    g.setDescription(rs.getString("description"));
+                    g.setReference(rs.getString("reference"));
+                    g.setRefNo(rs.getString("ref_no"));
+                    g.setGlVouNo(rs.getString("gl_vou_no"));
+                    g.setDrAmt(rs.getDouble("dr_amt"));
+                    g.setCrAmt(rs.getDouble("cr_amt"));
+                    g.setDeptCode(rs.getString("dept_code"));
+                    g.setDeptUsrCode(rs.getString("d_user_code"));
+                    g.setTraderCode(rs.getString("trader_code"));
+                    g.setTraderName(rs.getString("trader_name"));
+                    g.setAccCode(rs.getString("account_id"));
+                    g.setAccName(rs.getString("coa_name_eng"));
+                    g.setSrcAccCode(rs.getString("source_ac_id"));
+                    g.setTranSource(rs.getString("tran_source"));
+                    g.setCurCode(rs.getString("cur_code"));
+                    list.add(g);
+                }
+            }
+        } catch (Exception e) {
+            log.error("getVoucher : " + e.getMessage());
         }
         return list;
     }

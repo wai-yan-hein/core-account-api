@@ -753,7 +753,7 @@ public class ReportServiceImpl implements ReportService {
         }
         String sql = "select trader_code,cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,t.account_code\n" +
                 "from (\n" +
-                "select trader_code,cur_code,sum(dr_amt) -sum(cr_amt) balance,comp_code\n" +
+                "select trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
                 "from (\n" +
                 "\tselect trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom  coa_opening \n" +
@@ -803,8 +803,8 @@ public class ReportServiceImpl implements ReportService {
                     a.setTraderCode(rs.getString("trader_code"));
                     a.setUserCode(rs.getString("user_code"));
                     a.setTraderName(rs.getString("trader_name"));
-                    a.setDrAmt(rs.getDouble("dr_amt"));
-                    a.setCrAmt(rs.getDouble("cr_amt"));
+                    a.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
+                    a.setCrAmt(Util1.toNull(rs.getDouble("cr_amt")));
                     list.add(a);
                 }
             }

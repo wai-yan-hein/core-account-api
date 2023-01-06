@@ -129,22 +129,28 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
-        return glDao.searchVoucher(fromDate, toDate, vouNo, description, reference, compCode, macId);
+    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
+        return glDao.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId);
     }
 
     @Override
-    public boolean deleteJournal(String glVouNo, String compCode, String modifyBy) {
+    public boolean deleteVoucher(String glVouNo, String compCode, String modifyBy) {
         List<Gl> list = getJournal(glVouNo, compCode);
         for (Gl gl : list) {
             backupGl(gl.getKey(), modifyBy, true);
         }
-        return glDao.deleteJournal(glVouNo, compCode);
+        return glDao.deleteVoucher(glVouNo, compCode);
     }
 
     @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         return glDao.getJournal(glVouNo, compCode);
+    }
+
+    @Override
+    public List<Gl> getVoucher(String glVouNo, String compCode) {
+        return glDao.getVoucher(glVouNo, compCode);
+
     }
 
     @Override

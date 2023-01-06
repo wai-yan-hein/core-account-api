@@ -307,6 +307,7 @@ public class Util1 {
         return Util1.toDate("1998-10-07");
     }
     public static boolean isZGText(String str) {
+        if (Util1.isNullOrEmpty(str)) return false;
         ZawgyiDetector zd = new ZawgyiDetector();
         Double score = zd.getZawgyiProbability(str);
         return getBoolean(df0.format(score));

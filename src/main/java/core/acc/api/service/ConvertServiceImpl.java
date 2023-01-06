@@ -19,7 +19,7 @@ public class ConvertServiceImpl implements ConverterService {
     public void convertToUnicode() {
         convertCOA();
         convertTrader();
-        //convertGl();
+        convertGl();
     }
 
     private void convertCOA() {

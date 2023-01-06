@@ -58,6 +58,8 @@ public class Gl {
     @Column(name = "ref_no")
     private String refNo;
     @Transient
+    private String glDateStr;
+    @Transient
     private List<String> delList;
     @Transient
     private boolean deleted;

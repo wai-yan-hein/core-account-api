@@ -282,9 +282,10 @@ public class AccountController {
         String vouNo = Util1.isNull(filter.getGlVouNo(), "-");
         String description = Util1.isAll(filter.getDesp());
         String reference = Util1.isAll(filter.getReference());
+        String refNo = Util1.isNull(filter.getRefNo(), "-");
         String compCode = filter.getCompCode();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        return ResponseEntity.ok(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, compCode, macId));
+        return ResponseEntity.ok(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId));
     }
 
     @GetMapping(path = "/get-journal")
@@ -292,9 +293,14 @@ public class AccountController {
         return ResponseEntity.ok(glService.getJournal(glVouNo, compCode));
     }
 
-    @PostMapping(path = "/delete-journal")
-    public ResponseEntity<?> getJournal(@RequestBody DeleteObj obj) {
-        return ResponseEntity.ok(glService.deleteJournal(obj.getGlVouNo(), obj.getCompCode(), obj.getModifyBy()));
+    @GetMapping(path = "/get-voucher")
+    public ResponseEntity<?> getVoucher(@RequestParam String glVouNo, @RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getVoucher(glVouNo, compCode));
+    }
+
+    @PostMapping(path = "/delete-voucher")
+    public ResponseEntity<?> deleteVoucher(@RequestBody DeleteObj obj) {
+        return ResponseEntity.ok(glService.deleteVoucher(obj.getGlVouNo(), obj.getCompCode(), obj.getModifyBy()));
     }
 
     @PostMapping(path = "/save-stock-op")
