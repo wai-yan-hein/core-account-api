@@ -5,7 +5,6 @@ import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
-import core.acc.api.model.TraderBalance;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,6 +22,8 @@ public class ReportServiceImpl implements ReportService {
 
     @Autowired
     private ReportDao dao;
+    @Autowired
+    private COAOpeningService coaOpeningService;
     private static final String OP_INV = "Opening Inventory";
     private static final String CL_INV = "Closing Inventory";
     private static final String GP = "Gross Profit (Loss)";
@@ -902,13 +903,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<TraderBalance> getTraderBalance(String traderCode, String accCode, String curCode, String fromDate,
-                                                String toDate, String compCode, Integer macId) {
-        List<TraderBalance> balances = new ArrayList<>();
+    public List<Gl> getTraderBalance(String traderCode, String accCode, String curCode, String fromDate,
+                                     String toDate, String compCode, Integer macId) {
+        List<Gl> list = new ArrayList<>();
         try {
-            String sql = "select '" + accCode + "' acc_code ,gl_date,ref_no,description,trader_code, cur_code, \n"
-                    + "get_dr_cr_amt(source_ac_id, account_id, '" + accCode + "', ifnull(dr_amt,0), ifnull(cr_amt,0), 'DR')dr_amt,\n"
-                    + "get_dr_cr_amt(source_ac_id, account_id, '" + accCode + "', ifnull(dr_amt,0), ifnull(cr_amt,0), 'CR') cr_amt\n"
+            String sql = "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,\n"
+                    + "dr_amt,cr_amt\n"
                     + "from gl\n"
                     + "where  (source_ac_id = '" + accCode + "' or account_id = '" + accCode + "') \n"
                     + "and date(gl_date) between '" + fromDate + "'  and '" + toDate + "' \n"
@@ -916,51 +916,146 @@ public class ReportServiceImpl implements ReportService {
                     + "and (cur_code = '" + curCode + "' or '-' ='" + curCode + "')\n"
                     + "and trader_code = '" + traderCode + "' \n"
                     + "and trader_code is not null\n"
-                    + "group by gl_code,gl_date,trader_code,acc_code,cur_code\n"
-                    + "order by gl_date";
+                    + "order by gl_date,gl_code";
             ResultSet rs = dao.executeSql(sql);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
-                    TraderBalance b = new TraderBalance();
-                    b.setTranDate(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
+                    Gl b = new Gl();
+                    b.setSrcAccCode(rs.getString("source_ac_id"));
+                    b.setAccCode(rs.getString("account_id"));
+                    b.setGlDateStr(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
                     b.setOpening(0.0);
                     b.setVouNo(rs.getString("ref_no"));
-                    b.setRemark(rs.getString("description"));
-                    double drAmt = rs.getDouble("dr_amt");
-                    double crAmt = rs.getDouble("cr_amt");
-                    b.setDrAmt(drAmt == 0 ? null : drAmt);
-                    b.setCrAmt(crAmt == 0 ? null : crAmt);
-                    b.setClosing(Util1.getDouble(b.getDrAmt()) - Util1.getDouble(b.getCrAmt()));
-                    balances.add(b);
+                    b.setDescription(rs.getString("description"));
+                    b.setDrAmt(rs.getDouble("dr_amt"));
+                    b.setCrAmt(rs.getDouble("cr_amt"));
+                    list.add(b);
                 }
             }
-            double opAmt = getTraderLastBalance(fromDate, traderCode, compCode);
-            TraderBalance tb = new TraderBalance();
-            tb.setRemark("Opening");
-            tb.setTranDate(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
-            tb.setOpening(opAmt);
-            tb.setClosing(opAmt);
-            balances.add(0, tb);
-            for (int i = 0; i < balances.size(); i++) {
-                if (i > 0) {
-                    TraderBalance io = balances.get(i - 1);
-                    double clAmt = Util1.getDouble(io.getOpening()) + Util1.getDouble(io.getDrAmt()) - Util1.getDouble(io.getCrAmt());
-                    TraderBalance io1 = balances.get(i);
-                    io1.setOpening(clAmt);
-                    io1.setClosing(Util1.getDouble(io1.getOpening()) + Util1.getDouble(io1.getDrAmt()) - Util1.getDouble(io1.getCrAmt()));
+            if (!list.isEmpty()) {
+                list.forEach(gl -> {
+                    String account = Util1.isNull(gl.getAccCode(), "-");
+                    if (account.equals(accCode)) {
+                        //swap amt
+                        double tmpDrAmt = Util1.getDouble(gl.getDrAmt());
+                        gl.setDrAmt(gl.getCrAmt());
+                        gl.setCrAmt(tmpDrAmt);
+                    }
+                    gl.setDrAmt(Util1.toNull(gl.getDrAmt()));
+                    gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
+
+                });
+                double opAmt = getTraderLastBalance(fromDate, traderCode, compCode);
+                Gl tb = new Gl();
+                tb.setRemark("Opening");
+                tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
+                tb.setOpening(opAmt);
+                tb.setClosing(opAmt);
+                list.add(0, tb);
+                for (int i = 0; i < list.size(); i++) {
+                    if (i > 0) {
+                        Gl io = list.get(i - 1);
+                        double clAmt = Util1.getDouble(io.getOpening()) + Util1.getDouble(io.getDrAmt()) - Util1.getDouble(io.getCrAmt());
+                        Gl io1 = list.get(i);
+                        io1.setOpening(clAmt);
+                        io1.setClosing(Util1.getDouble(io1.getOpening()) + Util1.getDouble(io1.getDrAmt()) - Util1.getDouble(io1.getCrAmt()));
+                    }
                 }
+                double opening = list.get(0).getOpening();
+                double closing = list.get(list.size() - 1).getClosing();
+                ReturnObject ro = new ReturnObject();
+                ro.setOpAmt(opening);
+                ro.setClAmt(closing);
+                hmRo.put(macId, ro);
             }
-            double opening = balances.get(0).getOpening();
-            double closing = balances.get(balances.size() - 1).getClosing();
-            ReturnObject ro = new ReturnObject();
-            ro.setOpAmt(opening);
-            ro.setClAmt(closing);
-            hmRo.put(macId, ro);
 
         } catch (Exception ex) {
             log.error(String.format("getTraderBalance :%s", ex.getMessage()));
         }
-        return balances;
+        return list;
+    }
+
+    @Override
+    public List<Gl> getIndividualStatement(String sourceAcc, String curCode, String opDate, String fromDate, String toDate, String compCode, Integer macId) {
+        List<Gl> list = new ArrayList<>();
+        String sql = "select a.*,dep.usr_code d_user_code\n" +
+                "from (\n" +
+                "select gl_code,gl_date, description, source_ac_id, account_id, \n" +
+                "cur_code, dr_amt, cr_amt,  dept_code, comp_code\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and (account_id = '" + sourceAcc + "' or source_ac_id ='" + sourceAcc + "')\n" +
+                "order by gl_date,tran_source,gl_code\n" +
+                ")a\n" +
+                "join department dep\n" +
+                "on a.dept_code = dep.dept_code\n" +
+                "and a.comp_code = dep.comp_code\n" +
+                "order by a.gl_date,a.gl_code\n";
+        ResultSet rs = dao.executeSql(sql);
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    //gl_code, gl_date, description, source_ac_id, account_id, cur_code, dr_amt, cr_amt, dept_code, comp_code, d_user_code
+                    Gl gl = new Gl();
+                    gl.setGlDateStr(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
+                    gl.setDescription(rs.getString("description"));
+                    gl.setSrcAccCode(rs.getString("source_ac_id"));
+                    gl.setAccCode(rs.getString("account_id"));
+                    gl.setCurCode(rs.getString("cur_code"));
+                    gl.setDrAmt(rs.getDouble("dr_amt"));
+                    gl.setCrAmt(rs.getDouble("cr_amt"));
+                    gl.setDeptUsrCode(rs.getString("d_user_code"));
+                    list.add(gl);
+                }
+            } catch (Exception e) {
+                log.error("getIndividualStatement : " + e.getMessage());
+            }
+            //swap
+            if (!list.isEmpty()) {
+                list.forEach(gl -> {
+                    String account = Util1.isNull(gl.getAccCode(), "-");
+                    if (account.equals(sourceAcc)) {
+                        //swap amt
+                        double tmpDrAmt = Util1.getDouble(gl.getDrAmt());
+                        gl.setDrAmt(gl.getCrAmt());
+                        gl.setCrAmt(tmpDrAmt);
+                    }
+                    gl.setDrAmt(Util1.toNull(gl.getDrAmt()));
+                    gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
+                });
+                try {
+                    double opAmt = 0;
+                    List<TmpOpening> openings = coaOpeningService.getCOAOpening(sourceAcc, opDate, fromDate, 3, curCode, compCode, macId, "-");
+                    if (!openings.isEmpty()) opAmt = openings.get(0).getOpening();
+                    Gl tb = new Gl();
+                    tb.setDescription("Opening");
+                    tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
+                    tb.setOpening(opAmt);
+                    tb.setClosing(opAmt);
+                    list.add(0, tb);
+                    for (int i = 0; i < list.size(); i++) {
+                        if (i > 0) {
+                            Gl io = list.get(i - 1);
+                            double clAmt = Util1.getDouble(io.getOpening()) + Util1.getDouble(io.getDrAmt()) - Util1.getDouble(io.getCrAmt());
+                            Gl io1 = list.get(i);
+                            io1.setOpening(clAmt);
+                            io1.setClosing(Util1.getDouble(io1.getOpening()) + Util1.getDouble(io1.getDrAmt()) - Util1.getDouble(io1.getCrAmt()));
+                        }
+                    }
+                    double opening = list.get(0).getOpening();
+                    double closing = list.get(list.size() - 1).getClosing();
+                    ReturnObject ro = new ReturnObject();
+                    ro.setOpAmt(opening);
+                    ro.setClAmt(closing);
+                    hmRo.put(macId, ro);
+                } catch (Exception e) {
+                    log.error("getIndividualStatement : " + e.getMessage());
+                }
+            }
+        }
+        return list;
     }
 
     @Override

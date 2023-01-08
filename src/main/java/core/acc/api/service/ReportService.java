@@ -6,7 +6,6 @@ import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
-import core.acc.api.model.TraderBalance;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,8 +50,10 @@ public interface ReportService {
 
     ReturnObject getReportResult(Integer macId);
 
-    List<TraderBalance> getTraderBalance(String traderCode, String accCode,
+    List<Gl> getTraderBalance(String traderCode, String accCode,
                                          String curCode, String fromDate, String toDate, String compCode, Integer macId);
+
+    List<Gl> getIndividualStatement(String sourceAcc, String curCode,String opDate, String fromDate, String toDate, String compCode, Integer macId);
 
     List<COAOpening> getOpeningTri(String opDate, String deptCode, String curCode, String compCode);
 }

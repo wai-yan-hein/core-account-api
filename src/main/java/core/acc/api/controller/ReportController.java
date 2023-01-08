@@ -2,12 +2,12 @@ package core.acc.api.controller;
 
 import core.acc.api.common.Util1;
 import core.acc.api.entity.COAOpening;
+import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
-import core.acc.api.model.TraderBalance;
 import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,17 +36,10 @@ public class ReportController {
         String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
-        String des = Util1.isNull(filter.getDesp(), "-");
         String srcAcc = Util1.isNull(filter.getSrcAcc(), "-");
-        String acc = Util1.isNull(filter.getAcc(), "-");
         String curCode = Util1.isNull(filter.getCurCode(), "-");
-        String reference = Util1.isNull(filter.getReference(), "-");
-        String tranSource = Util1.isNull(filter.getTranSource(), "-");
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
-        String traderType = Util1.isNull(filter.getTraderType(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
-        String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
-        String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String ieProcess = Util1.isNull(filter.getIncomeExpenseProcess(), "-");
         String plProcess = Util1.isNull(filter.getPlProcess(), "-");
         String bsProcess = Util1.isNull(filter.getBsProcess(), "-");
@@ -88,7 +81,11 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "CreditDetail" -> {
-                    List<TraderBalance> data = reportService.getTraderBalance(traderCode, coaCode, curCode, fromDate, toDate, compCode, macId);
+                    List<Gl> data = reportService.getTraderBalance(traderCode, coaCode, curCode, fromDate, toDate, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "IndividualStatement" -> {
+                    List<Gl> data = reportService.getIndividualStatement(srcAcc,curCode,opDate,fromDate,toDate,compCode,macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
             }
