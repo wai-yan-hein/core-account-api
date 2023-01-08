@@ -1,5 +1,6 @@
 package core.acc.api.repo;
 
+import core.acc.api.entity.ChartOfAccount;
 import core.acc.api.model.DepartmentUser;
 import core.acc.api.model.PropertyKey;
 import core.acc.api.model.SystemProperty;
@@ -86,6 +87,9 @@ public class UserRepo {
             }
         }
         return hmKey.get(key);
+    }
+    public String updateMenu(String coaCode,String menuName){
+
     }
 
 }
