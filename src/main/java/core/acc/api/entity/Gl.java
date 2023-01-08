@@ -77,6 +77,10 @@ public class Gl {
     private String vouDate;
     @Transient
     private boolean edit;
+    @Transient
+    private double opening;
+    @Transient
+    private double closing;
 
 
     public Gl(Date modifyDate, String deptCode) {

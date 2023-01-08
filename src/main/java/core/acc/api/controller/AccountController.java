@@ -163,9 +163,8 @@ public class AccountController {
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
-        List<String> department = filter.getListDepartment();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, 3, curCode, compCode, department, macId, traderCode));
+        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, 3, curCode, compCode, macId, traderCode));
     }
 
     @PostMapping(path = "/get-opening")
