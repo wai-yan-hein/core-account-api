@@ -123,8 +123,18 @@ public class AccountController {
     }
 
     @PostMapping(path = "/save-coa")
-    public ResponseEntity<ChartOfAccount> saveCOA(@RequestBody ChartOfAccount coa) throws Exception {
+    public ResponseEntity<?> saveCOA(@RequestBody ChartOfAccount coa) throws Exception {
         return ResponseEntity.ok(coaService.save(coa));
+    }
+
+    @PostMapping(path = "/process-coa")
+    public ResponseEntity<?> processCOA(@RequestBody ChartOfAccount coa) throws Exception {
+        if (coa.getMigCode() != null) {
+            coa = coaService.save(coa);
+            String code = String.format("%s,%s", coa.getMigCode(), coa.getKey().getCoaCode());
+            return ResponseEntity.ok(code);
+        }
+        return ResponseEntity.ok(null);
     }
 
     @PostMapping(path = "/search-gl")
@@ -207,6 +217,12 @@ public class AccountController {
         key.setDeptId(obj.getDeptId());
         if (cloudMQSender != null) cloudMQSender.delete(key);
         return ResponseEntity.ok(glService.delete(key, obj.getModifyBy()));
+    }
+
+    @PostMapping(path = "/delete-gl-list")
+    public ResponseEntity<?> deleteGLList(@RequestBody Gl gl) {
+        glService.deleteGl(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode());
+        return ResponseEntity.ok("deleted.");
     }
 
     //Trader

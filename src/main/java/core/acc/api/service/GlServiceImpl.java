@@ -184,6 +184,11 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
+    public void deleteGl(String vouNo, String tranSource, String srcAcc) {
+        glDao.deleteGl(vouNo, tranSource, srcAcc);
+    }
+
+    @Override
     public void truncate(GlKey key) {
         glDao.truncate(key);
     }
