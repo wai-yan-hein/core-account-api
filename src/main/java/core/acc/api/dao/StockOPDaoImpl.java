@@ -42,7 +42,8 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                 "and a.comp_code = dep.comp_code\n" +
                 "join chart_of_account coa\n" +
                 "on a.coa_code = coa.coa_code\n" +
-                "and a.comp_code = coa.comp_code\n";
+                "and a.comp_code = coa.comp_code\n" +
+                "order by tran_date\n";
         ResultSet rs = getResultSet(sql);
         if (rs != null) {
             try {

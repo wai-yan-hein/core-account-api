@@ -29,6 +29,7 @@ public class UserRepo {
     @Autowired
     private WebClient userApi;
     private String deptCode;
+
     public SystemProperty findProperty(String key, String compCode) {
         PropertyKey p = new PropertyKey();
         p.setPropKey(key);
@@ -40,6 +41,7 @@ public class UserRepo {
                 .bodyToMono(SystemProperty.class);
         return result.block(Duration.ofMinutes(min));
     }
+
     public List<DepartmentUser> getDepartment() {
         if (listDept == null) {
             try {
@@ -54,6 +56,7 @@ public class UserRepo {
         }
         return listDept;
     }
+
     public String getDepCode() {
         if (deptCode == null) {
             List<DepartmentUser> list = getDepartment();
@@ -65,6 +68,7 @@ public class UserRepo {
         }
         return deptCode;
     }
+
     public String getProperty(String key) {
         if (hmKey.isEmpty()) {
             try {
@@ -88,8 +92,9 @@ public class UserRepo {
         }
         return hmKey.get(key);
     }
-    public String updateMenu(String coaCode,String menuName){
 
+    public String updateMenu(String coaCode, String menuName) {
+        return null;
     }
 
 }
