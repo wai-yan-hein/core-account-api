@@ -44,6 +44,7 @@ public interface GlService {
     List<Gl> search(String vouNo, String tranSource, String compCode);
 
     void deleteGl(String vouNo, String tranSource);
+    void deleteGl(String vouNo, String tranSource,String srcAcc);
 
     void truncate(GlKey key);
 

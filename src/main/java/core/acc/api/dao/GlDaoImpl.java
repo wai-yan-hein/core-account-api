@@ -216,6 +216,12 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public void deleteGl(String vouNo, String tranSource, String srcAcc) {
+        String sql = "delete from gl where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "' and source_ac_id ='" + srcAcc + "'";
+        execSql(sql);
+    }
+
+    @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
         String sql = "select g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" +

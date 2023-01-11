@@ -51,6 +51,8 @@ public class ChartOfAccount {
  private String deptCode;
  @Column(name = "deleted")
  private boolean deleted;
+ @Column(name = "mig_code")
+ private String migCode;
  @Column(name = "intg_upd_status")
  private String intgUpdStatus;
  @Transient
