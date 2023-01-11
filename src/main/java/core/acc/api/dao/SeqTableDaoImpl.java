@@ -37,7 +37,7 @@ public class SeqTableDaoImpl extends AbstractDao<SeqKey, SeqTable> implements Se
             strSql = strSql + " and o.period = '" + period + "'";
         }
 
-        return (List<SeqTable>) findHSQL(strSql);
+        return findHSQL(strSql);
     }
 
     @Override

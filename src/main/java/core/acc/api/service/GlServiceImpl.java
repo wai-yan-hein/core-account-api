@@ -5,6 +5,7 @@ import core.acc.api.dao.GlDao;
 import core.acc.api.dao.GlLogDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.ReturnObject;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
+@Slf4j
 @Service
 @Transactional
 public class GlServiceImpl implements GlService {
@@ -36,6 +37,7 @@ public class GlServiceImpl implements GlService {
             if (Objects.isNull(valid)) {
                 gl.getKey().setGlCode(glCode);
             } else {
+                log.info(valid.getKey().getGlCode());
                 throw new IllegalStateException("Duplication Occur in Gl");
             }
         } else {

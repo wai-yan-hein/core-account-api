@@ -78,30 +78,38 @@ public class ReportServiceImpl implements ReportService {
                                        String acc, String curCode, String reference,
                                        String compCode, String tranSource, String traderCode, String traderType,
                                        String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException {
-        String filter = "where  (a.trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n";
+        String coaFilter = "";
         if (!coaLv2.equals("-")) {
-            filter += "and coa3.coa_parent = '" + coaLv2 + "'\n";
+            coaFilter += "where coa3.coa_parent = '" + coaLv2 + "'\n";
         }
         if (!coaLv1.equals("-")) {
-            filter += "and coa2.coa_parent = '" + coaLv1 + "'\n";
+            if (coaFilter.isEmpty()) {
+                coaFilter += "where coa2.coa_parent = '" + coaLv1 + "'\n";
+            } else {
+                coaFilter += "and coa2.coa_parent = '" + coaLv1 + "'\n";
+            }
+        }
+        String filter = "";
+        if (!traderCode.equals("-")) {
+            filter += "and trader_code = '" + traderCode + "'\n";
         }
         if (!tranSource.equals("-")) {
-            filter += "and a.tran_source = '" + tranSource + "'\n";
+            filter += "and tran_source = '" + tranSource + "'\n";
         }
         if (!reference.equals("-")) {
-            filter += "and a.reference like '" + reference + "%'\n";
+            filter += "and reference like '" + reference + "%'\n";
         }
         if (!desp.equals("-")) {
-            filter += "and a.description like '" + desp + "%'\n";
+            filter += "and description like '" + desp + "%'\n";
         }
         if (!acc.equals("-")) {
-            filter += "and (a.account_id = '" + acc + "' or a.source_ac_id ='" + acc + "')";
+            filter += "and (account_id = '" + acc + "' or a.source_ac_id ='" + acc + "')";
         }
         if (!traderType.equals("-")) {
-            filter += "and  a.discriminator ='" + traderType + "' \n";
+            filter += "and  discriminator ='" + traderType + "' \n";
         }
         if (!curCode.equals("-")) {
-            filter += "and a.cur_code ='" + curCode + "'\n";
+            filter += "and cur_code ='" + curCode + "'\n";
         }
         List<Gl> list = new ArrayList<>();
         if (summary) {
@@ -113,6 +121,7 @@ public class ReportServiceImpl implements ReportService {
                     "and comp_code = '" + compCode + "'\n" +
                     "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                     "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
+                    "" + filter + "\n" +
                     "group by source_ac_id,account_id,dept_code\n" +
                     ")a\n" +
                     "join department dep\n" +
@@ -127,7 +136,7 @@ public class ReportServiceImpl implements ReportService {
                     "left join chart_of_account coa2\n" +
                     "on coa3.coa_parent = coa2.coa_code\n" +
                     "and coa3.comp_code = coa2.comp_code\n" +
-                    "" + filter + "\n" +
+                    "" + coaFilter + "\n" +
                     "order by coa.coa_code_usr\n";
             ResultSet rs = dao.executeSql(sql);
             if (!Objects.isNull(rs)) {
@@ -162,6 +171,7 @@ public class ReportServiceImpl implements ReportService {
                     "and comp_code = '" + compCode + "'\n" +
                     "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                     "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
+                    "" + filter + "\n" +
                     "order by gl_date,tran_source,gl_code\n" +
                     ")a\n" +
                     "join department dep\n" +
@@ -179,7 +189,7 @@ public class ReportServiceImpl implements ReportService {
                     "left join chart_of_account coa2\n" +
                     "on coa3.coa_parent = coa2.coa_code\n" +
                     "and coa3.comp_code = coa2.comp_code\n" +
-                    "" + filter + "\n" +
+                    "" + coaFilter + "\n" +
                     "order by a.gl_date,a.tran_source,a.gl_code\n";
             ResultSet rs = dao.executeSql(sql);
             if (!Objects.isNull(rs)) {
@@ -437,7 +447,7 @@ public class ReportServiceImpl implements ReportService {
         });
         List<Financial> list1 = getInvJournal(stDate, enDate, invGroup, compCode, macId);
         list1.forEach(f -> {
-            double amt = f.getAmount()*-1;
+            double amt = f.getAmount() * -1;
             String sql = "update tmp_tri\n" +
                     "set cr_amt = " + amt + "\n" +
                     "where mac_id =" + macId + "\n" +
@@ -593,7 +603,7 @@ public class ReportServiceImpl implements ReportService {
                 }
             }
         } catch (Exception e) {
-            log.error("getInvClosing : "+e.getMessage());
+            log.error("getInvClosing : " + e.getMessage());
         }
         return list;
     }
