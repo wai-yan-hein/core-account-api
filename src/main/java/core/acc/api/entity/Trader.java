@@ -24,7 +24,7 @@ public class Trader {
     @Column(name = "email")
     private String email;
     @Column(name = "account_code")
-    private String accCode;
+    private String account;
     @Column(name = "active")
     private boolean active;
     @Column(name = "remark")
