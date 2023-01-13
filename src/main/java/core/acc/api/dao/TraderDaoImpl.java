@@ -45,7 +45,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                     t.setKey(key);
                     t.setUserCode(rs.getString("user_code"));
                     t.setTraderName(rs.getString("trader_name"));
-                    t.setAccCode(rs.getString("account_code"));
+                    t.setAccount(rs.getString("account_code"));
                     t.setTraderType(rs.getString("discriminator"));
                     list.add(t);
                 }

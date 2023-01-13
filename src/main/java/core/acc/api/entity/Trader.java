@@ -29,12 +29,6 @@ public class Trader {
     private boolean active;
     @Column(name = "remark")
     private String remark;
-    @Column(name = "parent")
-    private String parent;
-    @Column(name = "app_short_name")
-    private String appShortName;
-    @Column(name = "app_trader_code")
-    private String appTraderCode;
     @Column(name = "mig_code")
     private String migCode;
     @Temporal(TemporalType.TIMESTAMP)
