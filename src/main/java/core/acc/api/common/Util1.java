@@ -314,8 +314,11 @@ public class Util1 {
     }
 
     public static String convertToUniCode(String str) {
-        TransliterateZ2U z2U = new TransliterateZ2U("Zawgyi to Unicode");
-        return z2U.convert(str);
+        if (isZGText(str)) {
+            TransliterateZ2U z2U = new TransliterateZ2U("Zawgyi to Unicode");
+            return z2U.convert(str);
+        }
+        return str;
     }
 
 }

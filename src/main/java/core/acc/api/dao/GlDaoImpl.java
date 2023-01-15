@@ -67,8 +67,12 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public boolean delete(GlKey key) {
-        String sql = "delete from gl where gl_code = '" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "' and dept_id =" + key.getDeptId() + "";
+    public boolean delete(GlKey key, String modifyBy) {
+        String sql = "update gl\n" +
+                "set deleted =1,modify_by ='" + modifyBy + "'\n" +
+                " where gl_code = '" + key.getGlCode() + "'\n" +
+                " and comp_code ='" + key.getCompCode() + "'\n" +
+                " and dept_id =" + key.getDeptId() + "";
         execSql(sql);
         return true;
     }
@@ -87,6 +91,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "from gl\n" +
                 "where comp_code ='" + compCode + "'\n" +
                 "and (description like '" + str + "%')\n" +
+                "and deleted =0\n" +
                 "limit 20";
         try {
             ResultSet rs = getResultSet(sql);
@@ -108,6 +113,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "from gl\n" +
                 "where comp_code ='" + compCode + "'\n" +
                 "and (reference like '" + str + "%')\n" +
+                "and deleted =0\n" +
                 "limit 20";
         try {
             ResultSet rs = getResultSet(sql);
@@ -127,6 +133,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         List<Gl> list = new ArrayList<>();
         String filter = " tran_source ='GV'\n" +
                 "and comp_code ='" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
@@ -167,6 +174,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         List<Gl> list = new ArrayList<>();
         String filter = " (tran_source ='DR' or tran_source ='CR')\n" +
                 "and comp_code ='" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
@@ -414,12 +422,6 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
 
         return list;
-    }
-
-    @Override
-    public List<Gl> search(String vouNo, String tranSource, String compCode) {
-        String hsql = "select o from Gl o where o.refNo ='" + vouNo + "' and o.tranSource ='" + tranSource + "' and o.key.compCode ='" + compCode + "'";
-        return findHSQL(hsql);
     }
 
     @Override

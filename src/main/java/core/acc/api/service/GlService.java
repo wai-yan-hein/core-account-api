@@ -17,7 +17,6 @@ public interface GlService {
     Gl findByCode(GlKey key);
 
     boolean delete(GlKey key,String modifyBy);
-    boolean delete(GlKey key);
 
     List<VDescription> getDescription(String str, String compCode);
 
@@ -41,12 +40,8 @@ public interface GlService {
 
     List<Gl> search(String updatedDate, String deptCode);
 
-    List<Gl> search(String vouNo, String tranSource, String compCode);
 
     void deleteGl(String vouNo, String tranSource);
     void deleteGl(String vouNo, String tranSource,String srcAcc);
-
-    void truncate(GlKey key);
-
 
 }

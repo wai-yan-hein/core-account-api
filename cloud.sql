@@ -34,8 +34,45 @@ DROP PRIMARY KEY,
 ADD PRIMARY KEY (`log_gl_code`, `gl_code`, `dept_id`);
 ;
 
+ALTER TABLE `gl`
+ADD COLUMN `deleted` BIT(1) NOT NULL DEFAULT 0 AFTER `dept_id`;
 
 
+
+
+drop table if exists tmp_tri,tmp_closing,tmp_ex_rate;
+
+create table tmp_tri (
+  coa_code varchar(25) not null,
+  curr_id varchar(15) not null,
+  mac_id int(11) not null,
+  dr_amt double(20,3) default null,
+  cr_amt double(20,3) default null,
+  dept_code varchar(15) not null,
+  comp_code varchar(15) default null,
+  primary key (coa_code,curr_id,mac_id,dept_code)
+) engine=innodb default charset=utf8mb3;
+
+create table tmp_closing (
+  coa_code varchar(15) not null,
+  cur_code varchar(15) not null,
+  dr_amt double default null,
+  cr_amt double default null,
+  dept_code varchar(15) not null,
+  mac_id int(11) not null,
+  comp_code varchar(15) default null,
+  primary key (coa_code,mac_id,cur_code,dept_code)
+) engine=innodb default charset=utf8mb3;
+
+create table tmp_ex_rate (
+  home_cur varchar(15) not null,
+  ex_cur varchar(15) not null,
+  home_rate double(10,3) default null,
+  ex_rate double(10,3) default null,
+  mac_id int(11) not null,
+  comp_code varchar(15) default null,
+  primary key (home_cur,mac_id,ex_cur)
+) engine=innodb default charset=utf8mb3;
 
 
 

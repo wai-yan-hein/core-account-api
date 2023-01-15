@@ -240,10 +240,9 @@ public class CloudMQSender {
     }
 
     public void delete(GlKey key) {
-        if (client) {
-            Gl obj = new Gl();
-            obj.setKey(key);
-            deleteMessage("GL", gson.toJson(obj), serverQ);
+        Gl obj = glService.findByCode(key);
+        if (obj != null) {
+            deleteMessage("GL", gson.toJson(obj), getQueue(obj));
         }
     }
 }

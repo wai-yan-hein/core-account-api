@@ -15,7 +15,7 @@ public interface GlDao {
 
     Gl findWithSql(GlKey key);
 
-    boolean delete(GlKey key);
+    boolean delete(GlKey key,String modifyBy);
 
     void deleteGl(String vouNo, String tranSource);
 
@@ -39,7 +39,6 @@ public interface GlDao {
     Date getMaxDate();
 
     List<Gl> search(String updatedDate,String deptCode);
-    List<Gl> search(String vouNo, String tranSource, String compCode);
 
     void truncate(GlKey key);
 

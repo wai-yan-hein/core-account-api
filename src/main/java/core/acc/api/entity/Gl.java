@@ -50,19 +50,19 @@ public class Gl {
     @Column(name = "gl_vou_no")
     private String glVouNo;
     @Column(name = "intg_upd_status")
-    private String intgUpdStatus; //For integration update status
+    private String intgUpdStatus;
     @Column(name = "remark")
     private String remark;
     @Column(name = "mac_id")
     private Integer macId;
     @Column(name = "ref_no")
     private String refNo;
+    @Column(name = "deleted")
+    private boolean deleted;
     @Transient
     private String glDateStr;
     @Transient
     private List<String> delList;
-    @Transient
-    private boolean deleted;
     @Transient
     private boolean cash = false;
     @Transient

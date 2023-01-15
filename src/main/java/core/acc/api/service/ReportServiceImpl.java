@@ -119,6 +119,7 @@ public class ReportServiceImpl implements ReportService {
                     "from gl \n" +
                     "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                     "and comp_code = '" + compCode + "'\n" +
+                    "and deleted =0\n" +
                     "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                     "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
                     "" + filter + "\n" +
@@ -169,6 +170,7 @@ public class ReportServiceImpl implements ReportService {
                     "from gl \n" +
                     "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                     "and comp_code = '" + compCode + "'\n" +
+                    "and deleted =0\n" +
                     "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                     "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" +
                     "" + filter + "\n" +
@@ -519,6 +521,7 @@ public class ReportServiceImpl implements ReportService {
                 "select source_ac_id,cur_code,comp_code,sum(dr_amt)-sum(cr_amt) amount\n" +
                 "from gl \n" +
                 "where date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
+                "and deleted =0\n" +
                 "and source_ac_id  in (select coa_code from chart_of_account where coa_parent='" + invGroup + "' and comp_code ='" + compCode + "')\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "group by source_ac_id,cur_code\n" +
@@ -576,6 +579,7 @@ public class ReportServiceImpl implements ReportService {
                 "where date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
                 "and source_ac_id  in (" + coaFilter + ")\n" +
                 "and comp_code ='" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 ")b\n" +
                 "where b.amount<>0" +
@@ -671,6 +675,7 @@ public class ReportServiceImpl implements ReportService {
                 "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
                 "group by account_id, cur_code\n" +
                 "\tunion all\n" +
@@ -680,6 +685,7 @@ public class ReportServiceImpl implements ReportService {
                 "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
                 "group by source_ac_id, cur_code\n" +
                 ")a\n" +
@@ -701,6 +707,7 @@ public class ReportServiceImpl implements ReportService {
                 "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
                 "group by account_id, cur_code\n" +
                 "\tunion all\n" +
@@ -710,6 +717,7 @@ public class ReportServiceImpl implements ReportService {
                 "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
                 "group by source_ac_id, cur_code\n" +
                 ")a\n" +
@@ -781,6 +789,7 @@ public class ReportServiceImpl implements ReportService {
                 "\twhere source_ac_id in (" + coaFilter + ")\n" +
                 "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
                 "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
@@ -791,6 +800,7 @@ public class ReportServiceImpl implements ReportService {
                 "\twhere account_id in (" + coaFilter + ")\n" +
                 "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
                 "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
@@ -884,6 +894,7 @@ public class ReportServiceImpl implements ReportService {
                 "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand date(gl_date) <= '" + toDate + "' \n" +
                 "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
                 "\tgroup by  cur_code,trader_code\n" +
                 "\t\t\tunion all\n" +
@@ -892,6 +903,7 @@ public class ReportServiceImpl implements ReportService {
                 "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand date(gl_date) <= '" + toDate + "' \n" +
                 "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
                 "\tgroup by cur_code,trader_code\n" +
                 ")a\n" +
@@ -923,6 +935,7 @@ public class ReportServiceImpl implements ReportService {
                     + "where  (source_ac_id = '" + accCode + "' or account_id = '" + accCode + "') \n"
                     + "and date(gl_date) between '" + fromDate + "'  and '" + toDate + "' \n"
                     + "and comp_code = '" + compCode + "'\n"
+                    + "and deleted =0\n"
                     + "and (cur_code = '" + curCode + "' or '-' ='" + curCode + "')\n"
                     + "and trader_code = '" + traderCode + "' \n"
                     + "and trader_code is not null\n"
@@ -995,6 +1008,7 @@ public class ReportServiceImpl implements ReportService {
                 "from gl \n" +
                 "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and (account_id = '" + sourceAcc + "' or source_ac_id ='" + sourceAcc + "')\n" +
                 "order by gl_date,tran_source,gl_code\n" +

@@ -62,6 +62,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + curr + "' or '-'='" + curr + "')\n" +
                 "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
                 "group by account_id, cur_code\n" +
@@ -72,6 +73,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
+                "and deleted =0\n" +
                 "and (cur_code ='" + curr + "' or '-'='" + curr + "')\n" +
                 "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
                 "group by source_ac_id, cur_code\n" +

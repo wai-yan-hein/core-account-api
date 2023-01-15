@@ -196,7 +196,7 @@ public class AccountController {
 
     @PostMapping(path = "/save-gl")
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
-        gl = glService.save(gl,true);
+        gl = glService.save(gl, false);
         //sent to cloud
         if (cloudMQSender != null) cloudMQSender.send(gl);
         return ResponseEntity.ok(gl);
@@ -227,8 +227,9 @@ public class AccountController {
 
     //Trader
     @PostMapping(path = "/save-trader")
-    public ResponseEntity<?> getTrader(@RequestBody Trader trader) {
-        return ResponseEntity.ok(traderService.save(trader));
+    public ResponseEntity<?> getTrader(@RequestBody Trader t) {
+        t.setTraderName(Util1.convertToUniCode(t.getTraderName()));
+        return ResponseEntity.ok(traderService.save(t));
     }
 
     @PostMapping(path = "/delete-trader")

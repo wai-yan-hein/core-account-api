@@ -49,8 +49,7 @@ public class GlServiceImpl implements GlService {
                 key.setCompCode(gl.getKey().getCompCode());
                 key.setGlCode(code);
                 key.setDeptId(gl.getKey().getDeptId());
-                backupGl(key, updatedBy, true);
-                glDao.delete(key);
+                glDao.delete(key, updatedBy);
             }
         }
         return glDao.save(gl);
@@ -78,6 +77,9 @@ public class GlServiceImpl implements GlService {
             glDao.deleteGl(vouNo, tranSource);
             if (!delete) {
                 for (Gl gl : glList) {
+                    //convert to uni code
+                    gl.setDescription(Util1.convertToUniCode(gl.getDescription()));
+                    gl.setReference(Util1.convertToUniCode(gl.getReference()));
                     if (gl.getSrcAccCode() != null) {
                         if (Util1.isMultiCur()) {
                             if (gl.isCash()) {
@@ -106,14 +108,9 @@ public class GlServiceImpl implements GlService {
 
     @Override
     public boolean delete(GlKey key, String modifyBy) {
-        backupGl(key, modifyBy, true);
-        return glDao.delete(key);
+        return glDao.delete(key, modifyBy);
     }
 
-    @Override
-    public boolean delete(GlKey key) {
-        return glDao.delete(key);
-    }
 
     @Override
     public List<VDescription> getDescription(String str, String compCode) {
@@ -175,10 +172,6 @@ public class GlServiceImpl implements GlService {
         return glDao.search(updatedDate, deptCode);
     }
 
-    @Override
-    public List<Gl> search(String vouNo, String tranSource, String compCode) {
-        return glDao.search(vouNo, tranSource, compCode);
-    }
 
     @Override
     public void deleteGl(String vouNo, String tranSource) {
@@ -190,10 +183,6 @@ public class GlServiceImpl implements GlService {
         glDao.deleteGl(vouNo, tranSource, srcAcc);
     }
 
-    @Override
-    public void truncate(GlKey key) {
-        glDao.truncate(key);
-    }
 
     private void backupGl(GlKey key, String updatedBy, boolean del) {
         if (key != null) {
