@@ -40,6 +40,5 @@ public interface GlDao {
 
     List<Gl> search(String updatedDate,String deptCode);
 
-    void truncate(GlKey key);
 
 }

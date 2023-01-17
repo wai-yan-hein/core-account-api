@@ -36,7 +36,8 @@ ADD PRIMARY KEY (`log_gl_code`, `gl_code`, `dept_id`);
 
 ALTER TABLE `gl`
 ADD COLUMN `deleted` BIT(1) NOT NULL DEFAULT 0 AFTER `dept_id`;
-
+ALTER TABLE `chart_of_account`
+ADD COLUMN `credit` BIT(1) NOT NULL DEFAULT 0 AFTER `intg_upd_status`;
 
 
 
@@ -73,6 +74,8 @@ create table tmp_ex_rate (
   comp_code varchar(15) default null,
   primary key (home_cur,mac_id,ex_cur)
 ) engine=innodb default charset=utf8mb3;
+
+
 
 
 

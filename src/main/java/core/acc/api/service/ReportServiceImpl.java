@@ -74,7 +74,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
+    public List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
                                        String acc, String curCode, String reference,
                                        String compCode, String tranSource, String traderCode, String traderType,
                                        String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException {
@@ -103,7 +103,7 @@ public class ReportServiceImpl implements ReportService {
             filter += "and description like '" + desp + "%'\n";
         }
         if (!acc.equals("-")) {
-            filter += "and (account_id = '" + acc + "' or a.source_ac_id ='" + acc + "')";
+            filter += "and (account_id = '" + acc + "' or source_ac_id ='" + acc + "')";
         }
         if (!traderType.equals("-")) {
             filter += "and  discriminator ='" + traderType + "' \n";

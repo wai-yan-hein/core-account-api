@@ -155,7 +155,7 @@ public class AccountController {
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        List<Gl> Gls = reportService.getIndividualLager(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, summary, macId);
+        List<Gl> Gls = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, summary, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);

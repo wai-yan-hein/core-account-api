@@ -18,7 +18,7 @@ public interface ReportService {
 
     String getOpeningDate(String compCode);
 
-    List<Gl> getIndividualLager(String fromDate, String toDate, String desp, String srcAcc,
+    List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
                                 String acc, String curCode, String reference,
                                 String compCode, String tranSource, String traderCode, String traderType,
                                 String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException;

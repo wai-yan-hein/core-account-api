@@ -424,9 +424,5 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         return list;
     }
 
-    @Override
-    public void truncate(GlKey key) {
-        String sql = "delete from gl where gl_code ='" + key.getCompCode() + "' and comp_code ='" + key.getGlCode() + "'";
-        execSql(sql);
-    }
+
 }
