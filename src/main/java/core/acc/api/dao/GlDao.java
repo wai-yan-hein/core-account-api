@@ -26,8 +26,9 @@ public interface GlDao {
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
     List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference,String refNo, String compCode, Integer macId);
 
+    boolean deleteInvVoucher(String refNo,String tranSource,String compCode);
     boolean deleteVoucher(String glVouNo,String compCode);
-    void deleteGl(String vouNo, String tranSource,String srcAcc);
+    void deleteVoucherByAcc(String vouNo, String tranSource,String srcAcc);
 
     List<Gl> getJournal(String glVouNo, String compCode);
     List<Gl> getVoucher(String glVouNo, String compCode);

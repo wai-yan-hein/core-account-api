@@ -73,8 +73,9 @@ public class GlServiceImpl implements GlService {
                     if (Util1.isNullOrEmpty(glVouNo)) {
                         glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
                     }
+                default:
+                    glDao.deleteInvVoucher(vouNo, tranSource, compCode);
             }
-            glDao.deleteGl(vouNo, tranSource);
             if (!delete) {
                 for (Gl gl : glList) {
                     //convert to uni code
@@ -174,13 +175,13 @@ public class GlServiceImpl implements GlService {
 
 
     @Override
-    public void deleteGl(String vouNo, String tranSource) {
-        glDao.deleteGl(vouNo, tranSource);
+    public void deleteInvVoucher(String refNo, String tranSource, String compCode) {
+        glDao.deleteInvVoucher(refNo, tranSource, compCode);
     }
 
     @Override
-    public void deleteGl(String vouNo, String tranSource, String srcAcc) {
-        glDao.deleteGl(vouNo, tranSource, srcAcc);
+    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc) {
+        glDao.deleteVoucherByAcc(vouNo, tranSource, srcAcc);
     }
 
 

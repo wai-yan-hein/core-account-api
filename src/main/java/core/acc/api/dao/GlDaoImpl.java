@@ -217,6 +217,14 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
+    public boolean deleteInvVoucher(String refNo, String tranSource, String compCode) {
+        String sql = "update gl set deleted =1 where ref_no ='" + refNo + "' and tran_source='" + tranSource + "' and comp_code ='" + compCode + "' and deleted =0";
+        execSql(sql);
+        log.info("deleted voucher : " + tranSource);
+        return true;
+    }
+
+    @Override
     public boolean deleteVoucher(String glVouNo, String compCode) {
         String sql = "update gl set deleted =1 where gl_vou_no ='" + glVouNo + "' and comp_code ='" + compCode + "'";
         execSql(sql);
@@ -224,7 +232,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public void deleteGl(String vouNo, String tranSource, String srcAcc) {
+    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc) {
         String sql = "delete from gl where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "' and source_ac_id ='" + srcAcc + "'";
         execSql(sql);
     }
