@@ -129,7 +129,7 @@ public class CloudMQReceiver {
                         }
                         case "RECEIVE" -> {
                             update(obj);
-                            log.info("gl transaction successfully delivered to " + senderQ + " : " + obj.getKey().getGlCode());
+                            log.info("gl transaction successfully sent to " + senderQ + " : " + obj.getKey().getGlCode());
                         }
                         case "DELETE" -> glService.delete(obj.getKey(), obj.getModifyBy());
 
@@ -173,7 +173,7 @@ public class CloudMQReceiver {
                             }.getType());
                             if (!list.isEmpty()) {
                                 list.forEach(this::update);
-                                log.info("coa setup successfully delivered to server : " + list.size());
+                                log.info("coa setup successfully sent to server : " + list.size());
                             }
                         }
                         case "COA_REQUEST" -> {
@@ -224,7 +224,7 @@ public class CloudMQReceiver {
                                         objList.add(obj);
                                         sleep();
                                     } catch (Exception e) {
-                                        log.error("save Gl : " + e.getMessage());
+                                        log.error("save gl : " + e.getMessage());
                                     }
                                 });
                                 log.info("gl done.");
@@ -239,7 +239,7 @@ public class CloudMQReceiver {
                             }.getType());
                             if (!list.isEmpty()) {
                                 list.forEach(this::update);
-                                log.info("gl transaction successfully delivered to server : " + list.size());
+                                log.info("gl transaction successfully sent to server : " + list.size());
                             }
                         }
 
