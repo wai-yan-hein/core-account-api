@@ -218,9 +218,15 @@ public class AccountController {
         return ResponseEntity.ok(glService.delete(key, obj.getModifyBy()));
     }
 
-    @PostMapping(path = "/delete-gl-list")
-    public ResponseEntity<?> deleteGLList(@RequestBody Gl gl) {
-        glService.deleteGl(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode());
+    @PostMapping(path = "/delete-gl-by-account")
+    public ResponseEntity<?> deleteGlByAccount(@RequestBody Gl gl) {
+        glService.deleteVoucherByAcc(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode());
+        return ResponseEntity.ok("deleted.");
+    }
+
+    @PostMapping(path = "/delete-gl-by-voucher")
+    public ResponseEntity<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
+        glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(),gl.getKey().getCompCode());
         return ResponseEntity.ok("deleted.");
     }
 
