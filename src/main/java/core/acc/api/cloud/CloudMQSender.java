@@ -231,7 +231,7 @@ public class CloudMQSender {
 
     public void send(ReturnObject ro) {
         if (ro != null) {
-            uploadGl();
+            //uploadGl();
         }
     }
 
