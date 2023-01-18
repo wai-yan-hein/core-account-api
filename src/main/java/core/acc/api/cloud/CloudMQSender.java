@@ -207,11 +207,13 @@ public class CloudMQSender {
         uploadGl();
     }
 
-    private void uploadGl() {
-        List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
-        if (!list.isEmpty()) {
-            log.info("upload gl : " + list.size());
-            uploadFile("GL_UPLOAD", list, serverQ);
+    public void uploadGl() {
+        if (client) {
+            List<Gl> list = glService.unUpload(Util1.toDateStr(Util1.getSyncDate(), "yyyy-MM-dd"));
+            if (!list.isEmpty()) {
+                log.info("upload gl : " + list.size());
+                uploadFile("GL_UPLOAD", list, serverQ);
+            }
         }
     }
 
@@ -229,13 +231,7 @@ public class CloudMQSender {
         }
     }
 
-    public void send(ReturnObject ro) {
-        if (ro != null) {
-            //uploadGl();
-        }
-    }
-
-    private String getQueue(Gl sh) {
+     private String getQueue(Gl sh) {
         return client ? serverQ : hmQueue.get(sh.getDeptCode());
     }
 

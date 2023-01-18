@@ -111,7 +111,6 @@ public class AccountController {
         return ResponseEntity.ok(coaService.getTraderCOA(compCode));
     }
 
-
     @GetMapping(path = "/get-coa-child")
     public ResponseEntity<?> getCOAChild(@RequestParam String coaCode, @RequestParam String compCode) {
         return ResponseEntity.ok(coaService.getCOAChild(coaCode, compCode));
@@ -205,7 +204,7 @@ public class AccountController {
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
-        if (cloudMQSender != null) cloudMQSender.send(ro);
+        if (cloudMQSender != null) cloudMQSender.uploadGl();
         return ResponseEntity.ok(ro);
     }
 
