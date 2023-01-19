@@ -265,7 +265,6 @@ public class AccountController {
         return ResponseEntity.ok(traderService.getCustomer(compCode));
     }
 
-    //Desp
     @GetMapping(path = "/get-description")
     public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getDescription(str, compCode));

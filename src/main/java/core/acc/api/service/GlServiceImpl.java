@@ -231,7 +231,7 @@ public class GlServiceImpl implements GlService {
     }
 
     private String getGLCode(Integer deptId, Integer macId, String compCode) {
-        String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
+        String period = Util1.toDateStr(Util1.getTodayDate(), "ddMMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
         return deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
