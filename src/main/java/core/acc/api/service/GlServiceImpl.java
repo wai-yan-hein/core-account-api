@@ -184,6 +184,11 @@ public class GlServiceImpl implements GlService {
         glDao.deleteVoucherByAcc(vouNo, tranSource, srcAcc);
     }
 
+    @Override
+    public List<String> shootTri() {
+        return glDao.shootTri();
+    }
+
 
     private void backupGl(GlKey key, String updatedBy, boolean del) {
         if (key != null) {

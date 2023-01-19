@@ -204,6 +204,7 @@ public class AccountController {
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
+        //if (cloudMQSender != null) cloudMQSender.uploadGl();
         return ResponseEntity.ok(ro);
     }
 
@@ -225,7 +226,9 @@ public class AccountController {
 
     @PostMapping(path = "/delete-gl-by-voucher")
     public ResponseEntity<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
-        glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(),gl.getKey().getCompCode());
+        glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(), gl.getKey().getCompCode());
+        //upload to cloud
+        cloudMQSender.uploadGl();
         return ResponseEntity.ok("deleted.");
     }
 
@@ -294,6 +297,7 @@ public class AccountController {
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId));
     }
+
     @PostMapping(path = "/search-voucher")
     public ResponseEntity<?> searchVoucher(@RequestBody ReportFilter filter) {
         Integer macId = filter.getMacId();
@@ -348,6 +352,11 @@ public class AccountController {
     public ResponseEntity<?> convertToUniCode() {
         converterService.convertToUnicode();
         return ResponseEntity.ok("converted.");
+    }
+
+    @GetMapping(path = "/shoot-tri")
+    public ResponseEntity<?> shootTri() {
+        return ResponseEntity.ok(glService.shootTri());
     }
 
 

@@ -40,8 +40,8 @@ public interface GlService {
 
     List<Gl> search(String updatedDate, String deptCode);
 
-
     void deleteInvVoucher(String refNo, String tranSource,String compCode);
     void deleteVoucherByAcc(String vouNo, String tranSource,String srcAcc);
+    List<String> shootTri();
 
 }

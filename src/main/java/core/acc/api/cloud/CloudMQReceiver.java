@@ -158,7 +158,7 @@ public class CloudMQReceiver {
                         }.getType());
                         if (!list.isEmpty()) {
                             list.forEach(this::update);
-                            log.info("coa setup successfully sent to server : " + list.size());
+                            log.info("coa setup successfully received to server : " + list.size());
                         }
                     }
                     case "COA_REQUEST" -> {
@@ -223,7 +223,7 @@ public class CloudMQReceiver {
                         }.getType());
                         if (!list.isEmpty()) {
                             list.forEach(this::update);
-                            log.info("gl transaction successfully sent to server : " + list.size());
+                            log.info("gl transaction successfully received to server : " + list.size());
                         }
                     }
                 }
