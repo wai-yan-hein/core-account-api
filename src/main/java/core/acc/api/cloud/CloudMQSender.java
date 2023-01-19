@@ -9,7 +9,6 @@ import core.acc.api.entity.Department;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
 import core.acc.api.model.DepartmentUser;
-import core.acc.api.model.ReturnObject;
 import core.acc.api.repo.UserRepo;
 import core.acc.api.service.COAService;
 import core.acc.api.service.DepartmentService;
@@ -93,7 +92,8 @@ public class CloudMQSender {
         }
     }
 
-    private void saveMessage(String entity, String data, String queue) {
+    private void saveGl(String data, String queue) {
+        String entity = "GL";
         try {
             MessageCreator mc = (Session session) -> {
                 MapMessage mm = session.createMapMessage();
@@ -108,7 +108,7 @@ public class CloudMQSender {
                 log.info(entity + " sent to " + queue);
             }
         } catch (Exception e) {
-            log.error(String.format("saveMessage : %s : %s", entity, e.getMessage()));
+            log.error(String.format("saveGl : %s : %s", entity, e.getMessage()));
         }
     }
 
@@ -227,7 +227,7 @@ public class CloudMQSender {
 
     public void send(Gl gl) {
         if (gl != null) {
-            saveMessage("GL", gson.toJson(gl), getQueue(gl));
+            saveGl(gson.toJson(gl), getQueue(gl));
         }
     }
 

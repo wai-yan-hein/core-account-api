@@ -197,7 +197,7 @@ public class AccountController {
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
         gl = glService.save(gl, false);
         //sent to cloud
-        if (cloudMQSender != null) cloudMQSender.send(gl);
+        //if (cloudMQSender != null) cloudMQSender.send(gl);
         return ResponseEntity.ok(gl);
     }
 
