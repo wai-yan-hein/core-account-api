@@ -227,8 +227,6 @@ public class AccountController {
     @PostMapping(path = "/delete-gl-by-voucher")
     public ResponseEntity<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
         glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(), gl.getKey().getCompCode());
-        //upload to cloud
-        cloudMQSender.uploadGl();
         return ResponseEntity.ok("deleted.");
     }
 

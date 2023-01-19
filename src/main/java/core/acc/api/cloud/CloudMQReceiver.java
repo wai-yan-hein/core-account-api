@@ -158,7 +158,7 @@ public class CloudMQReceiver {
                         }.getType());
                         if (!list.isEmpty()) {
                             list.forEach(this::update);
-                            log.info("coa setup successfully received to server : " + list.size());
+                            log.info("coa setup successfully sent to server : " + list.size());
                         }
                     }
                     case "COA_REQUEST" -> {
@@ -187,11 +187,19 @@ public class CloudMQReceiver {
                         assert reader != null;
                         List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
                         }.getType());
-                        log.info("gl list size : " + list.size());
-                        for (Gl obj : list) {
-                            save(obj);
+                        log.info("gl list size : " + list.size() + " from " + senderQ);
+                        List<Gl> objList = new ArrayList<>();
+                        for (Gl gl : list) {
+                            gl.setIntgUpdStatus(REC);
+                            save(gl);
+                            Gl obj = new Gl();
+                            obj.setKey(gl.getKey());
+                            objList.add(obj);
                         }
                         log.info("gl done.");
+                        if (!objList.isEmpty()) {
+                            fileMessage("GL_RECEIVED", objList, senderQ);
+                        }
                     }
                     case "GL_UPLOAD" -> {
                         assert reader != null;
@@ -223,13 +231,10 @@ public class CloudMQReceiver {
                         }.getType());
                         if (!list.isEmpty()) {
                             list.forEach(this::update);
-                            log.info("gl transaction successfully received to server : " + list.size());
+                            log.info("gl transaction successfully sent to server : " + list.size());
                         }
                     }
                 }
-            }
-            if (option.equals("SAVE")) {
-                sendReceiveMessage(senderQ, entity, data);
             }
         } catch (Exception e) {
             log.error(String.format("%s : %s", entity, e.getMessage()));

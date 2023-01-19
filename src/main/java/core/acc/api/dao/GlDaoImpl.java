@@ -220,7 +220,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public boolean deleteInvVoucher(String refNo, String tranSource, String compCode) {
         String sql = "update gl set deleted =1,intg_upd_status = null where ref_no ='" + refNo + "' and tran_source='" + tranSource + "' and comp_code ='" + compCode + "'";
         execSql(sql);
-        log.info("deleted voucher : " + tranSource);
+        //log.info("deleted voucher : " + tranSource);
         return true;
     }
 
