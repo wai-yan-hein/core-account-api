@@ -387,7 +387,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> search(String updatedDate, String deptCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.modify_date > '" + updatedDate + "'";
+        String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.intg_upd_status is null";
         ResultSet rs = getResultSet(sql);
         if (rs != null) {
             try {
@@ -399,6 +399,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     GlKey key = new GlKey();
                     key.setCompCode(rs.getString("comp_code"));
                     key.setGlCode(rs.getString("gl_code"));
+                    key.setDeptId(rs.getInt("dept_id"));
                     gl.setKey(key);
                     gl.setGlDate(rs.getDate("gl_date"));
                     gl.setCreatedDate(rs.getTimestamp("created_date"));

@@ -204,7 +204,6 @@ public class AccountController {
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
-        if (cloudMQSender != null) cloudMQSender.uploadGl();
         return ResponseEntity.ok(ro);
     }
 
