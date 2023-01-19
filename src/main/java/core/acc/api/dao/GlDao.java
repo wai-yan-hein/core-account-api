@@ -15,7 +15,7 @@ public interface GlDao {
 
     Gl findWithSql(GlKey key);
 
-    boolean delete(GlKey key,String modifyBy);
+    boolean delete(GlKey key, String modifyBy);
 
     void deleteGl(String vouNo, String tranSource);
 
@@ -24,13 +24,17 @@ public interface GlDao {
     List<VRef> getReference(String str, String compCode);
 
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
-    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference,String refNo, String compCode, Integer macId);
 
-    boolean deleteInvVoucher(String refNo,String tranSource,String compCode);
-    boolean deleteVoucher(String glVouNo,String compCode);
-    void deleteVoucherByAcc(String vouNo, String tranSource,String srcAcc);
+    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId);
+
+    boolean deleteInvVoucher(String refNo, String tranSource, String compCode);
+
+    boolean deleteVoucher(String glVouNo, String compCode);
+
+    void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc);
 
     List<Gl> getJournal(String glVouNo, String compCode);
+
     List<Gl> getVoucher(String glVouNo, String compCode);
 
     List<Gl> getTranSource(String compCode);
@@ -39,7 +43,9 @@ public interface GlDao {
 
     Date getMaxDate();
 
-    List<Gl> search(String updatedDate,String deptCode);
+    List<Gl> search(String updatedDate, String deptCode);
+
+    List<String> shootTri();
 
 
 }
