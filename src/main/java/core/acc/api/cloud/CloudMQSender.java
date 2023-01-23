@@ -131,7 +131,6 @@ public class CloudMQSender {
         } catch (IOException e) {
             log.error(String.format("uploadFile : %s : %s", option, e.getMessage()));
         }
-
     }
 
     private void deleteMessage(String entity, String data, String queue) {

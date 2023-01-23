@@ -69,7 +69,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public boolean delete(GlKey key, String modifyBy) {
         String sql = "update gl\n" +
-                "set deleted =1,modify_by ='" + modifyBy + "'\n" +
+                "set deleted =1,intg_upd_status = null,modify_by ='" + modifyBy + "'\n" +
                 " where gl_code = '" + key.getGlCode() + "'\n" +
                 " and comp_code ='" + key.getCompCode() + "'\n" +
                 " and dept_id =" + key.getDeptId() + "";
@@ -80,7 +80,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public void deleteGl(String vouNo, String tranSource) {
-        String sql = "update  gl set deleted =1 where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "'";
+        String sql = "update  gl set deleted =1,intg_upd_status = null where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "'";
         execSql(sql);
     }
 
