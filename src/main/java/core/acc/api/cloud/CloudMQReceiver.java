@@ -118,13 +118,13 @@ public class CloudMQReceiver {
         String senderQ = message.getString("SENDER_QUEUE");
         String path = String.format("temp%s%s", File.separator, option);
         try {
-            log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
             String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
             if ("FILE".equals(entity)) {
                 Reader reader = null;
                 if (file != null) {
                     Util1.extractZipToJson(file, path);
                     reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
+                    log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
                 }
                 switch (option) {
                     case "COA_UPLOAD" -> {

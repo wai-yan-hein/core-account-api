@@ -55,6 +55,8 @@ public class GlServiceImpl implements GlService {
         return glDao.save(gl);
     }
 
+
+
     @Override
     public ReturnObject save(List<Gl> glList) throws Exception {
         ReturnObject ro = new ReturnObject();
@@ -95,6 +97,7 @@ public class GlServiceImpl implements GlService {
                     }
                 }
             }
+            ro.setGlVouNo(glVouNo);
             ro.setVouNo(vouNo);
             ro.setTranSource(tranSource);
             ro.setCompCode(compCode);

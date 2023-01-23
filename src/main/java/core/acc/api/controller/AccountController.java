@@ -196,15 +196,12 @@ public class AccountController {
     @PostMapping(path = "/save-gl")
     public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
         gl = glService.save(gl, false);
-        //sent to cloud
-        //if (cloudMQSender != null) cloudMQSender.send(gl);
         return ResponseEntity.ok(gl);
     }
 
     @PostMapping(path = "/save-gl-list")
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
-        //if (cloudMQSender != null) cloudMQSender.uploadGl();
         return ResponseEntity.ok(ro);
     }
 
@@ -214,7 +211,6 @@ public class AccountController {
         key.setGlCode(obj.getGlCode());
         key.setCompCode(obj.getCompCode());
         key.setDeptId(obj.getDeptId());
-        if (cloudMQSender != null) cloudMQSender.delete(key);
         return ResponseEntity.ok(glService.delete(key, obj.getModifyBy()));
     }
 
