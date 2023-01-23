@@ -33,6 +33,7 @@ public class ReturnObject {
     private String vouNo;
     private String tranSource;
     private String compCode;
+    private String glVouNo;
     private double opAmt;
     private double clAmt;
 }
