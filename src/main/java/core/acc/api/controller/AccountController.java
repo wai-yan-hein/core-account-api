@@ -40,6 +40,8 @@ public class AccountController {
     private StockOPService stockOPService;
     @Autowired
     private ConverterService converterService;
+    @Autowired
+    private ExchangeService exchangeService;
     @Autowired(required = false)
     private CloudMQSender cloudMQSender;
 
@@ -341,6 +343,14 @@ public class AccountController {
         return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, compCode));
     }
 
+    @PostMapping(path = "/search-exchange")
+    public ResponseEntity<?> searchExchange(@RequestBody ReportFilter filter) {
+        String fromDate = Util1.isNull(filter.getFromDate(), "-");
+        String toDate = Util1.isNull(filter.getToDate(), "-");
+        String compCode = Util1.isNull(filter.getCompCode(), "-");
+        return ResponseEntity.ok(exchangeService.search(fromDate, toDate, compCode));
+    }
+
     @GetMapping(path = "/convert-to-unicode")
     public ResponseEntity<?> convertToUniCode() {
         converterService.convertToUnicode();
@@ -351,6 +361,4 @@ public class AccountController {
     public ResponseEntity<?> shootTri() {
         return ResponseEntity.ok(glService.shootTri());
     }
-
-
 }

@@ -37,6 +37,8 @@ public class Department implements java.io.Serializable {
     private Integer macId;
     @Column(name = "map_dept_id")
     private Integer mapDeptId;
+    @Column(name = "deleted")
+    private boolean deleted;
     @Transient
     private List<Department> child;
 }

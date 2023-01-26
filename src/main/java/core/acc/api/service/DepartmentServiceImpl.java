@@ -47,8 +47,8 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public int delete(String code) {
-        return dao.delete(code);
+    public int delete(DepartmentKey key) {
+        return dao.delete(key);
     }
 
     @Override

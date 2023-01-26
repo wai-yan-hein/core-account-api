@@ -16,7 +16,7 @@ public interface DepartmentService {
 
     List<Department> getDepartmentTree(String compCode);
 
-    int delete(String code);
+    int delete(DepartmentKey key);
 
     List<Department> findAll(String compCode);
 

@@ -14,12 +14,10 @@ public class CurExchange {
     @Column(name = "ex_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date exDate;
-    @ManyToOne
-    @JoinColumn(name = "home_cur")
-    private Currency homeCur;
-    @ManyToOne
-    @JoinColumn(name = "exchange_cur")
-    private Currency exCur;
+    @Column(name = "home_cur")
+    private String homeCur;
+    @Column(name = "exchange_cur")
+    private String exCur;
     @Column(name = "remark")
     private String remark;
     @Column(name = "ex_rate")
