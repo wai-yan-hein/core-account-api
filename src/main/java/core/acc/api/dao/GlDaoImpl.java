@@ -193,7 +193,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "from gl\n" +
                 "where " + filter + "" +
                 "group by gl_vou_no\n" +
-                "order by gl_date";
+                "order by gl_date,tran_source,gl_vou_no";
         try {
             ResultSet rs = getResultSet(sql);
             if (rs != null) {

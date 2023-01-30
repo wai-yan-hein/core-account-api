@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
 @Slf4j
 @Service
 @Transactional
@@ -56,7 +57,6 @@ public class GlServiceImpl implements GlService {
     }
 
 
-
     @Override
     public ReturnObject save(List<Gl> glList) throws Exception {
         ReturnObject ro = new ReturnObject();
@@ -70,13 +70,14 @@ public class GlServiceImpl implements GlService {
             if (tmp.isEdit()) {
                 backupGl(tmp.getKey(), tmp.getModifyBy(), false);
             }
+            log.info(tranSource);
             switch (tranSource) {
-                case "GV", "DR", "CR":
+                case "GV", "DR", "CR" -> {
                     if (Util1.isNullOrEmpty(glVouNo)) {
                         glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
                     }
-                default:
-                    glDao.deleteInvVoucher(vouNo, tranSource, compCode);
+                }
+                default -> glDao.deleteInvVoucher(vouNo, tranSource, compCode);
             }
             if (!delete) {
                 for (Gl gl : glList) {
