@@ -924,6 +924,7 @@ public class ReportServiceImpl implements ReportService {
         return hmRo.get(macId) == null ? new ReturnObject() : hmRo.get(macId);
     }
 
+
     @Override
     public List<Gl> getTraderBalance(String traderCode, String accCode, String curCode, String fromDate,
                                      String toDate, String compCode, Integer macId) {
