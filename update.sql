@@ -9,3 +9,12 @@ create table tmp_tri (
   comp_code varchar(15) not null,
   primary key (coa_code,curr_id,mac_id,dept_code,comp_code)
 ) engine=innodb default charset=utf8mb3;
+
+alter table gl
+drop column old_dept_code,
+drop column exchange_id,
+add column from_des varchar(255) null after deleted,
+add column for_des varchar(255) null after from_des;
+ALTER TABLE `gl`
+CHANGE COLUMN `naration` `narration` VARCHAR(500) NULL DEFAULT NULL ;
+

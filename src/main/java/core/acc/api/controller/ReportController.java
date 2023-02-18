@@ -31,7 +31,8 @@ public class ReportController {
     private ReturnObject ro = new ReturnObject();
 
     @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody ReturnObject getReport(@RequestBody ReportFilter filter) {
+    public @ResponseBody
+    ReturnObject getReport(@RequestBody ReportFilter filter) {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
@@ -45,6 +46,7 @@ public class ReportController {
         String bsProcess = Util1.isNull(filter.getBsProcess(), "-");
         String invGroup = Util1.isNull(filter.getInvGroup(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
+        String cashGroup = Util1.isNull(filter.getCashGroup(), "-");
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
@@ -85,7 +87,11 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "IndividualStatement" -> {
-                    List<Gl> data = reportService.getIndividualStatement(srcAcc,curCode,opDate,fromDate,toDate,compCode,macId);
+                    List<Gl> data = reportService.getIndividualStatement(srcAcc, curCode, opDate, fromDate, toDate, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
+                case "AllCashDaily" -> {
+                    List<Gl> data = reportService.getAllCashDaily(opDate, fromDate, toDate, curCode, cashGroup, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
             }

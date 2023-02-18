@@ -175,7 +175,7 @@ public class AccountController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, 3, curCode, compCode, macId, traderCode));
+        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, traderCode));
     }
 
     @PostMapping(path = "/get-opening")

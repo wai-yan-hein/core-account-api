@@ -69,7 +69,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public boolean delete(GlKey key, String modifyBy) {
         String sql = "update gl\n" +
-                "set deleted =1,intg_upd_status = null,modify_by ='" + modifyBy + "'\n" +
+                " set deleted =1,intg_upd_status = null,modify_by ='" + modifyBy + "'\n" +
                 " where gl_code = '" + key.getGlCode() + "'\n" +
                 " and comp_code ='" + key.getCompCode() + "'\n" +
                 " and dept_id =" + key.getDeptId() + "";
@@ -189,7 +189,8 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!refNo.equals("-")) {
             filter += "and ref_no like '" + refNo + "%'\n";
         }
-        String sql = "select gl_date,description,reference,ref_no,gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+        String sql = "select gl_date,description,reference,for_des,from_des,narration,\n" +
+                "gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
                 "from gl\n" +
                 "where " + filter + "" +
                 "group by gl_vou_no\n" +
@@ -202,11 +203,14 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     g.setGlDate(rs.getDate("gl_date"));
                     g.setDescription(rs.getString("description"));
                     g.setReference(rs.getString("reference"));
-                    g.setRefNo(rs.getString("ref_no"));
+                    g.setForDes(rs.getString("for_des"));
+                    g.setFromDes(rs.getString("from_des"));
+                    g.setNarration(rs.getString("narration"));
                     g.setGlVouNo(rs.getString("gl_vou_no"));
                     g.setDrAmt(rs.getDouble("dr_amt"));
                     g.setCrAmt(rs.getDouble("cr_amt"));
                     g.setTranSource(rs.getString("tran_source"));
+                    g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
                     list.add(g);
                 }
             }
@@ -253,6 +257,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "where g.comp_code ='" + compCode + "'\n" +
                 "and g.gl_vou_no ='" + glVouNo + "'\n" +
                 "and g.tran_source ='GV'\n" +
+                "and g.deleted =0\n" +
                 "order by g.gl_code";
         try {
             ResultSet rs = getResultSet(sql);
@@ -293,6 +298,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         List<Gl> list = new ArrayList<>();
         String sql = "select g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" +
                 "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" +
+                "g.for_des,g.from_des,g.narration,\n" +
                 "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
                 "d.usr_code d_user_code,coa.coa_name_eng\n" +
                 "from gl g\n" +
@@ -320,10 +326,14 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
                     g.setDescription(rs.getString("description"));
                     g.setReference(rs.getString("reference"));
+                    g.setForDes(rs.getString("for_des"));
+                    g.setFromDes(rs.getString("from_des"));
+                    g.setNarration(rs.getString("narration"));
                     g.setRefNo(rs.getString("ref_no"));
                     g.setGlVouNo(rs.getString("gl_vou_no"));
                     g.setDrAmt(rs.getDouble("dr_amt"));
                     g.setCrAmt(rs.getDouble("cr_amt"));
+                    g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
                     g.setDeptCode(rs.getString("dept_code"));
                     g.setDeptUsrCode(rs.getString("d_user_code"));
                     g.setTraderCode(rs.getString("trader_code"));

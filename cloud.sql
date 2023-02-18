@@ -38,9 +38,6 @@ ALTER TABLE `gl`
 ADD COLUMN `deleted` BIT(1) NOT NULL DEFAULT 0 AFTER `dept_id`;
 ALTER TABLE `chart_of_account`
 ADD COLUMN `credit` BIT(1) NOT NULL DEFAULT 0 AFTER `intg_upd_status`;
-ALTER TABLE `gl`
-ADD COLUMN `old_dept_code` VARCHAR(15) NULL AFTER `deleted`;
-
 
 
 drop table if exists tmp_tri,tmp_closing,tmp_ex_rate;

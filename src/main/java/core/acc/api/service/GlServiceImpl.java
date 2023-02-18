@@ -31,7 +31,7 @@ public class GlServiceImpl implements GlService {
         if (Util1.isNull(gl.getKey().getGlCode())) {
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
-            String glCode = getGLCode(gl.getKey().getDeptId(), macId, compCode);
+            String glCode = getGLCode(gl.getGlDate(), gl.getKey().getDeptId(), macId, compCode);
             GlKey key = gl.getKey();
             key.setGlCode(glCode);
             Gl valid = findByCode(key);
@@ -45,11 +45,7 @@ public class GlServiceImpl implements GlService {
             if (backup) backupGl(gl.getKey(), updatedBy, false);
         }
         if (gl.getDelList() != null) {
-            for (String code : gl.getDelList()) {
-                GlKey key = new GlKey();
-                key.setCompCode(gl.getKey().getCompCode());
-                key.setGlCode(code);
-                key.setDeptId(gl.getKey().getDeptId());
+            for (GlKey key : gl.getDelList()) {
                 glDao.delete(key, updatedBy);
             }
         }
@@ -65,16 +61,16 @@ public class GlServiceImpl implements GlService {
             String vouNo = tmp.getRefNo();
             String tranSource = tmp.getTranSource();
             String compCode = tmp.getKey().getCompCode();
+            Date glDate = tmp.getGlDate();
             boolean delete = tmp.isDeleted();
             String glVouNo = tmp.getGlVouNo();
             if (tmp.isEdit()) {
                 backupGl(tmp.getKey(), tmp.getModifyBy(), false);
             }
-            log.info(tranSource);
             switch (tranSource) {
                 case "GV", "DR", "CR" -> {
                     if (Util1.isNullOrEmpty(glVouNo)) {
-                        glVouNo = getVouNo(tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
+                        glVouNo = getVouNo(glDate, tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
                     }
                 }
                 default -> glDao.deleteInvVoucher(vouNo, tranSource, compCode);
@@ -234,8 +230,8 @@ public class GlServiceImpl implements GlService {
         }
     }
 
-    private String getGLCode(Integer deptId, Integer macId, String compCode) {
-        String period = Util1.toDateStr(Util1.getTodayDate(), "ddMMyy");
+    private String getGLCode(Date date, Integer deptId, Integer macId, String compCode) {
+        String period = Util1.toDateStr(date, "ddMMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
         return deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
@@ -248,11 +244,11 @@ public class GlServiceImpl implements GlService {
         return "L-" + deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
     }
 
-    private String getVouNo(Integer deptId, Integer macId, String compCode, String type) {
-        String period = Util1.toDateStr(Util1.getTodayDate(), "MMyy");
-        int seqNo = seqService.getSequence(macId, "GV", period, compCode);
-        String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
-        return deptCode + type + "-" + String.format("%0" + 5 + "d", seqNo) + period;
+    private String getVouNo(Date glDate, Integer deptId, Integer macId, String compCode, String type) {
+        String period = Util1.toDateStr(glDate, "MMyy");
+        int seqNo = seqService.getSequence(macId, type, period, compCode);
+        String deptCode = String.format("%0" + 2 + "d", deptId);
+        return type + deptCode + String.format("%0" + 2 + "d", macId) + "-" + period + "-" + String.format("%0" + 5 + "d", seqNo);
     }
 
 }

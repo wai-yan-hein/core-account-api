@@ -56,6 +56,15 @@ public class CloudMQReceiver {
     private COAService coaService;
     @Autowired
     private ReportService service;
+    private boolean online = false;
+
+    public boolean isOnline() {
+        return online;
+    }
+
+    public void setOnline(boolean online) {
+        this.online = online;
+    }
 
     private void responseSetup(String entity, String distQ, String data) {
         MessageCreator mc = (Session session) -> {
@@ -117,121 +126,136 @@ public class CloudMQReceiver {
         byte[] file = message.getBytes("DATA_FILE");
         String senderQ = message.getString("SENDER_QUEUE");
         String path = String.format("temp%s%s", File.separator, option);
+        log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
         try {
             String dateTimeFormat = "yyyy-MM-dd HH:mm:ss";
-            if ("FILE".equals(entity)) {
-                Reader reader = null;
-                if (file != null) {
-                    Util1.extractZipToJson(file, path);
-                    reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
-                    log.info(String.format("receivedMessage : %s - %s - %s", entity, option, senderQ));
+            switch (entity) {
+                case "CONNECTION" -> {
+                    MessageCreator mc = (Session session) -> {
+                        MapMessage mm = session.createMapMessage();
+                        mm.setString("SENDER_QUEUE", listenQ);
+                        mm.setString("ENTITY", "ONLINE");
+                        mm.setString("OPTION", "CONNECTION");
+                        return mm;
+                    };
+                    if (senderQ != null) {
+                        cloudMQTemplate.send(senderQ, mc);
+                    }
                 }
-                switch (option) {
-                    case "COA_UPLOAD" -> {
-                        assert reader != null;
-                        List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                        }.getType());
-                        List<ChartOfAccount> objList = new ArrayList<>();
-                        if (!list.isEmpty()) {
-                            log.info("coa list size :" + list.size() + " from " + senderQ);
-                            list.forEach(gl -> {
-                                try {
-                                    gl.setIntgUpdStatus(SAVE);
-                                    save(gl);
-                                    ChartOfAccount obj = new ChartOfAccount();
-                                    obj.setKey(gl.getKey());
-                                    objList.add(obj);
-                                    sleep();
-                                } catch (Exception e) {
-                                    log.error("save coa : " + e.getMessage());
-                                }
-                            });
-                            log.info("coa done.");
-                        }
-                        if (!objList.isEmpty()) {
-                            fileMessage("COA_RECEIVED", objList, senderQ);
-                        }
+                case "ONLINE" -> setOnline(true);
+                case "FILE" -> {
+                    Reader reader = null;
+                    if (file != null) {
+                        Util1.extractZipToJson(file, path);
+                        reader = Files.newBufferedReader(Paths.get(path.concat(".json")));
                     }
-                    case "COA_RECEIVED" -> {
-                        assert reader != null;
-                        List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                        }.getType());
-                        if (!list.isEmpty()) {
-                            list.forEach(this::update);
-                            log.info("coa setup successfully sent to server : " + list.size());
+                    switch (option) {
+                        case "COA_UPLOAD" -> {
+                            assert reader != null;
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            List<ChartOfAccount> objList = new ArrayList<>();
+                            if (!list.isEmpty()) {
+                                log.info("coa list size :" + list.size() + " from " + senderQ);
+                                list.forEach(gl -> {
+                                    try {
+                                        gl.setIntgUpdStatus(SAVE);
+                                        save(gl);
+                                        ChartOfAccount obj = new ChartOfAccount();
+                                        obj.setKey(gl.getKey());
+                                        objList.add(obj);
+                                        sleep();
+                                    } catch (Exception e) {
+                                        log.error("save coa : " + e.getMessage());
+                                    }
+                                });
+                                log.info("coa done.");
+                            }
+                            if (!objList.isEmpty()) {
+                                fileMessage("COA_RECEIVED", objList, senderQ);
+                            }
                         }
-                    }
-                    case "COA_REQUEST" -> {
-                        ChartOfAccount obj = gson.fromJson(data, ChartOfAccount.class);
-                        List<ChartOfAccount> list = coaService.search(Util1.toDateStr(obj.getModifiedDate(), dateTimeFormat));
-                        if (!list.isEmpty()) {
-                            fileMessage("COA", list, senderQ);
+                        case "COA_RECEIVED" -> {
+                            assert reader != null;
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            if (!list.isEmpty()) {
+                                list.forEach(this::update);
+                                log.info("coa setup successfully sent to server : " + list.size());
+                            }
                         }
-                    }
-                    case "COA_RESPONSE" -> {
-                        assert reader != null;
-                        List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
-                        }.getType());
-                        for (ChartOfAccount obj : list) {
-                            update(obj);
+                        case "COA_REQUEST" -> {
+                            ChartOfAccount obj = gson.fromJson(data, ChartOfAccount.class);
+                            List<ChartOfAccount> list = coaService.search(Util1.toDateStr(obj.getModifiedDate(), dateTimeFormat));
+                            if (!list.isEmpty()) {
+                                fileMessage("COA", list, senderQ);
+                            }
                         }
-                    }
-                    case "GL_REQUEST" -> {
-                        Gl obj = gson.fromJson(data, Gl.class);
-                        List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
-                        if (!list.isEmpty()) {
-                            fileMessage("GL_RESPONSE", list, senderQ);
+                        case "COA_RESPONSE" -> {
+                            assert reader != null;
+                            List<ChartOfAccount> list = gson.fromJson(reader, new TypeToken<ArrayList<ChartOfAccount>>() {
+                            }.getType());
+                            for (ChartOfAccount obj : list) {
+                                update(obj);
+                            }
                         }
-                    }
-                    case "GL_RESPONSE" -> {
-                        assert reader != null;
-                        List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                        }.getType());
-                        log.info("gl list size : " + list.size() + " from " + senderQ);
-                        List<Gl> objList = new ArrayList<>();
-                        for (Gl gl : list) {
-                            gl.setIntgUpdStatus(REC);
-                            save(gl);
-                            Gl obj = new Gl();
-                            obj.setKey(gl.getKey());
-                            objList.add(obj);
+                        case "GL_REQUEST" -> {
+                            Gl obj = gson.fromJson(data, Gl.class);
+                            List<Gl> list = glService.search(Util1.toDateStr(obj.getModifyDate(), dateTimeFormat), obj.getDeptCode());
+                            if (!list.isEmpty()) {
+                                fileMessage("GL_RESPONSE", list, senderQ);
+                            }
                         }
-                        log.info("gl done.");
-                        if (!objList.isEmpty()) {
-                            fileMessage("GL_RECEIVED", objList, senderQ);
-                        }
-                    }
-                    case "GL_UPLOAD" -> {
-                        assert reader != null;
-                        List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                        }.getType());
-                        List<Gl> objList = new ArrayList<>();
-                        if (!list.isEmpty()) {
-                            log.info("gl list size :" + list.size() + " from " + senderQ);
-                            list.forEach(gl -> {
-                                try {
-                                    gl.setIntgUpdStatus(SAVE);
-                                    save(gl);
-                                    Gl obj = new Gl();
-                                    obj.setKey(gl.getKey());
-                                    objList.add(obj);
-                                } catch (Exception e) {
-                                    log.error("save gl : " + e.getMessage());
-                                }
-                            });
+                        case "GL_RESPONSE" -> {
+                            assert reader != null;
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            log.info("gl list size : " + list.size() + " from " + senderQ);
+                            List<Gl> objList = new ArrayList<>();
+                            for (Gl gl : list) {
+                                gl.setIntgUpdStatus(REC);
+                                save(gl);
+                                Gl obj = new Gl();
+                                obj.setKey(gl.getKey());
+                                objList.add(obj);
+                            }
                             log.info("gl done.");
+                            if (!objList.isEmpty()) {
+                                fileMessage("GL_RECEIVED", objList, senderQ);
+                            }
                         }
-                        if (!objList.isEmpty()) {
-                            fileMessage("GL_RECEIVED", objList, senderQ);
+                        case "GL_UPLOAD" -> {
+                            assert reader != null;
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            List<Gl> objList = new ArrayList<>();
+                            if (!list.isEmpty()) {
+                                log.info("gl list size :" + list.size() + " from " + senderQ);
+                                list.forEach(gl -> {
+                                    try {
+                                        gl.setIntgUpdStatus(SAVE);
+                                        save(gl);
+                                        Gl obj = new Gl();
+                                        obj.setKey(gl.getKey());
+                                        objList.add(obj);
+                                    } catch (Exception e) {
+                                        log.error("save gl : " + e.getMessage());
+                                    }
+                                });
+                                log.info("gl done.");
+                            }
+                            if (!objList.isEmpty()) {
+                                fileMessage("GL_RECEIVED", objList, senderQ);
+                            }
                         }
-                    }
-                    case "GL_RECEIVED" -> {
-                        assert reader != null;
-                        List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
-                        }.getType());
-                        if (!list.isEmpty()) {
-                            list.forEach(this::update);
-                            log.info("gl transaction successfully sent to server : " + list.size());
+                        case "GL_RECEIVED" -> {
+                            assert reader != null;
+                            List<Gl> list = gson.fromJson(reader, new TypeToken<ArrayList<Gl>>() {
+                            }.getType());
+                            if (!list.isEmpty()) {
+                                list.forEach(this::update);
+                                log.info("gl transaction successfully sent to server : " + list.size());
+                            }
                         }
                     }
                 }

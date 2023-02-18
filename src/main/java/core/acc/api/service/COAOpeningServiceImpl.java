@@ -38,7 +38,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
     }
 
     @Override
-    public List<TmpOpening> getCOAOpening(String coaCode, String opDate, String clDate, int level, String curr,
+    public List<TmpOpening> getCOAOpening(String coaCode, String opDate, String clDate, String curr,
                                           String compCode, Integer macId, String traderCode) {
         List<TmpOpening> list = new ArrayList<>();
         String opSql = "select source_acc_id,cur_code,balance\n" +

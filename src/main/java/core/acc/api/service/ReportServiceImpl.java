@@ -75,9 +75,9 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
-                                       String acc, String curCode, String reference,
-                                       String compCode, String tranSource, String traderCode, String traderType,
-                                       String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException {
+                                        String acc, String curCode, String reference,
+                                        String compCode, String tranSource, String traderCode, String traderType,
+                                        String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException {
         String coaFilter = "";
         if (!coaLv2.equals("-")) {
             coaFilter += "where coa3.coa_parent = '" + coaLv2 + "'\n";
@@ -810,7 +810,6 @@ public class ReportServiceImpl implements ReportService {
                 ")b\n" +
                 "join trader t on b.trader_code = t.code\n" +
                 "and b.comp_code = t.comp_code\n" +
-                "where balance<>0\n" +
                 "order by t.user_code";
         List<VApar> list = new ArrayList<>();
         try {
@@ -1052,7 +1051,7 @@ public class ReportServiceImpl implements ReportService {
                 });
                 try {
                     double opAmt = 0;
-                    List<TmpOpening> openings = coaOpeningService.getCOAOpening(sourceAcc, opDate, fromDate, 3, curCode, compCode, macId, "-");
+                    List<TmpOpening> openings = coaOpeningService.getCOAOpening(sourceAcc, opDate, fromDate, curCode, compCode, macId, "-");
                     if (!openings.isEmpty()) opAmt = openings.get(0).getOpening();
                     Gl tb = new Gl();
                     tb.setDescription("Opening");
@@ -1088,7 +1087,7 @@ public class ReportServiceImpl implements ReportService {
         List<COAOpening> list = new ArrayList<>();
         String sql = "select a.cur_code,coa.coa_code_usr,coa.coa_name_eng,dep.usr_code,if(dr_amt-cr_amt>0,dr_amt-cr_amt,0) dr_amt,if(dr_amt-cr_amt<0,(dr_amt-cr_amt)*-1,0) cr_amt\n" +
                 "from (\n" +
-                "select source_acc_id,cur_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt,dept_code,comp_code\n" +
+                "select source_acc_id,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code,comp_code\n" +
                 "from coa_opening \n" +
                 "where comp_code ='" + compCode + "'\n" +
                 "and date(op_date)='" + opDate + "'\n" +
@@ -1120,6 +1119,95 @@ public class ReportServiceImpl implements ReportService {
                 }
             } catch (Exception e) {
                 log.error("getOpeningTri : " + e.getMessage());
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public List<Gl> getAllCashDaily(String opDate, String fromDate, String toDate, String curCode, String cashGroup, String compCode, Integer macId) {
+        List<Gl> list = new ArrayList<>();
+        List<String> listCOA = new ArrayList<>();
+        String delSql = "delete from tmp_op_cl where mac_id =" + macId + "";
+        dao.exeSql(delSql);
+        String sql = "select coa_code\n" +
+                "from chart_of_account\n" +
+                "where coa_parent='" + cashGroup + "'\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and active = 1\n" +
+                "and deleted =0";
+        ResultSet rs = dao.executeSql(sql);
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    listCOA.add(rs.getString("coa_code"));
+                }
+            } catch (Exception e) {
+                log.error("getAllCashDaily : " + e.getMessage());
+            }
+        }
+        List<Gl> listGl;
+        for (String coaCode : listCOA) {
+            try {
+                listGl = new ArrayList<>();
+                log.info(coaCode);
+                sql = "select a.*,dep.dept_name,coa.coa_name_eng src_acc_name,coa1.coa_name_eng coa_name\n" +
+                        "from (\n" +
+                        "select source_ac_id,account_id,dept_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+                        "from gl \n" +
+                        "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                        "and comp_code = '" + compCode + "'\n" +
+                        "and deleted =0\n" +
+                        "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                        "and (account_id ='" + coaCode + "' or source_ac_id ='" + coaCode + "')\n" +
+                        "group by source_ac_id,dept_code\n" +
+                        ")a\n" +
+                        "join department dep\n" +
+                        "on a.dept_code = dep.dept_code\n" +
+                        "and a.comp_code = dep.comp_code\n" +
+                        "join chart_of_account coa\n" +
+                        "on a.source_ac_id = coa.coa_code\n" +
+                        "and a.comp_code = coa.comp_code\n" +
+                        "join chart_of_account coa1\n" +
+                        "on a.account_id = coa1.coa_code\n" +
+                        "and a.comp_code = coa1.comp_code";
+                rs = getResult(sql);
+                if (rs != null) {
+                    while (rs.next()) {
+                        Gl gl = new Gl();
+                        gl.setSrcAccCode(rs.getString("source_ac_id"));
+                        gl.setAccCode(rs.getString("account_id"));
+                        gl.setSrcAccName(rs.getString("src_acc_name"));
+                        gl.setAccName(rs.getString("coa_name"));
+                        gl.setDrAmt(rs.getDouble("dr_amt"));
+                        gl.setCrAmt(rs.getDouble("cr_amt"));
+                        gl.setDeptUsrCode(rs.getString("dept_name"));
+                        String account = Util1.isNull(gl.getAccCode(), "-");
+                        if (account.equals(coaCode)) {
+                            //swap amt
+                            double tmpDrAmt = Util1.getDouble(gl.getDrAmt());
+                            gl.setDrAmt(gl.getCrAmt());
+                            gl.setCrAmt(tmpDrAmt);
+                            String name = gl.getSrcAccName();
+                            gl.setSrcAccName(gl.getAccName());
+                            gl.setAccName(name);
+                        }
+                        gl.setDrAmt(Util1.toNull(gl.getDrAmt()));
+                        gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
+                        listGl.add(gl);
+                    }
+                    if (!listGl.isEmpty()) {
+                        List<TmpOpening> tmp = coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, "-");
+                        if (!tmp.isEmpty()) {
+                            listGl.get(0).setOpening(tmp.get(0).getOpening());
+                        } else {
+                            listGl.get(0).setOpening(0);
+                        }
+                        list.addAll(listGl);
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
             }
         }
         return list;

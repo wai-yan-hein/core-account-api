@@ -59,10 +59,16 @@ public class Gl {
     private String refNo;
     @Column(name = "deleted")
     private boolean deleted;
+    @Column(name = "from_des")
+    private String fromDes;
+    @Column(name = "for_des")
+    private String forDes;
+    @Column(name = "narration")
+    private String narration;
     @Transient
     private String glDateStr;
     @Transient
-    private List<String> delList;
+    private List<GlKey> delList;
     @Transient
     private boolean cash = false;
     @Transient
@@ -81,6 +87,8 @@ public class Gl {
     private double opening;
     @Transient
     private double closing;
+    @Transient
+    private double amount;
 
 
     public Gl(Date modifyDate, String deptCode) {

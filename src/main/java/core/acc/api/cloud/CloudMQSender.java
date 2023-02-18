@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -50,6 +51,8 @@ public class CloudMQSender {
     private JmsTemplate cloudMQTemplate;
     @Autowired
     private UserRepo userRepo;
+    @Autowired
+    private CloudMQReceiver receiver;
     private final HashMap<String, String> hmQueue = new HashMap<>();
 
     //service
@@ -64,17 +67,42 @@ public class CloudMQSender {
         serverQ = userRepo.getProperty("cloud.activemq.account.server.queue");
         if (client) {
             log.info("This program is running as a client.");
-            if (!progress) {
-                progress = true;
-                //destroyQ(serverQ);
-                downloadSetup();
-                uploadSetup();
-                downloadTransaction();
-                uploadTransaction();
-                progress = false;
+            checkOnline();
+            if (receiver.isOnline()) {
+                if (!progress) {
+                    progress = true;
+                    downloadSetup();
+                    uploadSetup();
+                    downloadTransaction();
+                    uploadTransaction();
+                    progress = false;
+                }
+            } else {
+                log.info("server is offline.");
             }
         } else {
             log.info("This program is running as a server.");
+        }
+    }
+
+    private void checkOnline() {
+        receiver.setOnline(false);
+        MessageCreator mc = (Session session) -> {
+            MapMessage mm = session.createMapMessage();
+            mm.setString("SENDER_QUEUE", listenQ);
+            mm.setString("ENTITY", "CONNECTION");
+            mm.setString("OPTION", "CONNECTION");
+            return mm;
+        };
+        cloudMQTemplate.send(serverQ, mc);
+        sleep();
+    }
+
+    private void sleep() {
+        try {
+            TimeUnit.MILLISECONDS.sleep(5000);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -230,7 +258,7 @@ public class CloudMQSender {
         }
     }
 
-     private String getQueue(Gl sh) {
+    private String getQueue(Gl sh) {
         return client ? serverQ : hmQueue.get(sh.getDeptCode());
     }
 

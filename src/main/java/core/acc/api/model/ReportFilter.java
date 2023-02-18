@@ -34,4 +34,5 @@ public class ReportFilter {
     private List<String> listDepartment;
     private String deptCode;
     private boolean summary;
+    private String cashGroup;
 }

@@ -19,9 +19,9 @@ public interface ReportService {
     String getOpeningDate(String compCode);
 
     List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
-                                String acc, String curCode, String reference,
-                                String compCode, String tranSource, String traderCode, String traderType,
-                                String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException;
+                                 String acc, String curCode, String reference,
+                                 String compCode, String tranSource, String traderCode, String traderType,
+                                 String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException;
 
     List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate, String invGroup,
                                   boolean detail, String compCode, Integer macId);
@@ -51,9 +51,11 @@ public interface ReportService {
     ReturnObject getReportResult(Integer macId);
 
     List<Gl> getTraderBalance(String traderCode, String accCode,
-                                         String curCode, String fromDate, String toDate, String compCode, Integer macId);
+                              String curCode, String fromDate, String toDate, String compCode, Integer macId);
 
-    List<Gl> getIndividualStatement(String sourceAcc, String curCode,String opDate, String fromDate, String toDate, String compCode, Integer macId);
+    List<Gl> getIndividualStatement(String sourceAcc, String curCode, String opDate, String fromDate, String toDate, String compCode, Integer macId);
 
     List<COAOpening> getOpeningTri(String opDate, String deptCode, String curCode, String compCode);
+
+    List<Gl> getAllCashDaily(String opDate, String fromDate, String toDate,String curCode, String cashGroup, String compCode, Integer mac_id);
 }
