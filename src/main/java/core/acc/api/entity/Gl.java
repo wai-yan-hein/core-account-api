@@ -65,6 +65,10 @@ public class Gl {
     private String forDes;
     @Column(name = "narration")
     private String narration;
+    @Column(name = "batch_no")
+    private String batchNo;
+    @Column(name = "project_no")
+    private String projectNo;
     @Transient
     private String glDateStr;
     @Transient

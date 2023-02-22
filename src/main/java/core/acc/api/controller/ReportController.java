@@ -41,9 +41,18 @@ public class ReportController {
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
-        String ieProcess = Util1.isNull(filter.getIncomeExpenseProcess(), "-");
-        String plProcess = Util1.isNull(filter.getPlProcess(), "-");
-        String bsProcess = Util1.isNull(filter.getBsProcess(), "-");
+        String fixAcc = Util1.isNull(filter.getFixedAcc(), "-");
+        String curAcc = Util1.isNull(filter.getCurrentAcc(), "-");
+        String liaAcc = Util1.isNull(filter.getLiaAcc(), "-");
+        String capitalAcc = Util1.isNull(filter.getCapitalAcc(), "-");
+        String incomeAcc = Util1.isNull(filter.getIncomeAcc(), "-");
+        String otherIncomeAcc = Util1.isNull(filter.getOtherIncomeAcc(), "-");
+        String purAcc = Util1.isNull(filter.getPurchaseAcc(), "-");
+        String expenseAcc = Util1.isNull(filter.getExpenseAcc(), "-");
+
+        String ieProcess = String.format("%s,%s,%s,%s", incomeAcc, otherIncomeAcc, purAcc, expenseAcc);
+        String plProcess = String.format("%s,%s,%s,%s", incomeAcc, purAcc, otherIncomeAcc, expenseAcc);
+        String bsProcess = String.format("%s,%s,%s,%s", fixAcc, curAcc, liaAcc, capitalAcc);
         String invGroup = Util1.isNull(filter.getInvGroup(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         String cashGroup = Util1.isNull(filter.getCashGroup(), "-");

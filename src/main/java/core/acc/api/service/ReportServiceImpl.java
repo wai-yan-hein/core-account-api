@@ -166,7 +166,7 @@ public class ReportServiceImpl implements ReportService {
                     "from (\n" +
                     "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
                     "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, trader_code, comp_code, tran_source, gl_vou_no,\n" +
-                    "remark, mac_id, ref_no,dept_id\n" +
+                    "remark, mac_id, ref_no,dept_id,batch_no\n" +
                     "from gl \n" +
                     "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                     "and comp_code = '" + compCode + "'\n" +
@@ -222,6 +222,7 @@ public class ReportServiceImpl implements ReportService {
                     v.setSrcAccName(rs.getString("src_acc_name"));
                     v.setAccName(rs.getString("acc_name"));
                     v.setMacId(rs.getInt("mac_id"));
+                    v.setBatchNo(rs.getString("batch_no"));
                     list.add(v);
                 }
             }

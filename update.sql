@@ -18,3 +18,8 @@ add column for_des varchar(255) null after from_des;
 ALTER TABLE `gl`
 CHANGE COLUMN `naration` `narration` VARCHAR(500) NULL DEFAULT NULL ;
 
+alter table gl
+add column batch_no varchar(15) null after deleted,
+add column project_no varchar(15) null after batch_no;
+
+
