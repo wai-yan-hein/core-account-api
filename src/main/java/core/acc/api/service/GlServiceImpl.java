@@ -5,6 +5,7 @@ import core.acc.api.dao.GlDao;
 import core.acc.api.dao.GlLogDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.ReturnObject;
+import core.acc.api.model.VDescription;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -119,8 +120,13 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<VRef> getReference(String str, String compCode) {
+    public List<VDescription> getReference(String str, String compCode) {
         return glDao.getReference(str, compCode);
+    }
+
+    @Override
+    public List<VDescription> getBatchNo(String str, String compCode) {
+        return glDao.getBatchNo(str, compCode);
     }
 
     @Override

@@ -6,6 +6,7 @@ import core.acc.api.entity.*;
 import core.acc.api.model.DeleteObj;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
+import core.acc.api.model.VDescription;
 import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -153,10 +154,12 @@ public class AccountController {
         String traderType = Util1.isNull(filter.getTraderType(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
+        String batchNo = Util1.isNull(filter.getBatchNo(),"-");
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        List<Gl> Gls = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, summary, macId);
+        List<Gl> Gls = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
+                reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1,batchNo, summary, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
@@ -267,10 +270,14 @@ public class AccountController {
     public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getDescription(str, compCode));
     }
+    @GetMapping(path = "/get-batch-no")
+    public ResponseEntity<?> getBatchNo(@RequestParam String str, @RequestParam String compCode) {
+        return ResponseEntity.ok(glService.getBatchNo(str, compCode));
+    }
 
     //Ref
     @GetMapping(path = "/get-reference")
-    public ResponseEntity<List<VRef>> getRef(@RequestParam String str, @RequestParam String compCode) {
+    public ResponseEntity<?> getRef(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getReference(str, compCode));
     }
 

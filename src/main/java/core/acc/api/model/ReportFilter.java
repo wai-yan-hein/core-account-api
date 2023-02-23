@@ -32,7 +32,7 @@ public class ReportFilter {
     private String deptCode;
     private boolean summary;
     private String cashGroup;
-
+    private String batchNo;
     private String fixedAcc;
     private String currentAcc;
     private String capitalAcc;

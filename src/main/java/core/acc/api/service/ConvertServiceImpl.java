@@ -66,7 +66,7 @@ public class ConvertServiceImpl implements ConverterService {
 
     private void convertGl() {
         String sql = "select *\n" +
-                "from gl where tran_source ='CB'\n";
+                "from gl where (tran_source ='CB' or tran_source ='GV')\n";
         try {
             ResultSet rs = reportService.getResult(sql);
             if (rs != null) {

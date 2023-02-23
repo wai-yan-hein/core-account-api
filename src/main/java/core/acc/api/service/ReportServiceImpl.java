@@ -77,7 +77,7 @@ public class ReportServiceImpl implements ReportService {
     public List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
                                         String acc, String curCode, String reference,
                                         String compCode, String tranSource, String traderCode, String traderType,
-                                        String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException {
+                                        String coaLv2, String coaLv1, String batchNo, boolean summary, Integer macId) throws SQLException {
         String coaFilter = "";
         if (!coaLv2.equals("-")) {
             coaFilter += "where coa3.coa_parent = '" + coaLv2 + "'\n";
@@ -110,6 +110,9 @@ public class ReportServiceImpl implements ReportService {
         }
         if (!curCode.equals("-")) {
             filter += "and cur_code ='" + curCode + "'\n";
+        }
+        if (!batchNo.equals("-")) {
+            filter += "and batch_no ='" + batchNo + "'\n";
         }
         List<Gl> list = new ArrayList<>();
         if (summary) {

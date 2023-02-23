@@ -1,4 +1,4 @@
-package core.acc.api.entity;
+package core.acc.api.model;
 
 import lombok.*;
 
@@ -7,10 +7,6 @@ import javax.persistence.Id;
 
 @Data
 public class VDescription {
-    @Id
-    @Column(name = "description")
     private String description;
-    @Column(name = "comp_code")
     private String compCode;
-
 }

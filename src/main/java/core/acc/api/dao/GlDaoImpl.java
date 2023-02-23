@@ -4,8 +4,7 @@ package core.acc.api.dao;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.GlKey;
-import core.acc.api.entity.VDescription;
-import core.acc.api.entity.VRef;
+import core.acc.api.model.VDescription;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -107,8 +106,8 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public List<VRef> getReference(String str, String compCode) {
-        List<VRef> list = new ArrayList<>();
+    public List<VDescription> getReference(String str, String compCode) {
+        List<VDescription> list = new ArrayList<>();
         String sql = "select distinct reference\n" +
                 "from gl\n" +
                 "where comp_code ='" + compCode + "'\n" +
@@ -118,8 +117,8 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         try {
             ResultSet rs = getResultSet(sql);
             while (rs.next()) {
-                VRef v = new VRef();
-                v.setReference(rs.getString("reference"));
+                VDescription v = new VDescription();
+                v.setDescription(rs.getString("reference"));
                 list.add(v);
             }
         } catch (Exception e) {
@@ -127,6 +126,27 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         }
         return list;
     }
+
+    @Override
+    public List<VDescription> getBatchNo(String str, String compCode) {
+        List<VDescription> list = new ArrayList<>();
+        String sql = "select distinct batch_no\n" +
+                "from gl\n" +
+                "where comp_code ='" + compCode + "'\n" +
+                "and (batch_no like '" + str + "%')\n" +
+                "and deleted =0\n" +
+                "limit 20";
+        try {
+            ResultSet rs = getResultSet(sql);
+            while (rs.next()) {
+                VDescription v = new VDescription();
+                v.setDescription(rs.getString("batch_no"));
+                list.add(v);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+        return list;    }
 
     @Override
     public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {

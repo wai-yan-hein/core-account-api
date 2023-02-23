@@ -21,7 +21,7 @@ public interface ReportService {
     List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
                                  String acc, String curCode, String reference,
                                  String compCode, String tranSource, String traderCode, String traderType,
-                                 String coaLv2, String coaLv1, boolean summary, Integer macId) throws SQLException;
+                                 String coaLv2, String coaLv1,String batchNo, boolean summary, Integer macId) throws SQLException;
 
     List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate, String invGroup,
                                   boolean detail, String compCode, Integer macId);
