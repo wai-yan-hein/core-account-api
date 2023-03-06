@@ -33,5 +33,5 @@ public interface COADao {
 
     Date getMaxDate();
 
-
+    List<ChartOfAccount> getCOA(String headCode, String compCode);
 }

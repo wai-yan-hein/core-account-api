@@ -32,6 +32,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
         String sql = "select code,user_code,trader_name,account_code,discriminator\n" +
                 "from trader\n" +
                 "" + filter + "\n" +
+                "order by user_code,trader_name\n" +
                 "limit 20\n";
         ResultSet rs = getResultSet(sql);
         List<Trader> list = new ArrayList<>();

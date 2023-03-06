@@ -255,6 +255,38 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         return Util1.getOldDate();
     }
 
+    @Override
+    public List<ChartOfAccount> getCOA(String headCode, String compCode) {
+        String sql = "select coa.coa_code,coa.comp_code,coa.coa_name_eng\n" +
+                "from chart_of_account coa join(\n" +
+                "select coa_code,comp_code\n" +
+                "from chart_of_account\n" +
+                "where coa_parent ='" + headCode + "'\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                ")a\n" +
+                "on coa.coa_parent = a.coa_code\n" +
+                "and coa.comp_code = a.comp_code\n" +
+                "where coa.coa_level =3";
+        ResultSet rs = getResultSet(sql);
+        List<ChartOfAccount> list = new ArrayList<>();
+        if (rs != null) {
+            try {
+                while (rs.next()) {
+                    ChartOfAccount c = new ChartOfAccount();
+                    COAKey key = new COAKey();
+                    key.setCoaCode(rs.getString("coa_code"));
+                    key.setCompCode(rs.getString("comp_code"));
+                    c.setKey(key);
+                    c.setCoaNameEng(rs.getString("coa_name_eng"));
+                    list.add(c);
+                }
+            } catch (Exception e) {
+                log.error("getCOA : " + e.getMessage());
+            }
+        }
+        return list;
+    }
+
     private void getChild(List<ChartOfAccount> listAllChild, String parent, String compCode) {
         String strSql = "select o from ChartOfAccount o where o.key.compCode = '"
                 + compCode + "' and o.coaParent = '" + parent + "'";

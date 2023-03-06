@@ -104,6 +104,12 @@ public class AccountController {
         return ResponseEntity.ok(chart);
     }
 
+    @GetMapping(path = "/get-coa3")
+    public ResponseEntity<List<ChartOfAccount>> getCOA3(@RequestParam String headCode, @RequestParam String compCode) {
+        List<ChartOfAccount> chart = coaService.getCOA(headCode, compCode);
+        return ResponseEntity.ok(chart);
+    }
+
     @GetMapping(path = "/search-coa")
     public ResponseEntity<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
         return ResponseEntity.ok(coaService.searchCOA(str, level, compCode));
@@ -154,12 +160,12 @@ public class AccountController {
         String traderType = Util1.isNull(filter.getTraderType(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
-        String batchNo = Util1.isNull(filter.getBatchNo(),"-");
+        String batchNo = Util1.isNull(filter.getBatchNo(), "-");
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         List<Gl> Gls = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
-                reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1,batchNo, summary, macId);
+                reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, summary, macId);
         String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
@@ -270,6 +276,7 @@ public class AccountController {
     public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getDescription(str, compCode));
     }
+
     @GetMapping(path = "/get-batch-no")
     public ResponseEntity<?> getBatchNo(@RequestParam String str, @RequestParam String compCode) {
         return ResponseEntity.ok(glService.getBatchNo(str, compCode));

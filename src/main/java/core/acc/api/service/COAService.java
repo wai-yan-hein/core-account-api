@@ -16,6 +16,8 @@ public interface COAService {
 
     List<ChartOfAccount> getCOA(String compCode);
 
+    List<ChartOfAccount> getCOA(String headCode, String compCode);
+
     int delete(String code, String compCode);
 
     List<ChartOfAccount> searchCOA(String str, Integer level, String compCode);
