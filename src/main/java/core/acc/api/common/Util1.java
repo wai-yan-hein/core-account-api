@@ -303,9 +303,11 @@ public class Util1 {
     public static Date getSyncDate() {
         return Util1.toDate(SYNC_DATE);
     }
+
     public static Date getOldDate() {
         return Util1.toDate("1998-10-07");
     }
+
     public static boolean isZGText(String str) {
         if (Util1.isNullOrEmpty(str)) return false;
         ZawgyiDetector zd = new ZawgyiDetector();
@@ -319,6 +321,10 @@ public class Util1 {
             return z2U.convert(str);
         }
         return str;
+    }
+
+    public static String cleanStr(String str) {
+        return str.trim().replaceAll("[^a-zA-Z0-9\\s.,?!:;\"'()-]", "");
     }
 
 }

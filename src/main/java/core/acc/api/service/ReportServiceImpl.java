@@ -442,14 +442,32 @@ public class ReportServiceImpl implements ReportService {
 
     private void updateInvClosing(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
         List<Financial> list = getInvClosing(stDate, enDate, invGroup, compCode, macId, false);
+
         list.forEach(f -> {
             double amt = f.getAmount();
-            String sql = "update tmp_tri\n" +
-                    "set dr_amt = " + amt + "\n" +
+            String coaCode = f.getCoaCode();
+            String c = "select * \n" +
+                    "from tmp_tri\n" +
                     "where mac_id =" + macId + "\n" +
                     "and comp_code ='" + compCode + "'\n" +
-                    "and coa_code ='" + f.getCoaCode() + "'";
-            dao.exeSql(sql);
+                    "and coa_code ='" + coaCode + "'";
+            ResultSet rs = getResult(c);
+            try {
+                if (rs.next()) {
+                    String sql = "update tmp_tri\n" +
+                            "set dr_amt = " + amt + "\n" +
+                            "where mac_id =" + macId + "\n" +
+                            "and comp_code ='" + compCode + "'\n" +
+                            "and coa_code ='" + coaCode + "'";
+                    dao.exeSql(sql);
+                } else {
+                    String sql = "insert into tmp_tri\n" +
+                            "select '" + coaCode + "','-'," + macId + "," + amt + ",0,'-','" + compCode + "'";
+                    dao.exeSql(sql);
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage());
+            }
         });
         List<Financial> list1 = getInvJournal(stDate, enDate, invGroup, compCode, macId);
         list1.forEach(f -> {
@@ -1055,8 +1073,10 @@ public class ReportServiceImpl implements ReportService {
                 });
                 try {
                     double opAmt = 0;
-                    List<TmpOpening> openings = coaOpeningService.getCOAOpening(sourceAcc, opDate, fromDate, curCode, compCode, macId, "-");
-                    if (!openings.isEmpty()) opAmt = openings.get(0).getOpening();
+                    TmpOpening op = coaOpeningService.getCOAOpening(sourceAcc, opDate, fromDate, curCode, compCode, macId, "-");
+                    if (op != null) {
+                        opAmt = op.getOpening();
+                    }
                     Gl tb = new Gl();
                     tb.setDescription("Opening");
                     tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
@@ -1201,9 +1221,9 @@ public class ReportServiceImpl implements ReportService {
                         listGl.add(gl);
                     }
                     if (!listGl.isEmpty()) {
-                        List<TmpOpening> tmp = coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, "-");
-                        if (!tmp.isEmpty()) {
-                            listGl.get(0).setOpening(tmp.get(0).getOpening());
+                        TmpOpening tmp = coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, "-");
+                        if (tmp != null) {
+                            listGl.get(0).setOpening(tmp.getOpening());
                         } else {
                             listGl.get(0).setOpening(0);
                         }

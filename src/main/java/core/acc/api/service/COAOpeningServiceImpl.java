@@ -38,9 +38,8 @@ public class COAOpeningServiceImpl implements COAOpeningService {
     }
 
     @Override
-    public List<TmpOpening> getCOAOpening(String coaCode, String opDate, String clDate, String curr,
+    public TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr,
                                           String compCode, Integer macId, String traderCode) {
-        List<TmpOpening> list = new ArrayList<>();
         String opSql = "select source_acc_id,cur_code,balance\n" +
                 "from (\n" +
                 "select source_acc_id,cur_code,sum(dr_amt)-sum(cr_amt) balance\n" +
@@ -51,10 +50,10 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and source_acc_id ='" + coaCode + "'\n" +
                 "and comp_code = '" + compCode + "'\n" +
-                "and (cur_code ='" + curr + "' or '-'='" + curr + "')\n" +
+                "and cur_code ='" + curr + "'\n" +
                 "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
                 "and (dr_amt>0 or cr_amt>0)\n" +
-                "group by source_acc_id, cur_code\n" +
+                "group by source_acc_id\n" +
                 "\tunion all\n" +
                 "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
                 "from gl \n" +
@@ -63,9 +62,9 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
                 "and deleted =0\n" +
-                "and (cur_code ='" + curr + "' or '-'='" + curr + "')\n" +
+                "and cur_code ='" + curr + "'\n" +
                 "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
-                "group by account_id, cur_code\n" +
+                "group by account_id\n" +
                 "\tunion all\n" +
                 "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
                 "from gl \n" +
@@ -74,15 +73,15 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
                 "and deleted =0\n" +
-                "and (cur_code ='" + curr + "' or '-'='" + curr + "')\n" +
+                "and cur_code ='" + curr + "'\n" +
                 "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
-                "group by source_ac_id, cur_code\n" +
+                "group by source_ac_id\n" +
                 ")a\n" +
-                "group by source_acc_id,cur_code)b";
+                "group by source_acc_id)b";
         ResultSet rs = coaOpeningDao.getResult(opSql);
         if (rs != null) {
             try {
-                while (rs.next()) {
+                if (rs.next()) {
                     TmpOpening op = new TmpOpening();
                     TmpOpeningKey key = new TmpOpeningKey();
                     key.setCoaCode(rs.getString("source_acc_id"));
@@ -90,13 +89,13 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                     key.setMacId(macId);
                     op.setKey(key);
                     op.setOpening(rs.getDouble("balance"));
-                    list.add(op);
+                    return op;
                 }
             } catch (Exception e) {
                 log.error("getCOAOpening : " + e.getMessage());
             }
         }
-        return list;
+        return null;
     }
 
     @Override

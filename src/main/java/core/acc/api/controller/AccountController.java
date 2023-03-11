@@ -12,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.IOException;
@@ -112,7 +114,7 @@ public class AccountController {
 
     @GetMapping(path = "/search-coa")
     public ResponseEntity<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
-        return ResponseEntity.ok(coaService.searchCOA(str, level, compCode));
+        return ResponseEntity.ok(coaService.searchCOA(Util1.cleanStr(str), level, compCode));
     }
 
     @GetMapping(path = "/get-trader-coa")
@@ -146,7 +148,8 @@ public class AccountController {
     }
 
     @PostMapping(path = "/search-gl")
-    public ResponseEntity<ReturnObject> searchGl(@RequestBody ReportFilter filter) throws SQLException, IOException {
+    public Flux<?> searchGl(@RequestBody ReportFilter filter) throws SQLException {
+        log.info("search gl");
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
         String des = Util1.isNull(filter.getDesp(), "-");
@@ -164,18 +167,19 @@ public class AccountController {
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        List<Gl> Gls = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
+        List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
                 reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, summary, macId);
-        String fileName = "Ledger" + macId.toString() + ".json";
+        /*String fileName = "Ledger" + macId.toString() + ".json";
         String exportPath = "temp";
         String path = String.format("%s%s%s", exportPath, File.separator, fileName);
         Util1.writeJsonFile(Gls, path);
-        ro.setFile(Util1.zipJsonFile(path));
-        return ResponseEntity.ok(ro);
+        ro.setFile(Util1.zipJsonFile(path));*/
+        return Flux.fromIterable(list);
     }
 
     @PostMapping(path = "/get-coa-opening")
-    public ResponseEntity<List<TmpOpening>> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
+    public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
+        log.info("coa opening.");
         String opDate = filter.getOpeningDate();
         String fromDate = filter.getFromDate();
         String curCode = Util1.isNull(filter.getCurCode(), "-");
@@ -184,7 +188,7 @@ public class AccountController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
-        return ResponseEntity.ok(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, traderCode));
+        return Mono.justOrEmpty(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, traderCode));
     }
 
     @PostMapping(path = "/get-opening")
@@ -259,7 +263,7 @@ public class AccountController {
 
     @GetMapping(path = "/search-trader")
     public ResponseEntity<List<Trader>> getTrader(@RequestParam String text, @RequestParam String compCode) {
-        return ResponseEntity.ok(traderService.getTrader(text, compCode));
+        return ResponseEntity.ok(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
 
     @GetMapping(path = "/get-supplier")
@@ -274,18 +278,18 @@ public class AccountController {
 
     @GetMapping(path = "/get-description")
     public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(glService.getDescription(str, compCode));
+        return ResponseEntity.ok(glService.getDescription(Util1.cleanStr(str), compCode));
     }
 
     @GetMapping(path = "/get-batch-no")
     public ResponseEntity<?> getBatchNo(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(glService.getBatchNo(str, compCode));
+        return ResponseEntity.ok(glService.getBatchNo(Util1.cleanStr(str), compCode));
     }
 
     //Ref
     @GetMapping(path = "/get-reference")
     public ResponseEntity<?> getRef(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(glService.getReference(str, compCode));
+        return ResponseEntity.ok(glService.getReference(Util1.cleanStr(str), compCode));
     }
 
     //TranSource
