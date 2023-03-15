@@ -324,7 +324,9 @@ public class Util1 {
     }
 
     public static String cleanStr(String str) {
-        return str.trim().replaceAll("[^a-zA-Z0-9\\s.,?!:;\"'()-]", "");
+//str
+        //str.trim().replaceAll("[^a-zA-Z0-9\\s.,?!:;\"'()-]", "");
+        return str;
     }
 
 }
