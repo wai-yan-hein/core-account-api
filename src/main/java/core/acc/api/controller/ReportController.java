@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -159,7 +160,7 @@ public class ReportController {
     }
 
     @PostMapping(path = "/get-arap")
-    public ResponseEntity<?> getArap(@RequestBody ReportFilter filter) throws IOException {
+    public Flux<?> getArap(@RequestBody ReportFilter filter) {
         String compCode = filter.getCompCode();
         String enDate = filter.getToDate();
         String opDate = reportService.getOpeningDate(compCode);
@@ -169,11 +170,7 @@ public class ReportController {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId);
-        String fileName = "ARAP" + macId.toString() + ".json";
-        String path = exportPath + fileName;
-        Util1.writeJsonFile(list, path);
-        ro.setFile(Util1.zipJsonFile(path));
-        return ResponseEntity.ok(ro);
+        return Flux.fromIterable(list);
     }
 
     @GetMapping(path = "/get-trader-balance")

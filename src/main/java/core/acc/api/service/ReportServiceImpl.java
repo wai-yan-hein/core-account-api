@@ -56,7 +56,7 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public String getOpeningDate(String compCode) {
         String opDate = null;
-        String sql = "select max(op_date) op_date from coa_opening where comp_code ='" + compCode + "'";
+        String sql = "select max(op_date) op_date from coa_opening where comp_code ='" + compCode + "' and deleted =0";
         try {
             ResultSet rs = dao.executeSql(sql);
             if (rs != null) {
@@ -152,6 +152,7 @@ public class ReportServiceImpl implements ReportService {
                     key.setDeptId(rs.getInt("dept_id"));
                     v.setKey(key);
                     v.setGlDate(rs.getDate("gl_date"));
+                    v.setVouDate(Util1.toDateStr(v.getGlDate(), "dd/MM/yyyy"));
                     v.setCurCode(rs.getString("cur_code"));
                     v.setSrcAccCode(rs.getString("source_ac_id"));
                     v.setAccCode(rs.getString("account_id"));
@@ -492,6 +493,7 @@ public class ReportServiceImpl implements ReportService {
                 "select DATE_SUB(op_date, INTERVAL 1 DAY) op_date,source_acc_id,dept_code,cur_code,comp_code,sum(dr_amt) amount\n" +
                 "from coa_opening\n" +
                 "where source_acc_id in (" + coaFilter + ")\n" +
+                "and deleted =0\n"+
                 "and dept_code in (" + depFilter + ")\n" +
                 "and date(op_date)>='" + opDate + "'\n" +
                 "and dr_amt>0\n" +
@@ -685,6 +687,7 @@ public class ReportServiceImpl implements ReportService {
                 "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
                 "from coa_opening\n" +
                 "where date(op_date)='" + opDate + "'\n" +
+                "and deleted =0\n"+
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
@@ -792,21 +795,22 @@ public class ReportServiceImpl implements ReportService {
         if (!coaCode.equals("-")) {
             coaFilter = "'" + coaCode + "'";
         }
-        String sql = "select trader_code,cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,t.account_code\n" +
+        String sql = "select source_acc_id,trader_code,b.cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,coa.coa_name_eng\n" +
                 "from (\n" +
-                "select trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
+                "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
                 "from (\n" +
-                "\tselect trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
+                "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom  coa_opening \n" +
                 "\twhere comp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n"+
                 "\tand date(op_date) = '" + opDate + "'\n" +
                 "\tand source_acc_id in (" + coaFilter + ")\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
-                "\tgroup by  cur_code,trader_code\n" +
+                "\tgroup by  cur_code,trader_code,source_acc_id\n" +
                 "\t\t\tunion all\n" +
-                "\tselect trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
+                "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom gl \n" +
                 "\twhere source_ac_id in (" + coaFilter + ")\n" +
                 "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
@@ -815,9 +819,9 @@ public class ReportServiceImpl implements ReportService {
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
-                "\tgroup by  cur_code,trader_code\n" +
+                "\tgroup by  cur_code,trader_code,source_ac_id\n" +
                 "\t\t\tunion all\n" +
-                "\tselect trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" +
+                "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom gl \n" +
                 "\twhere account_id in (" + coaFilter + ")\n" +
                 "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
@@ -826,12 +830,14 @@ public class ReportServiceImpl implements ReportService {
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
-                "\tgroup by cur_code,trader_code\n" +
+                "\tgroup by cur_code,trader_code,account_id\n" +
                 ")a\n" +
-                "group by trader_code,cur_code\n" +
+                "group by source_acc_id,trader_code,cur_code\n" +
                 ")b\n" +
                 "join trader t on b.trader_code = t.code\n" +
                 "and b.comp_code = t.comp_code\n" +
+                "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" +
+                "and b.comp_code = coa.comp_code\n" +
                 "order by t.user_code";
         List<VApar> list = new ArrayList<>();
         try {
@@ -839,8 +845,9 @@ public class ReportServiceImpl implements ReportService {
             if (rs != null) {
                 while (rs.next()) {
                     VApar a = new VApar();
-                    a.setCoaCode(rs.getString("account_code"));
-                    a.setCompCode(compCode);
+                    a.setCoaCode(rs.getString("source_acc_id"));
+                    a.setCoaName(rs.getString("coa_name_eng"));
+                    a.setCompCode(rs.getString("comp_code"));
                     a.setCurCode(rs.getString("cur_code"));
                     a.setTraderCode(rs.getString("trader_code"));
                     a.setUserCode(rs.getString("user_code"));
@@ -906,6 +913,7 @@ public class ReportServiceImpl implements ReportService {
                 "\tfrom  coa_opening op\n" +
                 "\twhere\n" +
                 "\tcomp_code = '" + compCode + "'\n" +
+                "\tand deleted =0\n"+
                 "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
                 "\tgroup by  op.cur_code,op.trader_code\n" +
@@ -1114,6 +1122,7 @@ public class ReportServiceImpl implements ReportService {
                 "select source_acc_id,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code,comp_code\n" +
                 "from coa_opening \n" +
                 "where comp_code ='" + compCode + "'\n" +
+                "and deleted =0\n"+
                 "and date(op_date)='" + opDate + "'\n" +
                 "and (cur_code ='" + curCode + "' or '-' ='" + curCode + "')\n" +
                 "and (dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +

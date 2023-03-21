@@ -149,7 +149,6 @@ public class AccountController {
 
     @PostMapping(path = "/search-gl")
     public Flux<?> searchGl(@RequestBody ReportFilter filter) throws SQLException {
-        log.info("search gl");
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
         String des = Util1.isNull(filter.getDesp(), "-");
@@ -192,7 +191,7 @@ public class AccountController {
     }
 
     @PostMapping(path = "/get-opening")
-    public ResponseEntity<?> getOpening(@RequestBody ReportFilter filter) {
+    public Flux<?> getOpening(@RequestBody ReportFilter filter) {
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
@@ -200,7 +199,7 @@ public class AccountController {
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv3 = Util1.isNull(filter.getCoaCode(), "-");
         String traderType = Util1.isNull(filter.getTraderType(), "-");
-        return ResponseEntity.ok(coaOpeningService.searchOpening(deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
+        return Flux.fromIterable(coaOpeningService.searchOpening(deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
     }
 
     @PostMapping(path = "/save-opening")
@@ -262,8 +261,8 @@ public class AccountController {
     }
 
     @GetMapping(path = "/search-trader")
-    public ResponseEntity<List<Trader>> getTrader(@RequestParam String text, @RequestParam String compCode) {
-        return ResponseEntity.ok(traderService.getTrader(Util1.cleanStr(text), compCode));
+    public Flux<Trader> getTrader(@RequestParam String text, @RequestParam String compCode) {
+        return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
 
     @GetMapping(path = "/get-supplier")
@@ -349,6 +348,11 @@ public class AccountController {
     public ResponseEntity<?> deleteStockOP(@RequestBody StockOPKey key) {
         stockOPService.delete(key);
         return ResponseEntity.ok(true);
+    }
+
+    @PostMapping(path = "/delete-op")
+    public Mono<?> deleteOP(@RequestBody OpeningKey key) {
+        return Mono.just(coaOpeningService.delete(key));
     }
 
     @PostMapping(path = "/search-stock-op")
