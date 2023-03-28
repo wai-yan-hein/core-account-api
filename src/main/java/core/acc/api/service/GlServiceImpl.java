@@ -1,5 +1,6 @@
 package core.acc.api.service;
 
+import core.acc.api.GlProcessor;
 import core.acc.api.common.Util1;
 import core.acc.api.dao.GlDao;
 import core.acc.api.dao.GlLogDao;
@@ -25,6 +26,8 @@ public class GlServiceImpl implements GlService {
     private GlLogDao logDao;
     @Autowired
     private SeqTableService seqService;
+    @Autowired
+    private GlProcessor glProcessor;
 
     @Override
     public Gl save(Gl gl, boolean backup) throws Exception {
@@ -50,6 +53,7 @@ public class GlServiceImpl implements GlService {
                 glDao.delete(key, updatedBy);
             }
         }
+        glProcessor.process(gl);
         return glDao.save(gl);
     }
 
@@ -91,6 +95,7 @@ public class GlServiceImpl implements GlService {
                         if (amt > 0) {
                             gl.setGlVouNo(glVouNo);
                             save(gl, false);
+
                         }
                     }
                 }

@@ -6,7 +6,6 @@ import core.acc.api.entity.*;
 import core.acc.api.model.DeleteObj;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
-import core.acc.api.model.VDescription;
 import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -49,34 +46,29 @@ public class AccountController {
     private CloudMQSender cloudMQSender;
 
     @GetMapping(path = "/get-department")
-    public ResponseEntity<?> getDepartment(@RequestParam String compCode) {
-        return ResponseEntity.ok(departmentService.findAll(compCode));
+    public Flux<?> getDepartment(@RequestParam String compCode) {
+        return Flux.fromIterable(departmentService.findAll(compCode));
     }
 
     @PostMapping(path = "/find-department")
-    public ResponseEntity<?> findDepartment(@RequestBody DepartmentKey key) {
-        return ResponseEntity.ok(departmentService.findById(key));
+    public Mono<?> findDepartment(@RequestBody DepartmentKey key) {
+        return Mono.justOrEmpty(departmentService.findById(key));
     }
 
     @GetMapping(path = "/get-department-tree")
-    public ResponseEntity<List<Department>> getDepartmentTree(@RequestParam String compCode) {
-        List<Department> listCat = departmentService.getDepartmentTree(compCode);
-        return ResponseEntity.ok(listCat);
+    public Flux<Department> getDepartmentTree(@RequestParam String compCode) {
+        return Flux.fromIterable(departmentService.getDepartmentTree(compCode));
     }
 
     @PostMapping(path = "/save-department")
-    public ResponseEntity<ReturnObject> saveDepartment(@RequestBody Department department) {
-        Department dep = departmentService.save(department);
-        ro.setData(dep);
-        ro.setMessage("Save Department");
-        return ResponseEntity.ok(ro);
+    public Mono<?> saveDepartment(@RequestBody Department department) {
+        return Mono.just(departmentService.save(department));
     }
 
     //Currency
     @GetMapping(path = "/find-currency")
-    public ResponseEntity<Currency> findCurrency(@RequestParam String curCode) {
-        Currency cur = currencyService.findByCode(curCode);
-        return ResponseEntity.ok(cur);
+    public Mono<Currency> findCurrency(@RequestParam String curCode) {
+        return Mono.just(currencyService.findByCode(curCode));
     }
 
     @PostMapping(path = "/save-currency")
@@ -113,8 +105,8 @@ public class AccountController {
     }
 
     @GetMapping(path = "/search-coa")
-    public ResponseEntity<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
-        return ResponseEntity.ok(coaService.searchCOA(Util1.cleanStr(str), level, compCode));
+    public Flux<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
+        return Flux.fromIterable(coaService.searchCOA(Util1.cleanStr(str), level, compCode));
     }
 
     @GetMapping(path = "/get-trader-coa")
@@ -123,8 +115,8 @@ public class AccountController {
     }
 
     @GetMapping(path = "/get-coa-child")
-    public ResponseEntity<?> getCOAChild(@RequestParam String coaCode, @RequestParam String compCode) {
-        return ResponseEntity.ok(coaService.getCOAChild(coaCode, compCode));
+    public Flux<?> getCOAChild(@RequestParam String coaCode, @RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOAChild(coaCode, compCode));
     }
 
     @PostMapping(path = "/find-coa")
@@ -168,17 +160,11 @@ public class AccountController {
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
                 reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, summary, macId);
-        /*String fileName = "Ledger" + macId.toString() + ".json";
-        String exportPath = "temp";
-        String path = String.format("%s%s%s", exportPath, File.separator, fileName);
-        Util1.writeJsonFile(Gls, path);
-        ro.setFile(Util1.zipJsonFile(path));*/
         return Flux.fromIterable(list);
     }
 
     @PostMapping(path = "/get-coa-opening")
     public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
-        log.info("coa opening.");
         String opDate = filter.getOpeningDate();
         String fromDate = filter.getFromDate();
         String curCode = Util1.isNull(filter.getCurCode(), "-");
@@ -276,8 +262,8 @@ public class AccountController {
     }
 
     @GetMapping(path = "/get-description")
-    public ResponseEntity<List<VDescription>> getDescription(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(glService.getDescription(Util1.cleanStr(str), compCode));
+    public Flux<?> getDescription(@RequestParam String str, @RequestParam String compCode) {
+        return Flux.fromIterable(glService.getDescription(Util1.cleanStr(str), compCode));
     }
 
     @GetMapping(path = "/get-batch-no")
@@ -287,8 +273,8 @@ public class AccountController {
 
     //Ref
     @GetMapping(path = "/get-reference")
-    public ResponseEntity<?> getRef(@RequestParam String str, @RequestParam String compCode) {
-        return ResponseEntity.ok(glService.getReference(Util1.cleanStr(str), compCode));
+    public Flux<?> getRef(@RequestParam String str, @RequestParam String compCode) {
+        return Flux.fromIterable(glService.getReference(Util1.cleanStr(str), compCode));
     }
 
     //TranSource
@@ -366,11 +352,11 @@ public class AccountController {
     }
 
     @PostMapping(path = "/search-exchange")
-    public ResponseEntity<?> searchExchange(@RequestBody ReportFilter filter) {
+    public Flux<?> searchExchange(@RequestBody ReportFilter filter) {
         String fromDate = Util1.isNull(filter.getFromDate(), "-");
         String toDate = Util1.isNull(filter.getToDate(), "-");
         String compCode = Util1.isNull(filter.getCompCode(), "-");
-        return ResponseEntity.ok(exchangeService.search(fromDate, toDate, compCode));
+        return Flux.fromIterable(exchangeService.search(fromDate, toDate, compCode));
     }
 
     @GetMapping(path = "/convert-to-unicode")

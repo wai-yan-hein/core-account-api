@@ -96,11 +96,11 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         List<ChartOfAccount> list = new ArrayList<>();
         String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
                 "from (\n" +
-                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code\n" +
+                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" +
                 "from chart_of_account\n" +
                 "where active = 1\n" +
                 "and deleted = 0\n" +
-                "and coa_level =" + level + "\n" +
+                "and (coa_level =" + level + " or 0 =" + level + ")\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
                 "limit 20\n" +
@@ -129,11 +129,11 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                     coa.setHeadCode(rs.getString("head_code"));
                     coa.setHeadUsrCode(rs.getString("head_usr_code"));
                     coa.setHeadName(rs.getString("head_name"));
+                    coa.setCoaLevel(rs.getInt("coa_level"));
                     list.add(coa);
                 }
             }
-        } catch (Exception e) {
-            log.error("searchCOA : " + e.getMessage());
+        } catch (Exception ignored) {
         }
         return list;
     }

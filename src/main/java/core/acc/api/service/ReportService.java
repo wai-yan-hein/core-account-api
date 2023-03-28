@@ -58,4 +58,6 @@ public interface ReportService {
     List<COAOpening> getOpeningTri(String opDate, String deptCode, String curCode, String compCode);
 
     List<Gl> getAllCashDaily(String opDate, String fromDate, String toDate,String curCode, String cashGroup, String compCode, Integer mac_id);
+
+    List<Financial> getCOAList(String compCode);
 }

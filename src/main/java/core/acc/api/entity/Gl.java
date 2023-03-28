@@ -1,6 +1,8 @@
 package core.acc.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import springfox.documentation.spring.web.json.Json;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -8,6 +10,7 @@ import java.util.List;
 
 @Data
 @Entity
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "gl")
 public class Gl {
     @EmbeddedId
@@ -93,6 +96,8 @@ public class Gl {
     private double closing;
     @Transient
     private double amount;
+    @Transient
+    private String event;
 
 
     public Gl(Date modifyDate, String deptCode) {

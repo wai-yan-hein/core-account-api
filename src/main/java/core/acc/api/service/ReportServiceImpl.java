@@ -34,8 +34,12 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void insertTmp(List<String> listStr, Integer macId, String taleName) {
         try {
-            if (listStr != null) {
-                deleteTmp(taleName, macId);
+            deleteTmp(taleName, macId);
+            if (listStr == null || listStr.isEmpty()) {
+                String sql = "insert into department(dept_code,mac_id)\n" +
+                        "select dept_code," + macId +   " mac_id from department";
+                executeSql(sql);
+            } else {
                 for (String str : listStr) {
                     String sql = "insert into " + taleName + "(dept_code,mac_id)\n" +
                             "select '" + str + "'," + macId + "";
@@ -493,7 +497,7 @@ public class ReportServiceImpl implements ReportService {
                 "select DATE_SUB(op_date, INTERVAL 1 DAY) op_date,source_acc_id,dept_code,cur_code,comp_code,sum(dr_amt) amount\n" +
                 "from coa_opening\n" +
                 "where source_acc_id in (" + coaFilter + ")\n" +
-                "and deleted =0\n"+
+                "and deleted =0\n" +
                 "and dept_code in (" + depFilter + ")\n" +
                 "and date(op_date)>='" + opDate + "'\n" +
                 "and dr_amt>0\n" +
@@ -687,7 +691,7 @@ public class ReportServiceImpl implements ReportService {
                 "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
                 "from coa_opening\n" +
                 "where date(op_date)='" + opDate + "'\n" +
-                "and deleted =0\n"+
+                "and deleted =0\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and comp_code = '" + compCode + "'\n" +
                 "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
@@ -802,7 +806,7 @@ public class ReportServiceImpl implements ReportService {
                 "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
                 "\tfrom  coa_opening \n" +
                 "\twhere comp_code = '" + compCode + "'\n" +
-                "\tand deleted =0\n"+
+                "\tand deleted =0\n" +
                 "\tand date(op_date) = '" + opDate + "'\n" +
                 "\tand source_acc_id in (" + coaFilter + ")\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
@@ -913,7 +917,7 @@ public class ReportServiceImpl implements ReportService {
                 "\tfrom  coa_opening op\n" +
                 "\twhere\n" +
                 "\tcomp_code = '" + compCode + "'\n" +
-                "\tand deleted =0\n"+
+                "\tand deleted =0\n" +
                 "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
                 "\tgroup by  op.cur_code,op.trader_code\n" +
@@ -1122,7 +1126,7 @@ public class ReportServiceImpl implements ReportService {
                 "select source_acc_id,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code,comp_code\n" +
                 "from coa_opening \n" +
                 "where comp_code ='" + compCode + "'\n" +
-                "and deleted =0\n"+
+                "and deleted =0\n" +
                 "and date(op_date)='" + opDate + "'\n" +
                 "and (cur_code ='" + curCode + "' or '-' ='" + curCode + "')\n" +
                 "and (dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
@@ -1242,6 +1246,42 @@ public class ReportServiceImpl implements ReportService {
             } catch (Exception e) {
                 log.error(e.getMessage());
             }
+        }
+        return list;
+    }
+
+    @Override
+    public List<Financial> getCOAList(String compCode) {
+        String sql = "select c1.coa_code_usr h_code,c1.coa_name_eng h_name,\n" +
+                "c2.coa_code_usr g_code,c2.coa_name_eng g_name,\n" +
+                "c3.coa_code_usr user_code,c3.coa_name_eng\n" +
+                "from chart_of_account c3\n" +
+                "join chart_of_account c2\n" +
+                "on c3.coa_parent = c2.coa_code\n" +
+                "and c3.comp_code = c2.comp_code\n" +
+                "join chart_of_account c1\n" +
+                "on c2.coa_parent = c1.coa_code\n" +
+                "and c2.comp_code = c1.comp_code\n" +
+                "and c3.comp_code ='" + compCode + "'\n" +
+                "and c3.coa_level =3\n" +
+                "and c3.active =1\n" +
+                "and c3.deleted =0\n" +
+                "order by c1.coa_code_usr,c1.coa_name_eng,c2.coa_code_usr,c2.coa_name_eng,c3.coa_code_usr,c3.coa_name_eng";
+        List<Financial> list = new ArrayList<>();
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                Financial f = new Financial();
+                f.setHeadCode(rs.getString("h_code"));
+                f.setHeadName(rs.getString("h_name"));
+                f.setGroupCode(rs.getString("g_code"));
+                f.setGroupName(rs.getString("g_name"));
+                f.setCoaCode(rs.getString("user_code"));
+                f.setCoaName(rs.getString("coa_name_eng"));
+                list.add(f);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return list;
     }

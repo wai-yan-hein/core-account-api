@@ -104,6 +104,10 @@ public class ReportController {
                     List<Gl> data = reportService.getAllCashDaily(opDate, fromDate, toDate, curCode, cashGroup, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
+                case "COA" -> {
+                    List<Financial> list = reportService.getCOAList(compCode);
+                    Util1.writeJsonFile(list, exportPath);
+                }
             }
             try (FileInputStream in = new FileInputStream(exportPath)) {
                 byte[] bytes = in.readAllBytes();
@@ -138,7 +142,7 @@ public class ReportController {
     }
 
     @PostMapping(path = "/get-tri-balance")
-    public ResponseEntity<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
+    public Flux<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
         String coaCode = filter.getCoaCode();
         String coaLv1 = filter.getCoaLv1();
         String coaLv2 = filter.getCoaLv2();
@@ -151,12 +155,7 @@ public class ReportController {
         Integer macId = filter.getMacId();
         reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
         reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-", netChange, macId);
-        List<VTriBalance> list = reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId);
-        String fileName = "TRI" + macId.toString() + ".json";
-        String path = exportPath + fileName;
-        Util1.writeJsonFile(list, path);
-        ro.setFile(Util1.zipJsonFile(path));
-        return ResponseEntity.ok(ro);
+        return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId));
     }
 
     @PostMapping(path = "/get-arap")

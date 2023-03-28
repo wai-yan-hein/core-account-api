@@ -29,7 +29,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
         String filter = "where active =1\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
-        String sql = "select code,user_code,trader_name,account_code,discriminator\n" +
+        String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" +
                 "from trader\n" +
                 "" + filter + "\n" +
                 "order by user_code,trader_name\n" +
@@ -42,7 +42,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                     Trader t = new Trader();
                     TraderKey key = new TraderKey();
                     key.setCompCode(compCode);
-                    key.setCode(rs.getString("code"));
+                    key.setCode(rs.getString("trader_code"));
                     t.setKey(key);
                     t.setUserCode(rs.getString("user_code"));
                     t.setTraderName(rs.getString("trader_name"));
@@ -51,8 +51,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                     list.add(t);
                 }
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
+        } catch (Exception ignored) {
         }
         return list;
     }
