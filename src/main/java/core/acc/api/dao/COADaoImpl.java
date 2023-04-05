@@ -59,26 +59,12 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
-    public int delete(String code, String compCode) {
-        int status = 10;
-        //check gl
-        String delSql = "delete from ChartOfAccount o where o.code = '"
-                + code + "' and o.key.compCode = '" + compCode + "'";
-        String vSql = "select distinct o.sourceAcId,o.accCode from Gl o where (o.sourceAcId ='" + code + "' or o.accCode = '" + code + "')"
-                + " and o.key.compCode = '" + compCode + "'";
-        //check opening
-        String opSql = "select distinct o.sourceAccId from COAOpening o where o.sourceAccId = '" + code + "' and o.key.compCode = '" + compCode + "'\n"
-                + "and (o.drAmt<>0 or o.crAmt<>0)";
-        //check trader
-        String tSql = "select distinct o.account.code from Trader o where o.account.code = '" + code + "' and o.key.compCode = '" + compCode + "'";
-        List<COAOpening> listOP = getSession().createQuery(opSql, COAOpening.class).list();
-        List<Gl> listGl = getSession().createQuery(vSql, Gl.class).list();
-        List<Trader> listTrader = getSession().createQuery(tSql, Trader.class).list();
-        if (listOP.isEmpty() && listGl.isEmpty() && listTrader.isEmpty()) {
-            status = execUpdateOrDelete(delSql);
-        }
-        return status;
+    public Boolean delete(COAKey key) {
+        String sql = "update chart_of_account set deleted =1 where comp_code ='" + key.getCompCode() + "' and coa_code='" + key.getCoaCode() + "'";
+        execSql(sql);
+        return true;
     }
+
 
     @Override
     public List<ChartOfAccount> getUnusedCOA(String compCode) {
@@ -87,7 +73,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOAChild(String parentCode, String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.key.compCode = '" + compCode + "' order by o.coaCodeUsr";
+        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.key.compCode = '" + compCode + "' and o.deleted =0 order by o.coaCodeUsr";
         return findHSQL(hsql);
     }
 
@@ -141,7 +127,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOATree(String compCode) {
-        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.key.compCode = '" + compCode + "'";
+        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.key.compCode = '" + compCode + "' and o.deleted =0";
         List<ChartOfAccount> chart = findHSQL(hsql);
         for (ChartOfAccount coa : chart) {
             getChild(coa, compCode);
@@ -151,8 +137,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getAllChild(String parent, String compCode) {
-        String strSql = "select o from ChartOfAccount o where o.key.compCode = '"
-                + compCode + "' and o.code = '" + parent + "'";
+        String strSql = "select o from ChartOfAccount o where o.key.compCode = '" + compCode + "' and o.code = '" + parent + "' and o.deleted =0";
         List<ChartOfAccount> listAllChild = findHSQL(strSql);
         getChild(listAllChild, parent, compCode);
         return listAllChild;
@@ -256,6 +241,12 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
+    public List<ChartOfAccount> findAllActive(String compCode) {
+        String hsql = "select o from ChartOfAccount o where o.key.compCode ='" + compCode + "' and o.active =1 and o.deleted =0";
+        return findHSQL(hsql);
+    }
+
+    @Override
     public List<ChartOfAccount> getCOA(String headCode, String compCode) {
         String sql = "select coa.coa_code,coa.comp_code,coa.coa_name_eng\n" +
                 "from chart_of_account coa join(\n" +
@@ -299,7 +290,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     private void getChild(ChartOfAccount parent, String compCode) {
         String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getKey().getCoaCode()
-                + "' and o.key.compCode = '" + compCode + "'";
+                + "' and o.key.compCode = '" + compCode + "' and o.deleted =0";
         List<ChartOfAccount> chart = findHSQL(hsql);
         parent.setChild(chart);
         if (!chart.isEmpty()) {

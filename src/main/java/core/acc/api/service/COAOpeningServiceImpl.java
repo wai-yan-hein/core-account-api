@@ -52,7 +52,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
                 "from coa_opening\n" +
                 "where date(op_date)='" + opDate + "'\n" +
-                "and deleted =0\n"+
+                "and deleted =0\n" +
                 "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "and source_acc_id ='" + coaCode + "'\n" +
                 "and comp_code = '" + compCode + "'\n" +
@@ -101,7 +101,14 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 log.error("getCOAOpening : " + e.getMessage());
             }
         }
-        return null;
+        TmpOpening op = new TmpOpening();
+        TmpOpeningKey key = new TmpOpeningKey();
+        key.setCoaCode(coaCode);
+        key.setCurCode(curr);
+        key.setMacId(macId);
+        op.setKey(key);
+        op.setOpening(0.0);
+        return op;
     }
 
     @Override
@@ -114,13 +121,13 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                 "left join trader t\n" + "on op.trader_code = t.code\n" + "and op.comp_code = t.comp_code\n" +
                 "join department d on op.dept_code = d.dept_code\n" + "and op.comp_code = d.comp_code\n" +
                 "where (op.dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
-                "and op.deleted =0\n"+
+                "and op.deleted =0\n" +
                 "and (c1.coa_parent ='" + coaLv2 + "' or '-'='" + coaLv2 + "')\n" +
                 "and (c2.coa_parent ='" + coaLv1 + "' or '-'='" + coaLv1 + "')\n" +
                 "and (op.cur_code ='" + curCode + "' or '-'='" + curCode + "')\n" +
                 "and op.comp_code ='" + compCode + "'\n" +
                 "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')\n" +
-                "order by c1.coa_code_usr";
+                "order by c1.coa_code_usr,t.user_code";
         ResultSet rs = coaOpeningDao.getResult(sql);
         List<COAOpening> list = new ArrayList<>();
         try {

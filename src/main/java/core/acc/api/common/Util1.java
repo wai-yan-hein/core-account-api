@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.myanmartools.TransliterateZ2U;
 import com.google.myanmartools.ZawgyiDetector;
+import core.acc.api.model.DateModel;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 
@@ -20,9 +21,12 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
+import java.time.Month;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 /**
  * @author WSwe
@@ -327,6 +331,59 @@ public class Util1 {
 //str
         //str.trim().replaceAll("[^a-zA-Z0-9\\s.,?!:;\"'()-]", "");
         return str.strip();
+    }
+
+    public static java.util.List<DateModel> generateDate(String fromDate) {
+        java.util.List<DateModel> list = new ArrayList<>();
+        LocalDate startDate = LocalDate.parse(fromDate);
+        LocalDate todayDate = LocalDate.now();
+        while (!startDate.isAfter(todayDate.plusMonths(3))) {
+            String monthName = startDate.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+            String startDateStr = startDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String endDateStr = startDate.withDayOfMonth(startDate.lengthOfMonth()).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            int month = startDate.getMonthValue();
+            int year = startDate.getYear();
+            DateModel m = new DateModel();
+            m.setMonthName(monthName);
+            m.setStartDate(startDateStr);
+            m.setEndDate(endDateStr);
+            m.setMonth(month);
+            m.setYear(year);
+            m.setDescription(monthName + "/" + year);
+            list.add(m);
+            startDate = startDate.plusMonths(1);
+        }
+        //today
+        DateModel today = new DateModel();
+        String todayDateStr = todayDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        today.setDescription("Today");
+        today.setMonth(todayDate.getMonthValue());
+        today.setYear(todayDate.getYear());
+        today.setStartDate(todayDateStr);
+        today.setEndDate(todayDateStr);
+        list.add(0, today);
+        //yesterday
+        DateModel yesterday = new DateModel();
+        LocalDate yesDate = LocalDate.now().minusDays(1);
+        String yesterdayStr = yesDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        yesterday.setDescription("Yesterday");
+        yesterday.setMonth(yesDate.getMonthValue());
+        yesterday.setYear(yesDate.getYear());
+        yesterday.setStartDate(yesterdayStr);
+        yesterday.setEndDate(yesterdayStr);
+        list.add(1, yesterday);
+        DateModel custom = new DateModel();
+        custom.setDescription("Custom");
+        list.add(2, custom);
+        return list;
+    }
+
+    private static String getMonthShortName(Month month) {
+        String strMonth = month.toString();
+        if (strMonth.length() >= 4) {
+            strMonth = strMonth.substring(0, 3);
+        }
+        return strMonth;
     }
 
 }

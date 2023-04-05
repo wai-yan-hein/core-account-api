@@ -40,9 +40,9 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
         if (!compCode.equals("-")) {
             if (strFilter.isEmpty()) {
-                strFilter = "o.key.compCode = '" + compCode+"'";
+                strFilter = "o.key.compCode = '" + compCode + "'";
             } else {
-                strFilter = strFilter + " and o.key.compCode = '" + compCode+"'";
+                strFilter = strFilter + " and o.key.compCode = '" + compCode + "'";
             }
         }
 
@@ -96,7 +96,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public int delete(DepartmentKey key) {
-        String strSql = "update department set deleted =1 where dept_code ='"+key.getDeptCode()+"' and comp_code ='"+key.getCompCode()+"'";
+        String strSql = "update department set deleted =1 where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
         return execUpdateOrDelete(strSql);
     }
 
@@ -112,9 +112,14 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     }
 
     @Override
+    public List<Department> findAllActive(String compCode) {
+        return findHSQL("select o from Department o where o.key.compCode ='"+compCode+"' and o.active =1 and o.deleted =0");
+    }
+
+    @Override
     public String getDepartment(Integer deptId) {
-        List<Department> list =findHSQL("select o from Department o where o.mapDeptId = "+deptId+"");
-        return list.isEmpty()?null:list.get(0).getKey().getDeptCode();
+        List<Department> list = findHSQL("select o from Department o where o.mapDeptId = " + deptId + "");
+        return list.isEmpty() ? null : list.get(0).getKey().getDeptCode();
     }
 }
 

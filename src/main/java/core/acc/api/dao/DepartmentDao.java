@@ -19,7 +19,11 @@ public interface DepartmentDao {
     int delete(DepartmentKey key);
 
     List<Department> findAll(String compCode);
+
     List<Department> findAll();
+
+    List<Department> findAllActive(String compCode);
+
     String getDepartment(Integer deptId);
 
 }

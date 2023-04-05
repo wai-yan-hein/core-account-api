@@ -13,7 +13,7 @@ public interface COADao {
 
     List<ChartOfAccount> getCOA(String compCode);
 
-    int delete(String code, String compCode);
+    Boolean delete(COAKey key);
 
     List<ChartOfAccount> getUnusedCOA(String compCode);
 
@@ -32,6 +32,8 @@ public interface COADao {
     List<ChartOfAccount> unUpload();
 
     Date getMaxDate();
+
+    List<ChartOfAccount> findAllActive(String compCode);
 
     List<ChartOfAccount> getCOA(String headCode, String compCode);
 }

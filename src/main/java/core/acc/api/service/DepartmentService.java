@@ -22,5 +22,7 @@ public interface DepartmentService {
 
     List<Department> findAll();
 
+    List<Department> findAllActive(String compCode);
+
     String getDepartment(Integer deptId);
 }

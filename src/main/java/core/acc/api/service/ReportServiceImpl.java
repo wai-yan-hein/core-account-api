@@ -36,7 +36,7 @@ public class ReportServiceImpl implements ReportService {
         try {
             deleteTmp(taleName, macId);
             if (listStr == null || listStr.isEmpty()) {
-                String sql = "insert into department(dept_code,mac_id)\n" +
+                String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" +
                         "select dept_code," + macId +   " mac_id from department";
                 executeSql(sql);
             } else {

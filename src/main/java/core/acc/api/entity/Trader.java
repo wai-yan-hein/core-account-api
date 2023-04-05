@@ -45,4 +45,6 @@ public class Trader {
     private Integer macId;
     @Column(name = "user_code")
     private String userCode;
+    @Column(name = "deleted")
+    private boolean deleted;
 }

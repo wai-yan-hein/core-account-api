@@ -21,7 +21,7 @@ public class COAServiceImpl implements COAService {
     private SeqTableService seqService;
 
     @Override
-    public ChartOfAccount save(ChartOfAccount coa) throws Exception {
+    public ChartOfAccount save(ChartOfAccount coa) {
         if (Util1.isNullOrEmpty(coa.getKey().getCoaCode())) {
             Integer macId = coa.getMacId();
             String compCode = coa.getKey().getCompCode();
@@ -54,14 +54,14 @@ public class COAServiceImpl implements COAService {
 
     @Override
     public List<ChartOfAccount> getCOA(String headCode, String compCode) {
-        return dao.getCOA(headCode,compCode);
+        return dao.getCOA(headCode, compCode);
     }
-
 
     @Override
-    public int delete(String code, String compCode) {
-        return dao.delete(code, compCode);
+    public Boolean delete(COAKey key) {
+        return dao.delete(key);
     }
+
 
     @Override
     public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
@@ -96,6 +96,11 @@ public class COAServiceImpl implements COAService {
     @Override
     public List<ChartOfAccount> unUpload() {
         return dao.unUpload();
+    }
+
+    @Override
+    public List<ChartOfAccount> findAllActive(String compCode) {
+        return dao.findAllActive(compCode);
     }
 
     @Override

@@ -62,6 +62,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    public List<Department> findAllActive(String compCode) {
+        return dao.findAllActive(compCode);
+    }
+
+    @Override
     public String getDepartment(Integer deptId) {
         return dao.getDepartment(deptId);
     }

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface COAService {
 
-    ChartOfAccount save(ChartOfAccount coa) throws Exception;
+    ChartOfAccount save(ChartOfAccount coa);
 
     ChartOfAccount save(ChartOfAccount coa, String opDate) throws Exception;
 
@@ -18,7 +18,7 @@ public interface COAService {
 
     List<ChartOfAccount> getCOA(String headCode, String compCode);
 
-    int delete(String code, String compCode);
+    Boolean delete(COAKey key);
 
     List<ChartOfAccount> searchCOA(String str, Integer level, String compCode);
 
@@ -31,6 +31,8 @@ public interface COAService {
     List<ChartOfAccount> search(String updatedDate);
 
     List<ChartOfAccount> unUpload();
+
+    List<ChartOfAccount> findAllActive(String compCode);
 
     Date getMaxDate();
 }

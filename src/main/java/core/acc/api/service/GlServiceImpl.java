@@ -53,7 +53,7 @@ public class GlServiceImpl implements GlService {
                 glDao.delete(key, updatedBy);
             }
         }
-        glProcessor.process(gl);
+        //glProcessor.process(gl);
         return glDao.save(gl);
     }
 

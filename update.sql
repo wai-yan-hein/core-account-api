@@ -25,4 +25,24 @@ add column project_no varchar(15) null after batch_no;
 alter table coa_opening
 add column deleted bit(1) not null default 0 after trader_code;
 
+ALTER TABLE `trader`
+ADD COLUMN `deleted` BIT(1) NOT NULL DEFAULT 0 AFTER `group_code`;
+
+alter table chart_of_account
+change column comp_code comp_code varchar(15) not null after coa_code,
+drop primary key,
+add primary key (coa_code, comp_code);
+alter table trader
+change column comp_code comp_code varchar(15) not null after code,
+drop primary key,
+add primary key (code, comp_code);
+alter table department
+change column comp_code comp_code varchar(15) not null after dept_code,
+drop primary key,
+add primary key (dept_code, comp_code);
+
+alter table gl
+change column comp_code comp_code varchar(15) not null after gl_code,
+drop primary key,
+add primary key (gl_code, comp_code);
 

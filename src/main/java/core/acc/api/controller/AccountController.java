@@ -6,6 +6,7 @@ import core.acc.api.entity.*;
 import core.acc.api.model.DeleteObj;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
+import core.acc.api.model.YearEnd;
 import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,8 @@ public class AccountController {
     private ExchangeService exchangeService;
     @Autowired(required = false)
     private CloudMQSender cloudMQSender;
+    @Autowired
+    private YearEndService yearEndService;
 
     @GetMapping(path = "/get-department")
     public Flux<?> getDepartment(@RequestParam String compCode) {
@@ -125,12 +128,12 @@ public class AccountController {
     }
 
     @PostMapping(path = "/save-coa")
-    public ResponseEntity<?> saveCOA(@RequestBody ChartOfAccount coa) throws Exception {
+    public ResponseEntity<?> saveCOA(@RequestBody ChartOfAccount coa) {
         return ResponseEntity.ok(coaService.save(coa));
     }
 
     @PostMapping(path = "/process-coa")
-    public ResponseEntity<?> processCOA(@RequestBody ChartOfAccount coa) throws Exception {
+    public ResponseEntity<?> processCOA(@RequestBody ChartOfAccount coa) {
         if (coa.getMigCode() != null) {
             coa = coaService.save(coa);
             String code = String.format("%s,%s", coa.getMigCode(), coa.getKey().getCoaCode());
@@ -203,6 +206,11 @@ public class AccountController {
     public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
         ReturnObject ro = glService.save(gl);
         return ResponseEntity.ok(ro);
+    }
+
+    @PostMapping(path = "/delete-coa")
+    public Mono<Boolean> deleteCOA(@RequestBody COAKey key) {
+        return Mono.just(coaService.delete(key));
     }
 
     @PostMapping(path = "/delete-gl")
@@ -369,4 +377,15 @@ public class AccountController {
     public ResponseEntity<?> shootTri() {
         return ResponseEntity.ok(glService.shootTri());
     }
+
+    @PostMapping(path = "/yearEnd")
+    public Mono<?> yearEnd(@RequestBody YearEnd yearEnd) {
+        return Mono.justOrEmpty(yearEndService.yearEnd(yearEnd));
+    }
+
+    @GetMapping(path = "/getDate")
+    public Flux<?> getDate(@RequestParam String startDate) {
+        return Flux.fromIterable(Util1.generateDate(startDate));
+    }
+
 }
