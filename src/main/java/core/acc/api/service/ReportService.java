@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface ReportService {
-    void insertTmp(List<String> listStr, Integer macId, String taleName);
+    void insertTmp(List<String> listStr, Integer macId, String compCode);
 
     ResultSet getResult(String sql);
 
@@ -30,8 +30,7 @@ public interface ReportService {
 
     List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,
                                     boolean detail, double prvProfit, double curProfit, String compCode, Integer macId);
-
-
+    List<Financial> getOpeningBalanceSheet(String bsProcess, String opDate, boolean detail, String compCode);
     void executeSql(String... sql) throws Exception;
 
 
@@ -39,7 +38,7 @@ public interface ReportService {
                        String opDate, String currency, String coaLv1, String coaLv2, String plProcess, String bsProcess,
                        boolean netChange, Integer macId);
 
-    List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2, Integer macId);
+    List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2,String compCode, Integer macId);
 
     List<VApar> genArAp(String compCode, String opDate,
                         String clDate, String currency, String traderCode, String coaCode, Integer macId);

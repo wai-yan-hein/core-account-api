@@ -80,8 +80,8 @@ public class SeqTableDaoImpl extends AbstractDao<SeqKey, SeqTable> implements Se
     }
 
     @Override
-    public List<SeqTable> findAll() {
-        String strSql = "select o from SeqTable o";
+    public List<SeqTable> findAll(String compCode) {
+        String strSql = "select o from SeqTable o where o.key.compCode ='" + compCode + "'";
         return findHSQL(strSql);
     }
 }

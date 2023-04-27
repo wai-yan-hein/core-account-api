@@ -36,4 +36,5 @@ public class ReturnObject {
     private String glVouNo;
     private double opAmt;
     private double clAmt;
+    private String opDate;
 }

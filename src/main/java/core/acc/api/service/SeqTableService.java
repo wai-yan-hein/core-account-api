@@ -28,5 +28,5 @@ import java.util.List;
 
      int getSequence(Integer macId,String option, String period, String compCode);
 
-     List<SeqTable> findAll();
+     List<SeqTable> findAll(String compCode);
 }

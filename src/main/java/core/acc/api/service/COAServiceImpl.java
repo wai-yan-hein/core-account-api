@@ -4,6 +4,7 @@ import core.acc.api.common.Util1;
 import core.acc.api.dao.COADao;
 import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import javax.transaction.Transactional;
 import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Service
 @Transactional
 public class COAServiceImpl implements COAService {
@@ -28,9 +30,9 @@ public class COAServiceImpl implements COAService {
             String coaCode = getCOACode(macId, compCode);
             coa.getKey().setCoaCode(coaCode);
             ChartOfAccount valid = findById(coa.getKey());
-            if (valid == null) {
-                coa.getKey().setCoaCode(coaCode);
-            } else {
+            if (valid != null) {
+                log.info("code " + coa.getKey().getCoaCode());
+                log.info("company" + coa.getKey().getCompCode());
                 throw new IllegalStateException("Duplicate Account Code");
             }
         }

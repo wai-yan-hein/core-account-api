@@ -32,16 +32,16 @@ public class ReportServiceImpl implements ReportService {
     private final HashMap<Integer, ReturnObject> hmRo = new HashMap<>();
 
     @Override
-    public void insertTmp(List<String> listStr, Integer macId, String taleName) {
+    public void insertTmp(List<String> listStr, Integer macId, String compCode) {
         try {
-            deleteTmp(taleName, macId);
+            deleteTmp("tmp_dep_filter", macId);
             if (listStr == null || listStr.isEmpty()) {
                 String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" +
-                        "select dept_code," + macId +   " mac_id from department";
+                        "select dept_code," + macId + " mac_id from department";
                 executeSql(sql);
             } else {
                 for (String str : listStr) {
-                    String sql = "insert into " + taleName + "(dept_code,mac_id)\n" +
+                    String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" +
                             "select '" + str + "'," + macId + "";
                     executeSql(sql);
                 }
@@ -445,6 +445,39 @@ public class ReportServiceImpl implements ReportService {
         return list;
     }
 
+    @Override
+    public List<Financial> getOpeningBalanceSheet(String bsProcess, String opDate, boolean detail, String compCode) {
+        List<Financial> list = new ArrayList<>();
+        if (!bsProcess.equals("-")) {
+            String[] process = bsProcess.split(",");
+            //fix,cur,lia,capital
+            for (int i = 0; i < process.length; i++) {
+                String head = process[i];
+                String sql = detail ? getOpeningHeadDetail(opDate, head, compCode) : getOpeningHeadSummary(opDate, head, compCode);
+                ResultSet rs = dao.executeSql(sql);
+                try {
+                    if (rs != null) {
+                        while (rs.next()) {
+                            Financial f = new Financial();
+                            f.setAmount(rs.getDouble("amount"));
+                            if (detail) {
+                                f.setCoaName(rs.getString("coa_name_eng"));
+                            }
+                            f.setGroupName(rs.getString("group_name"));
+                            f.setHeadName(rs.getString("head_name"));
+                            f.setAmount(i < 2 ? f.getAmount() * -1 : f.getAmount());
+                            f.setTranGroup(i < 2 ? "TOTAL ASSETS" : "TOTAL CAPITAL AND LIABILITIES");
+                            list.add(f);
+                        }
+                    }
+                } catch (Exception e) {
+                    log.error(e.getMessage());
+                }
+            }
+        }
+        return list;
+    }
+
     private void updateInvClosing(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
         List<Financial> list = getInvClosing(stDate, enDate, invGroup, compCode, macId, false);
 
@@ -614,6 +647,7 @@ public class ReportServiceImpl implements ReportService {
                 ")a\n" +
                 "join chart_of_account coa\n" +
                 "on a.coa_code = coa.coa_code\n" +
+                "and a.comp_code = coa.comp_code\n" +
                 "left join tmp_ex_rate tmp\n" +
                 "on a.curr_code = tmp.ex_cur\n" +
                 "and a.comp_code = tmp.comp_code\n" +
@@ -759,15 +793,18 @@ public class ReportServiceImpl implements ReportService {
 
 
     @Override
-    public List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2, Integer macId) {
+    public List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2, String compCode, Integer macId) {
         String sql = "select coa_code, curr_id, mac_id, dr_amt, cr_amt, dept_code, coa_code_usr, coa_name_eng\n" +
                 "from (\n" +
                 "select tmp.*,coa.coa_code_usr,coa.coa_name_eng,coa.coa_parent coa_lv2,coa1.coa_parent coa_lv1\n" +
                 "from tmp_tri tmp join chart_of_account coa\n" +
                 "on tmp.coa_code = coa.coa_code\n" +
+                "and tmp.comp_code = coa.comp_code\n" +
                 "join chart_of_account coa1\n" +
                 "on coa.coa_parent = coa1.coa_code\n" +
+                "and coa.comp_code =coa1.comp_code\n" +
                 "where tmp.mac_id = " + macId + " \n" +
+                "and tmp.comp_code='" + compCode + "'\n" +
                 "and (tmp.coa_code = '" + coaCode + "' or '-' = '" + coaCode + "'))a\n" +
                 "where (a.coa_lv2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "')\n" +
                 "and (a.coa_lv1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "')";
@@ -1302,7 +1339,7 @@ public class ReportServiceImpl implements ReportService {
                 "where tmp.mac_id =" + macId + "\n" +
                 "and coa2.coa_parent='" + head + "'\n" +
                 "and (dr_amt<>0 or cr_amt<>0)\n" +
-                "order by coa3.coa_code_usr,coa2.coa_code_usr,group_name,coa3.coa_code_usr,amount desc";
+                "order by coa3.coa_code_usr,coa2.coa_code_usr,group_name,amount desc";
     }
 
     private String getHeadSqlSummary(String head, Integer macId) {
@@ -1322,5 +1359,42 @@ public class ReportServiceImpl implements ReportService {
                 "and (tmp.dr_amt<>0 or tmp.cr_amt<>0)\n" +
                 "group by group_name\n" +
                 "order by coa2.coa_code_usr,coa3.coa_code_usr,amount desc";
+    }
+
+    private String getOpeningHeadDetail(String opDate, String headCode, String compCode) {
+        return "select op.op_date,op.source_acc_id,op.trader_code,op.cur_code,ifnull(cr_amt,0)-ifnull(dr_amt,0) amount,\n" +
+                "coa3.coa_name_eng,coa2.coa_name_eng group_name,coa1.coa_name_eng head_name\n" +
+                "from coa_opening op join chart_of_account coa3 on \n" +
+                "op.source_acc_id = coa3.coa_code\n" +
+                "and op.comp_code = coa3.comp_code\n" +
+                "join chart_of_account coa2 on coa3.coa_parent = coa2.coa_code\n" +
+                "and coa3.comp_code = coa2.comp_code\n" +
+                "join chart_of_account coa1 on coa2.coa_parent = coa1.coa_code\n" +
+                "and coa2.comp_code = coa1.comp_code\n" +
+                "and coa1.coa_code='" + headCode + "'\n" +
+                "where op.deleted = 0\n" +
+                "and op.comp_code ='" + compCode + "'\n" +
+                "and (ifnull(dr_amt,0) >0 or ifnull(cr_amt,0))\n" +
+                "and date(op.op_date)='" + opDate + "'\n" +
+                "order by coa3.coa_code_usr,coa2.coa_code_usr,coa2.coa_name_eng";
+    }
+
+    private String getOpeningHeadSummary(String opDate, String headCode, String compCode) {
+        return "select op.op_date,op.source_acc_id,op.trader_code,op.cur_code,sum(ifnull(cr_amt,0)-ifnull(dr_amt,0)) amount,\n" +
+                "coa2.coa_name_eng group_name,coa1.coa_name_eng head_name\n" +
+                "from coa_opening op join chart_of_account coa3 on \n" +
+                "op.source_acc_id = coa3.coa_code\n" +
+                "and op.comp_code = coa3.comp_code\n" +
+                "join chart_of_account coa2 on coa3.coa_parent = coa2.coa_code\n" +
+                "and coa3.comp_code = coa2.comp_code\n" +
+                "join chart_of_account coa1 on coa2.coa_parent = coa1.coa_code\n" +
+                "and coa2.comp_code = coa1.comp_code\n" +
+                "and coa1.coa_code='" + headCode + "'\n" +
+                "where op.deleted = 0\n" +
+                "and op.comp_code ='" + compCode + "'\n" +
+                "and (ifnull(dr_amt,0) >0 or ifnull(cr_amt,0))\n" +
+                "and date(op.op_date)='" + opDate + "'\n" +
+                "group by coa2.coa_code\n" +
+                "order by coa3.coa_code_usr,coa2.coa_code_usr,coa2.coa_name_eng";
     }
 }

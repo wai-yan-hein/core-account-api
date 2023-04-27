@@ -26,4 +26,5 @@ public class Financial {
     private Double grossProfit;
     private Double netProfit;
     private Double profit;
+    private String opDate;
 }

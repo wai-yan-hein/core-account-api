@@ -4,7 +4,6 @@ import core.acc.api.common.Util1;
 import core.acc.api.entity.COAOpening;
 import core.acc.api.entity.Gl;
 import core.acc.api.entity.VApar;
-import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReportFilter;
 import core.acc.api.model.ReturnObject;
@@ -15,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,8 +32,7 @@ public class ReportController {
     private ReturnObject ro = new ReturnObject();
 
     @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
-    public @ResponseBody
-    ReturnObject getReport(@RequestBody ReportFilter filter) {
+    public Mono<?> getReport(@RequestBody ReportFilter filter) {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
@@ -60,13 +59,15 @@ public class ReportController {
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         try {
             switch (reportName) {
                 case "OpeningTri" -> {
                     List<COAOpening> list = reportService.getOpeningTri(opDate, deptCode, curCode, compCode);
                     Util1.writeJsonFile(list, exportPath);
                 }
+                case "OpeningBalanceSheetDetail" -> Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, true, compCode), exportPath);
+                case "OpeningBalanceSheetSummary" -> Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, false, compCode), exportPath);
                 case "Income&ExpenditureDetail" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
@@ -112,13 +113,14 @@ public class ReportController {
             try (FileInputStream in = new FileInputStream(exportPath)) {
                 byte[] bytes = in.readAllBytes();
                 ro = reportService.getReportResult(macId);
+                ro.setOpDate(Util1.toDateStr(Util1.toDate(opDate), "dd/MM/yyyy"));
                 ro.setFile(bytes);
             }
         } catch (Exception e) {
             ro.setErrorMessage(e.getMessage());
             log.error(String.format("getReport: %s", e.getMessage()));
         }
-        return ro;
+        return Mono.justOrEmpty(ro);
     }
 
     private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate,
@@ -153,9 +155,9 @@ public class ReportController {
         String currency = filter.getCurCode();
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-", netChange, macId);
-        return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, macId));
+        return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId));
     }
 
     @PostMapping(path = "/get-arap")
@@ -167,7 +169,7 @@ public class ReportController {
         String currency = Util1.isNull(filter.getCurCode(), "-");
         Integer macId = filter.getMacId();
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId);
         return Flux.fromIterable(list);
     }

@@ -31,10 +31,9 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                 "and comp_code ='" + compCode + "'\n" +
                 "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
         String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" +
-                "from trader\n" +
-                "" + filter + "\n" +
+                "from trader\n" + filter + "\n" +
                 "order by user_code,trader_name\n" +
-                "limit 20\n";
+                "limit 100\n";
         ResultSet rs = getResultSet(sql);
         List<Trader> list = new ArrayList<>();
         try {

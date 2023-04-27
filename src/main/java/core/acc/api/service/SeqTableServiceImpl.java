@@ -58,7 +58,7 @@ public class SeqTableServiceImpl implements SeqTableService{
     }
     
     @Override
-    public List<SeqTable> findAll() {
-        return dao.findAll();
+    public List<SeqTable> findAll(String compCode) {
+        return dao.findAll(compCode);
     }
 }

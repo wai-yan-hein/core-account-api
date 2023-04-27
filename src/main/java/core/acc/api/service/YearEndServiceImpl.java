@@ -18,6 +18,8 @@ public class YearEndServiceImpl implements YearEndService {
     private TraderService traderService;
     @Autowired
     private DepartmentService departmentService;
+    @Autowired
+    private SeqTableService seqTableService;
 
     @Override
     public YearEnd yearEnd(YearEnd end) {
@@ -25,6 +27,7 @@ public class YearEndServiceImpl implements YearEndService {
         copyCOA(end);
         copyTrader(end);
         copyOpening(end);
+        copySeq(end);
         end.setMessage("year end in account.");
         return end;
     }
@@ -114,5 +117,22 @@ public class YearEndServiceImpl implements YearEndService {
             departmentService.save(d);
         });
         log.info("copied department.");
+    }
+
+    private void copySeq(YearEnd end) {
+        String compCode = end.getCompCode();
+        String yeCompCode = end.getYeCompCode();
+        seqTableService.findAll(yeCompCode).forEach(seq -> {
+            SeqTable s = new SeqTable();
+            SeqKey key = new SeqKey();
+            key.setCompCode(compCode);
+            key.setMacId(seq.getKey().getMacId());
+            key.setPeriod(seq.getKey().getPeriod());
+            key.setSeqOption(seq.getKey().getSeqOption());
+            s.setKey(key);
+            s.setSeqNo(seq.getSeqNo());
+            seqTableService.save(s);
+        });
+        log.info("copied sequence.");
     }
 }

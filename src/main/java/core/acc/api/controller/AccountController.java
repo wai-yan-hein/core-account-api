@@ -160,7 +160,7 @@ public class AccountController {
         String batchNo = Util1.isNull(filter.getBatchNo(), "-");
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
                 reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, summary, macId);
         return Flux.fromIterable(list);
@@ -175,7 +175,7 @@ public class AccountController {
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         return Mono.justOrEmpty(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, traderCode));
     }
 
@@ -300,7 +300,7 @@ public class AccountController {
         String description = Util1.isAll(filter.getDesp());
         String reference = Util1.isAll(filter.getReference());
         String compCode = filter.getCompCode();
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId));
     }
 
@@ -314,7 +314,7 @@ public class AccountController {
         String reference = Util1.isAll(filter.getReference());
         String refNo = Util1.isNull(filter.getRefNo(), "-");
         String compCode = filter.getCompCode();
-        reportService.insertTmp(filter.getListDepartment(), macId, "tmp_dep_filter");
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         return ResponseEntity.ok(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId));
     }
 
