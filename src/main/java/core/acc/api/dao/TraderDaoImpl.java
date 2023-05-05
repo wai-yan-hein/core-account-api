@@ -11,11 +11,16 @@ import java.util.List;
 
 @Repository
 @Slf4j
-public class TraderDaoImpl extends AbstractDao<String, Trader> implements TraderDao {
+public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements TraderDao {
     @Override
     public Trader save(Trader t) {
         persist(t);
         return t;
+    }
+
+    @Override
+    public Trader findById(TraderKey key) {
+        return getByKey(key);
     }
 
     @Override
@@ -34,7 +39,7 @@ public class TraderDaoImpl extends AbstractDao<String, Trader> implements Trader
                 "from trader\n" + filter + "\n" +
                 "order by user_code,trader_name\n" +
                 "limit 100\n";
-        ResultSet rs = getResultSet(sql);
+        ResultSet rs = getResult(sql);
         List<Trader> list = new ArrayList<>();
         try {
             if (rs != null) {

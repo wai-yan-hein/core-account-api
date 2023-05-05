@@ -28,10 +28,10 @@ public interface ReportService {
 
     double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess, String compCode, Integer macId);
 
-    List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,
+    List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,String reAcc,String plAcc,
                                     boolean detail, double prvProfit, double curProfit, String compCode, Integer macId);
     List<Financial> getOpeningBalanceSheet(String bsProcess, String opDate, boolean detail, String compCode);
-    void executeSql(String... sql) throws Exception;
+    void executeAndResult(String... sql) throws Exception;
 
 
     void genTriBalance(String compCode, String stDate, String enDate,

@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 @Slf4j
@@ -32,32 +33,31 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public Gl findWithSql(GlKey key) {
         try {
             String sql = "select * from gl where gl_code='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                if (rs.next()) {
-                    Gl gl = new Gl();
-                    gl.setKey(key);
-                    gl.setGlDate(rs.getDate("gl_date"));
-                    gl.setCreatedDate(rs.getDate("created_date"));
-                    gl.setModifyDate(rs.getDate("modify_date"));
-                    gl.setModifyBy(rs.getString("modify_by"));
-                    gl.setDescription(rs.getString("description"));
-                    gl.setSrcAccCode(rs.getString("source_ac_id"));
-                    gl.setAccCode(rs.getString("account_id"));
-                    gl.setCurCode(rs.getString("cur_code"));
-                    gl.setDrAmt(rs.getDouble("dr_amt"));
-                    gl.setCrAmt(rs.getDouble("cr_amt"));
-                    gl.setReference(rs.getString("reference"));
-                    gl.setDeptCode(rs.getString("dept_code"));
-                    gl.setVouNo(rs.getString("voucher_no"));
-                    gl.setTraderCode(rs.getString("trader_code"));
-                    gl.setTranSource(rs.getString("tran_source"));
-                    gl.setGlVouNo(rs.getString("gl_vou_no"));
-                    gl.setRemark(rs.getString("remark"));
-                    gl.setRefNo(rs.getString("ref_no"));
-                    gl.setMacId(rs.getInt("mac_id"));
-                    return gl;
-                }
+            List<Map<String, Object>> result = getList(sql);
+            if (!result.isEmpty()) {
+                Map<String, Object> rs = result.get(0);
+                Gl gl = new Gl();
+                gl.setKey(key);
+                gl.setGlDate(Util1.toDate(rs.get("gl_date")));
+                gl.setCreatedDate(Util1.toDate(rs.get("created_date")));
+                gl.setModifyDate(Util1.toDate(rs.get("modify_date")));
+                gl.setModifyBy(Util1.getString(rs.get("modify_by")));
+                gl.setDescription(Util1.getString(rs.get("description")));
+                gl.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
+                gl.setAccCode(Util1.getString(rs.get("account_id")));
+                gl.setCurCode(Util1.getString(rs.get("cur_code")));
+                gl.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
+                gl.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
+                gl.setReference(Util1.getString(rs.get("reference")));
+                gl.setDeptCode(Util1.getString(rs.get("dept_code")));
+                gl.setVouNo(Util1.getString(rs.get("voucher_no")));
+                gl.setTraderCode(Util1.getString(rs.get("trader_code")));
+                gl.setTranSource(Util1.getString(rs.get("tran_source")));
+                gl.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                gl.setRemark(Util1.getString(rs.get("remark")));
+                gl.setRefNo(Util1.getString(rs.get("ref_no")));
+                gl.setMacId(Util1.getInteger(rs.get("mac_id")));
+                return gl;
             }
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -67,11 +67,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public boolean delete(GlKey key, String modifyBy) {
-        String sql = "update gl\n" +
-                " set deleted =1,intg_upd_status = null,modify_by ='" + modifyBy + "'\n" +
-                " where gl_code = '" + key.getGlCode() + "'\n" +
-                " and comp_code ='" + key.getCompCode() + "'\n" +
-                " and dept_id =" + key.getDeptId() + "";
+        String sql = "update gl\n" + " set deleted =1,intg_upd_status = null,modify_by ='" + modifyBy + "'\n" + " where gl_code = '" + key.getGlCode() + "'\n" + " and comp_code ='" + key.getCompCode() + "'\n" + " and dept_id =" + key.getDeptId() + "";
         execSql(sql);
         return true;
     }
@@ -86,19 +82,14 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getDescription(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct description\n" +
-                "from gl\n" +
-                "where comp_code ='" + compCode + "'\n" +
-                "and (description like '" + str + "%')\n" +
-                "and deleted =0\n" +
-                "limit 20";
+        String sql = "select distinct description\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (description like '" + str + "%')\n" + "and deleted =0\n" + "limit 20";
         try {
-            ResultSet rs = getResultSet(sql);
-            while (rs.next()) {
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
                 VDescription v = new VDescription();
-                v.setDescription(rs.getString("description"));
+                v.setDescription(Util1.getString(rs.get("description")));
                 list.add(v);
-            }
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -108,19 +99,14 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getReference(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct reference\n" +
-                "from gl\n" +
-                "where comp_code ='" + compCode + "'\n" +
-                "and (reference like '" + str + "%')\n" +
-                "and deleted =0\n" +
-                "limit 20";
+        String sql = "select distinct reference\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (reference like '" + str + "%')\n" + "and deleted =0\n" + "limit 20";
         try {
-            ResultSet rs = getResultSet(sql);
-            while (rs.next()) {
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
                 VDescription v = new VDescription();
-                v.setDescription(rs.getString("reference"));
+                v.setDescription(Util1.getString(rs.get("reference")));
                 list.add(v);
-            }
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -130,32 +116,24 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getBatchNo(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct batch_no\n" +
-                "from gl\n" +
-                "where comp_code ='" + compCode + "'\n" +
-                "and (batch_no like '" + str + "%')\n" +
-                "and deleted =0\n" +
-                "limit 20";
+        String sql = "select distinct batch_no\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (batch_no like '" + str + "%')\n" + "and deleted =0\n" + "limit 20";
         try {
-            ResultSet rs = getResultSet(sql);
-            while (rs.next()) {
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
                 VDescription v = new VDescription();
-                v.setDescription(rs.getString("batch_no"));
+                v.setDescription(Util1.getString(rs.get("batch_no")));
                 list.add(v);
-            }
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
-        return list;    }
+        return list;
+    }
 
     @Override
     public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
-        String filter = " tran_source ='GV'\n" +
-                "and comp_code ='" + compCode + "'\n" +
-                "and deleted =0\n" +
-                "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
+        String filter = " tran_source ='GV'\n" + "and comp_code ='" + compCode + "'\n" + "and deleted =0\n" + "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
             filter += "and gl_vou_no ='" + vouNo + "'\n";
         }
@@ -165,24 +143,18 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!reference.equals("-")) {
             filter += "and reference like '" + reference + "%'\n";
         }
-        String sql = "select gl_date,description,reference,gl_vou_no,sum(dr_amt) amount\n" +
-                "from gl\n" +
-                "where " + filter + "" +
-                "group by gl_vou_no\n" +
-                "order by gl_date";
+        String sql = "select gl_date,description,reference,gl_vou_no,sum(dr_amt) amount\n" + "from gl\n" + "where " + filter + "" + "group by gl_vou_no\n" + "order by gl_date";
         try {
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    Gl g = new Gl();
-                    g.setGlDate(rs.getDate("gl_date"));
-                    g.setDescription(rs.getString("description"));
-                    g.setReference(rs.getString("reference"));
-                    g.setGlVouNo(rs.getString("gl_vou_no"));
-                    g.setDrAmt(rs.getDouble("amount"));
-                    list.add(g);
-                }
-            }
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
+                Gl g = new Gl();
+                g.setGlDate(Util1.toDate(rs.get("gl_date")));
+                g.setDescription(Util1.getString(rs.get("description")));
+                g.setReference(Util1.getString(rs.get("reference")));
+                g.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                g.setDrAmt(Util1.getDouble(rs.get("amount")));
+                list.add(g);
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -192,11 +164,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
-        String filter = " (tran_source ='DR' or tran_source ='CR')\n" +
-                "and comp_code ='" + compCode + "'\n" +
-                "and deleted =0\n" +
-                "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
+        String filter = " (tran_source ='DR' or tran_source ='CR')\n" + "and comp_code ='" + compCode + "'\n" + "and deleted =0\n" + "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
             filter += "and gl_vou_no ='" + vouNo + "'\n";
         }
@@ -209,31 +177,24 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!refNo.equals("-")) {
             filter += "and ref_no like '" + refNo + "%'\n";
         }
-        String sql = "select gl_date,description,reference,for_des,from_des,narration,\n" +
-                "gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
-                "from gl\n" +
-                "where " + filter + "" +
-                "group by gl_vou_no\n" +
-                "order by gl_date,tran_source,gl_vou_no";
+        String sql = "select gl_date,description,reference,for_des,from_des,narration,\n" + "gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl\n" + "where " + filter + "" + "group by gl_vou_no\n" + "order by gl_date,tran_source,gl_vou_no";
         try {
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    Gl g = new Gl();
-                    g.setGlDate(rs.getDate("gl_date"));
-                    g.setDescription(rs.getString("description"));
-                    g.setReference(rs.getString("reference"));
-                    g.setForDes(rs.getString("for_des"));
-                    g.setFromDes(rs.getString("from_des"));
-                    g.setNarration(rs.getString("narration"));
-                    g.setGlVouNo(rs.getString("gl_vou_no"));
-                    g.setDrAmt(rs.getDouble("dr_amt"));
-                    g.setCrAmt(rs.getDouble("cr_amt"));
-                    g.setTranSource(rs.getString("tran_source"));
-                    g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
-                    list.add(g);
-                }
-            }
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
+                Gl g = new Gl();
+                g.setGlDate(Util1.toDate(rs.get("gl_date")));
+                g.setDescription(Util1.getString(rs.get("description")));
+                g.setReference(Util1.getString(rs.get("reference")));
+                g.setForDes(Util1.getString(rs.get("for_des")));
+                g.setFromDes(Util1.getString(rs.get("from_des")));
+                g.setNarration(Util1.getString(rs.get("narration")));
+                g.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                g.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
+                g.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
+                g.setTranSource(Util1.getString(rs.get("tran_source")));
+                g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
+                list.add(g);
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -264,49 +225,33 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" +
-                "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
-                "d.usr_code d_user_code,coa.coa_name_eng\n" +
-                "from gl g\n" +
-                "join department d on g.dept_code = d.dept_code\n" +
-                "and g.comp_code = d.comp_code\n" +
-                "left join trader t on g.trader_code = t.code\n" +
-                "and g.comp_code = t.comp_code\n" +
-                "join chart_of_account coa on g.source_ac_id = coa.coa_code\n" +
-                "and g.comp_code = coa.comp_code\n" +
-                "where g.comp_code ='" + compCode + "'\n" +
-                "and g.gl_vou_no ='" + glVouNo + "'\n" +
-                "and g.tran_source ='GV'\n" +
-                "and g.deleted =0\n" +
-                "order by g.gl_code";
+        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" + "t.user_code t_user_code,t.trader_name,g.tran_source,\n" + "d.usr_code d_user_code,coa.coa_name_eng\n" + "from gl g\n" + "join department d on g.dept_code = d.dept_code\n" + "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.source_ac_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and g.tran_source ='GV'\n" + "and g.deleted =0\n" + "order by g.gl_code";
         try {
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    Gl g = new Gl();
-                    GlKey key = new GlKey();
-                    key.setGlCode(rs.getString("gl_code"));
-                    key.setCompCode(compCode);
-                    key.setDeptId(rs.getInt("dept_id"));
-                    g.setKey(key);
-                    g.setGlDate(rs.getDate("gl_date"));
-                    g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
-                    g.setDescription(rs.getString("description"));
-                    g.setReference(rs.getString("reference"));
-                    g.setGlVouNo(rs.getString("gl_vou_no"));
-                    g.setDrAmt(rs.getDouble("dr_amt"));
-                    g.setCrAmt(rs.getDouble("cr_amt"));
-                    g.setDeptCode(rs.getString("dept_code"));
-                    g.setDeptUsrCode(rs.getString("d_user_code"));
-                    g.setTraderCode(rs.getString("trader_code"));
-                    g.setTraderName(rs.getString("trader_name"));
-                    g.setSrcAccName(rs.getString("coa_name_eng"));
-                    g.setSrcAccCode(rs.getString("source_ac_id"));
-                    g.setTranSource(rs.getString("tran_source"));
-                    g.setCurCode(rs.getString("cur_code"));
-                    list.add(g);
-                }
-            }
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
+                Gl g = new Gl();
+                GlKey key = new GlKey();
+                key.setGlCode(Util1.getString(rs.get("gl_code")));
+                key.setCompCode(Util1.getString(rs.get("comp_code")));
+                key.setDeptId(Util1.getInteger(rs.get("dept_id")));
+                g.setKey(key);
+                g.setGlDate(Util1.toDate(rs.get("gl_date")));
+                g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
+                g.setDescription(Util1.getString(rs.get("description")));
+                g.setReference(Util1.getString(rs.get("reference")));
+                g.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                g.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
+                g.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
+                g.setDeptCode(Util1.getString(rs.get("dept_code")));
+                g.setDeptUsrCode(Util1.getString(rs.get("d_user_code")));
+                g.setTraderCode(Util1.getString(rs.get("trader_code")));
+                g.setTraderName(Util1.getString(rs.get("trader_name")));
+                g.setSrcAccName(Util1.getString(rs.get("coa_name_eng")));
+                g.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
+                g.setTranSource(Util1.getString(rs.get("tran_source")));
+                g.setCurCode(Util1.getString(rs.get("cur_code")));
+                list.add(g);
+            });
         } catch (Exception e) {
             log.error(e.getMessage());
         }
@@ -316,56 +261,40 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> getVoucher(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" +
-                "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" +
-                "g.for_des,g.from_des,g.narration,\n" +
-                "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
-                "d.usr_code d_user_code,coa.coa_name_eng\n" +
-                "from gl g\n" +
-                "join department d on g.dept_code = d.dept_code\n" +
-                "and g.comp_code = d.comp_code\n" +
-                "left join trader t on g.trader_code = t.code\n" +
-                "and g.comp_code = t.comp_code\n" +
-                "join chart_of_account coa on g.account_id = coa.coa_code\n" +
-                "and g.comp_code = coa.comp_code\n" +
-                "where g.comp_code ='" + compCode + "'\n" +
-                "and g.gl_vou_no ='" + glVouNo + "'\n" +
-                "and (g.tran_source ='DR' or g.tran_source='CR')\n" +
-                "order by g.gl_code";
+        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" + "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" + "g.for_des,g.from_des,g.narration,\n" + "t.user_code t_user_code,t.trader_name,g.tran_source,\n" + "d.usr_code d_user_code,coa.coa_name_eng\n" + "from gl g\n" + "join department d on g.dept_code = d.dept_code\n" + "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.account_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and (g.tran_source ='DR' or g.tran_source='CR')\n" + "order by g.gl_code";
         try {
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    Gl g = new Gl();
-                    GlKey key = new GlKey();
-                    key.setGlCode(rs.getString("gl_code"));
-                    key.setCompCode(compCode);
-                    key.setDeptId(rs.getInt("dept_id"));
-                    g.setKey(key);
-                    g.setGlDate(rs.getDate("gl_date"));
-                    g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
-                    g.setDescription(rs.getString("description"));
-                    g.setReference(rs.getString("reference"));
-                    g.setForDes(rs.getString("for_des"));
-                    g.setFromDes(rs.getString("from_des"));
-                    g.setNarration(rs.getString("narration"));
-                    g.setRefNo(rs.getString("ref_no"));
-                    g.setGlVouNo(rs.getString("gl_vou_no"));
-                    g.setDrAmt(rs.getDouble("dr_amt"));
-                    g.setCrAmt(rs.getDouble("cr_amt"));
-                    g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
-                    g.setDeptCode(rs.getString("dept_code"));
-                    g.setDeptUsrCode(rs.getString("d_user_code"));
-                    g.setTraderCode(rs.getString("trader_code"));
-                    g.setTraderName(rs.getString("trader_name"));
-                    g.setAccCode(rs.getString("account_id"));
-                    g.setAccName(rs.getString("coa_name_eng"));
-                    g.setSrcAccCode(rs.getString("source_ac_id"));
-                    g.setTranSource(rs.getString("tran_source"));
-                    g.setCurCode(rs.getString("cur_code"));
-                    list.add(g);
-                }
-            }
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
+                Gl g = new Gl();
+                GlKey key = new GlKey();
+                key.setGlCode(Util1.getString(rs.get("gl_code")));
+                key.setCompCode(Util1.getString(rs.get("comp_code")));
+                key.setDeptId(Util1.getInteger(rs.get("dept_id")));
+                g.setKey(key);
+                g.setGlDate(Util1.toDate(rs.get("gl_date")));
+                g.setGlDateStr(Util1.toDateStr(g.getGlDate(), "dd/MM/yyyy"));
+                g.setDescription(Util1.getString(rs.get("description")));
+                g.setReference(Util1.getString(rs.get("reference")));
+                g.setForDes(Util1.getString(rs.get("for_des")));
+                g.setFromDes(Util1.getString(rs.get("from_des")));
+                g.setNarration(Util1.getString(rs.get("narration")));
+                g.setRefNo(Util1.getString(rs.get("ref_no")));
+                g.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                g.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
+                g.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
+                g.setAmount(Util1.getDouble(g.getDrAmt()) + Util1.getDouble(g.getCrAmt()));
+                g.setDeptCode(Util1.getString(rs.get("dept_code")));
+                g.setDeptUsrCode(Util1.getString(rs.get("d_user_code")));
+                g.setTraderCode(Util1.getString(rs.get("trader_code")));
+                g.setTraderName(Util1.getString(rs.get("trader_name")));
+                g.setAccCode(Util1.getString(rs.get("account_id")));
+                g.setAccName(Util1.getString(rs.get("coa_name_eng")));
+                g.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
+                g.setTranSource(Util1.getString(rs.get("tran_source")));
+                g.setCurCode(Util1.getString(rs.get("cur_code")));
+
+                list.add(g);
+            });
         } catch (Exception e) {
             log.error("getVoucher : " + e.getMessage());
         }
@@ -376,18 +305,12 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public List<Gl> getTranSource(String compCode) {
         List<Gl> list = new ArrayList<>();
         String sql = "select distinct tran_source from gl where comp_code='" + compCode + "'";
-        ResultSet rs = getResultSet(sql);
-        try {
-            if (rs != null) {
-                while (rs.next()) {
-                    Gl g = new Gl();
-                    g.setTranSource(rs.getString("tran_source"));
-                    list.add(g);
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage());
-        }
+        List<Map<String, Object>> result = getList(sql);
+        result.forEach((rs) -> {
+            Gl g = new Gl();
+            g.setTranSource(Util1.getString(rs.get("tran_source")));
+            list.add(g);
+        });
         return list;
     }
 
@@ -400,16 +323,13 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public Date getMaxDate() {
         String sql = "select max(modify_date) date from gl";
-        ResultSet rs = getResultSet(sql);
-        try {
-            if (rs.next()) {
-                Date date = rs.getTimestamp("date");
-                if (date != null) {
-                    return date;
-                }
+        List<Map<String, Object>> result = getList(sql);
+        if (!result.isEmpty()) {
+            Map<String, Object> rs = result.get(0);
+            Date date = Util1.toDate(rs.get("date"));
+            if (date != null) {
+                return date;
             }
-        } catch (Exception e) {
-            log.error(e.getMessage());
         }
         return Util1.getSyncDate();
     }
@@ -418,48 +338,35 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public List<Gl> search(String updatedDate, String deptCode) {
         List<Gl> list = new ArrayList<>();
         String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.intg_upd_status is null";
-        ResultSet rs = getResultSet(sql);
-        if (rs != null) {
-            try {
-                //gl_code, gl_date, created_date, modify_date, modify_by, description, source_ac_id,
-                // account_id, cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, user_code,
-                // trader_code, comp_code, tran_source, gl_vou_no, split_id, intg_upd_status, remark, naration, ref_no, mac_id, exchange_id
-                while (rs.next()) {
-                    Gl gl = new Gl();
-                    GlKey key = new GlKey();
-                    key.setCompCode(rs.getString("comp_code"));
-                    key.setGlCode(rs.getString("gl_code"));
-                    key.setDeptId(rs.getInt("dept_id"));
-                    gl.setKey(key);
-                    gl.setGlDate(rs.getDate("gl_date"));
-                    gl.setCreatedDate(rs.getTimestamp("created_date"));
-                    gl.setModifyDate(rs.getTimestamp("modify_date"));
-                    gl.setModifyBy(rs.getString("modify_by"));
-                    gl.setDescription(rs.getString("description"));
-                    gl.setSrcAccCode(rs.getString("source_ac_id"));
-                    gl.setAccCode(rs.getString("account_id"));
-                    gl.setCurCode(rs.getString("cur_code"));
-                    gl.setDrAmt(rs.getDouble("dr_amt"));
-                    gl.setCrAmt(rs.getDouble("cr_amt"));
-                    gl.setReference(rs.getString("reference"));
-                    gl.setDeptCode(rs.getString("dept_code"));
-                    gl.setVouNo(rs.getString("voucher_no"));
-                    gl.setCreatedBy(rs.getString("user_code"));
-                    gl.setTraderCode(rs.getString("trader_code"));
-                    gl.setTranSource(rs.getString("tran_source"));
-                    gl.setGlVouNo(rs.getString("gl_vou_no"));
-                    gl.setIntgUpdStatus(rs.getString("intg_upd_status"));
-                    gl.setRemark(rs.getString("remark"));
-                    gl.setRefNo(rs.getString("ref_no"));
-                    gl.setMacId(rs.getInt("mac_id"));
-                    list.add(gl);
-                }
-            } catch (Exception e) {
-                log.error(e.getMessage());
-            }
-        }
-
-
+        List<Map<String, Object>> result = getList(sql);
+        result.forEach((rs) -> {
+            Gl gl = new Gl();
+            GlKey key = new GlKey();
+            key.setCompCode(Util1.getString(rs.get("gl_code")));
+            key.setDeptId(Util1.getInteger(rs.get("dept_id")));
+            key.setCompCode(Util1.getString(rs.get("comp_code")));
+            gl.setKey(key);
+            gl.setGlDate(Util1.toDate(rs.get("gl_date")));
+            gl.setCreatedDate(Util1.toDate(rs.get("created_date")));
+            gl.setModifyDate(Util1.toDate(rs.get("modify_date")));
+            gl.setModifyBy(Util1.getString(rs.get("modify_by")));
+            gl.setDescription(Util1.getString(rs.get("description")));
+            gl.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
+            gl.setAccCode(Util1.getString(rs.get("account_id")));
+            gl.setCurCode(Util1.getString(rs.get("cur_code")));
+            gl.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
+            gl.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
+            gl.setReference(Util1.getString(rs.get("reference")));
+            gl.setDeptCode(Util1.getString(rs.get("dept_code")));
+            gl.setVouNo(Util1.getString(rs.get("voucher_no")));
+            gl.setTraderCode(Util1.getString(rs.get("trader_code")));
+            gl.setTranSource(Util1.getString(rs.get("tran_source")));
+            gl.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+            gl.setRemark(Util1.getString(rs.get("remark")));
+            gl.setRefNo(Util1.getString(rs.get("ref_no")));
+            gl.setMacId(Util1.getInteger(rs.get("mac_id")));
+            list.add(gl);
+        });
         return list;
     }
 
@@ -468,78 +375,55 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         List<String> logs = new ArrayList<>();
         try {
             //check source acc
-            String sql = "select distinct source_ac_id,tran_source  from gl where source_ac_id not in(\n"
-                    + "select coa_code from chart_of_account) ";
-            ResultSet rs = getResultSet(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    String sourceAcc = rs.getString("source_ac_id");
-                    String tranSource = rs.getString("tran_source");
-                    logs.add(tranSource + " : Gl take Source Account which not exist in Chart Of Accouunt : " + sourceAcc);
-                }
-            }
+            String sql = "select distinct source_ac_id,tran_source  from gl where source_ac_id not in(\n" + "select coa_code from chart_of_account) ";
+            List<Map<String, Object>> result = getList(sql);
+            result.forEach((rs) -> {
+                String sourceAcc = Util1.getString(rs.get("source_ac_id"));
+                String tranSource = Util1.getString(rs.get("tran_source"));
+                logs.add(tranSource + " : Gl take Source Account which not exist in Chart Of Account : " + sourceAcc);
+            });
             //check account acc
-            String sql1 = "select distinct account_id,tran_source  from gl where account_id not in(\n"
-                    + "select coa_code from chart_of_account) ";
-            ResultSet rs1 = getResultSet(sql1);
-            if (rs1 != null) {
-                while (rs1.next()) {
-                    String account = rs1.getString("account_id");
-                    String tranSource = rs1.getString("tran_source");
-                    logs.add(tranSource + " : Gl take Account which not exist in Chart Of Accouunt : " + account);
-                }
-            }
+            String sql1 = "select distinct account_id,tran_source  from gl where account_id not in(\n" + "select coa_code from chart_of_account) ";
+            List<Map<String, Object>> result1 = getList(sql1);
+            result1.forEach(rs1 -> {
+                String account = Util1.getString(rs1.get("account_id"));
+                String tranSource = Util1.getString(rs1.get("tran_source"));
+                logs.add(tranSource + " : Gl take Account which not exist in Chart Of Account : " + account);
+            });
             //check gl date
             String sql2 = "select gl_code,tran_source from gl where (gl_date is null or gl_date = '') ";
-            ResultSet rs2 = getResultSet(sql2);
-            if (rs2 != null) {
-                while (rs2.next()) {
-                    String glCode = rs2.getString("gl_code");
-                    String tranSource = rs2.getString("tran_source");
-                    logs.add(tranSource + " : Gl date is null in Gl Code : " + glCode);
-                }
-            }
+            List<Map<String, Object>> result2 = getList(sql2);
+            result2.forEach(rs2 -> {
+                String glCode = Util1.getString(rs2.get("gl_code"));
+                String tranSource = Util1.getString(rs2.get("tran_source"));
+                logs.add(tranSource + " : Gl date is null in Gl Code : " + glCode);
+
+            });
             //check same account
             String sql3 = "select gl_code,tran_source from gl where source_ac_id = account_id ";
-            ResultSet rs3 = getResultSet(sql3);
-            if (rs3 != null) {
-                while (rs3.next()) {
-                    String glCode = rs3.getString("gl_code");
-                    String tranSource = rs3.getString("tran_source");
-                    logs.add(tranSource + " : Source Account Code and Accound Code are the same in Gl Code : " + glCode);
-                }
-            }
+            List<Map<String, Object>> result3 = getList(sql3);
+            result3.forEach(rs3 -> {
+                String glCode = Util1.getString(rs3.get("gl_code"));
+                String tranSource = Util1.getString(rs3.get("tran_source"));
+                logs.add(tranSource + " : Source Account Code and Accound Code are the same in Gl Code : " + glCode);
+
+            });
             //check gl date
             String sql4 = "select gl_code,tran_source from gl where (dept_code is null or dept_code = '') ";
-            ResultSet rs4 = getResultSet(sql4);
-            if (rs4 != null) {
-                while (rs4.next()) {
-                    String glCode = rs4.getString("gl_code");
-                    String tranSource = rs4.getString("tran_source");
-                    logs.add(tranSource + " : Department is null in Gl Code : " + glCode);
-                }
-            }
-            String sql5 = "select gl_code,tran_source \n"
-                    + "from gl\n"
-                    + "where source_ac_id  in(\n"
-                    + "select coa_code\n"
-                    + "from chart_of_account coa\n"
-                    + "where coa_level <=2\n"
-                    + ")\n"
-                    + "or\n"
-                    + "account_id in (\n"
-                    + "select coa_code\n"
-                    + "from chart_of_account coa\n"
-                    + "where coa_level <=2\n"
-                    + ")";
-            ResultSet rs5 = getResultSet(sql5);
-            if (rs5 != null) {
-                while (rs5.next()) {
-                    String glCode = rs5.getString("gl_code");
-                    String tranSource = rs5.getString("tran_source");
-                    logs.add(tranSource + " : Chart of Account in GL is Above Level 3 : " + glCode);
-                }
-            }
+            List<Map<String, Object>> result4 = getList(sql4);
+            result4.forEach(rs4 -> {
+                String glCode = Util1.getString(rs4.get("gl_code"));
+                String tranSource = Util1.getString(rs4.get("tran_source"));
+                logs.add(tranSource + " : Department is null in Gl Code : " + glCode);
+            });
+            String sql5 = "select gl_code,tran_source \n" + "from gl\n" + "where source_ac_id  in(\n" + "select coa_code\n" + "from chart_of_account coa\n" + "where coa_level <=2\n" + ")\n" + "or\n" + "account_id in (\n" + "select coa_code\n" + "from chart_of_account coa\n" + "where coa_level <=2\n" + ")";
+            List<Map<String, Object>> result5 = getList(sql5);
+            result5.forEach(rs5 -> {
+                String glCode = Util1.getString(rs5.get("gl_code"));
+                String tranSource = Util1.getString(rs5.get("tran_source"));
+                logs.add(tranSource + " : Chart of Account in GL is Above Level 3 : " + glCode);
+            });
+
             return logs;
         } catch (Exception e) {
             log.error("shootTri : " + e.getMessage());

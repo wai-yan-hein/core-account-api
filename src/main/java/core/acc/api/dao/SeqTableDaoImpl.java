@@ -56,8 +56,9 @@ public class SeqTableDaoImpl extends AbstractDao<SeqKey, SeqTable> implements Se
 
     @Override
     public int delete(Integer id) {
-        String strSql = "delete from SeqTable o where o.id = " + id;
-        return execUpdateOrDelete(strSql);
+        String sql = "delete from SeqTable o where o.id = " + id;
+        execSql(sql);
+        return 1;
     }
 
     @Override

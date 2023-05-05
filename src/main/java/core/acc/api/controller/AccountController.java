@@ -188,12 +188,13 @@ public class AccountController {
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv3 = Util1.isNull(filter.getCoaCode(), "-");
         String traderType = Util1.isNull(filter.getTraderType(), "-");
-        return Flux.fromIterable(coaOpeningService.searchOpening(deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
+        String opDate = Util1.isNull(filter.getOpeningDate(), "-");
+        return Flux.fromIterable(coaOpeningService.searchOpening(opDate,deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
     }
 
     @PostMapping(path = "/save-opening")
-    public ResponseEntity<?> saveOpening(@RequestBody COAOpening op) {
-        return ResponseEntity.ok(coaOpeningService.save(op));
+    public Mono<?> saveOpening(@RequestBody COAOpening op) {
+        return Mono.just(coaOpeningService.save(op));
     }
 
     @PostMapping(path = "/save-gl")
@@ -229,9 +230,9 @@ public class AccountController {
     }
 
     @PostMapping(path = "/delete-gl-by-voucher")
-    public ResponseEntity<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
+    public Mono<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
         glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(), gl.getKey().getCompCode());
-        return ResponseEntity.ok("deleted.");
+        return Mono.just("deleted.");
     }
 
     //Trader

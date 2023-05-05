@@ -8,10 +8,9 @@ import java.sql.ResultSet;
 import java.util.List;
 
 public interface COAOpeningDao {
-    ResultSet getResult(String sql);
     boolean delete(OpeningKey key);
     COAOpening save(COAOpening op);
-    void executeSql(String... sql);
+    void executeAndResult(String... sql);
 
 
 }

@@ -299,7 +299,7 @@ public class CloudMQReceiver {
         String sql = "update gl set intg_upd_status ='" + SAVE + "'\n"
                 + "where gl_code ='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
         try {
-            service.executeSql(sql);
+            service.executeAndResult(sql);
         } catch (Exception e) {
             log.error("update Gl : " + e.getMessage());
         }
@@ -310,7 +310,7 @@ public class CloudMQReceiver {
         String sql = "update chart_of_account set intg_upd_status ='" + SAVE + "'\n"
                 + "where coa_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
         try {
-            service.executeSql(sql);
+            service.executeAndResult(sql);
         } catch (Exception e) {
             log.error("update coa : " + e.getMessage());
         }

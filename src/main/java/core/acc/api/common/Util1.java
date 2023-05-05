@@ -36,16 +36,10 @@ public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
     private static final DecimalFormat df0 = new DecimalFormat("0");
     public static String SYNC_DATE;
-    public static final Gson gson = new GsonBuilder()
-            .setDateFormat(DateFormat.FULL, DateFormat.FULL)
-            .create();
+    public static final Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();
 
-    public static boolean getBoolean(String obj) {
-        boolean status = false;
-        if (!Util1.isNull(obj)) {
-            status = obj.equals("1") || obj.equalsIgnoreCase("true");
-        }
-        return status;
+    public static boolean getBoolean(Object obj) {
+        return obj != null && (obj.toString().equals("1") || obj.toString().equalsIgnoreCase("true"));
 
     }
 
@@ -227,6 +221,20 @@ public class Util1 {
         if (number != null) {
             if (!number.toString().isEmpty()) {
                 value = Double.parseDouble(number.toString());
+            }
+        }
+        return value;
+    }
+
+    public static String getString(Object value) {
+        return value == null ? null : value.toString();
+    }
+
+    public static int getInteger(Object number) {
+        int value = 0;
+        if (number != null) {
+            if (!number.toString().isEmpty()) {
+                value = Integer.parseInt(number.toString());
             }
         }
         return value;

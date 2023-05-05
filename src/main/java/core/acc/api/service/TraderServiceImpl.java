@@ -27,6 +27,11 @@ public class TraderServiceImpl implements TraderService {
     }
 
     @Override
+    public Trader findById(TraderKey key) {
+        return traderDao.findById(key);
+    }
+
+    @Override
     public List<Trader> getTrader(String compCode) {
         return traderDao.getTrader(compCode);
     }

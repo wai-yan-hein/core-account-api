@@ -44,7 +44,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                 "on a.coa_code = coa.coa_code\n" +
                 "and a.comp_code = coa.comp_code\n" +
                 "order by tran_date\n";
-        ResultSet rs = getResultSet(sql);
+        ResultSet rs = getResult(sql);
         if (rs != null) {
             try {
                 while (rs.next()) {

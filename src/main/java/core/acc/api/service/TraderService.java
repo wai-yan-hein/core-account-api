@@ -7,6 +7,7 @@ import java.util.List;
 
 public interface TraderService {
     Trader save(Trader t);
+    Trader findById(TraderKey key);
 
     List<Trader> getTrader(String compCode);
     List<Trader> getTrader(String text,String compCode);

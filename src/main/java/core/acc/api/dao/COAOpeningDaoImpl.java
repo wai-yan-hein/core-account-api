@@ -8,15 +8,11 @@ import java.sql.ResultSet;
 
 @Repository
 public class COAOpeningDaoImpl extends AbstractDao<String, COAOpening> implements COAOpeningDao {
-    @Override
-    public ResultSet getResult(String sql) {
-        return getResultSet(sql);
-    }
 
     @Override
     public boolean delete(OpeningKey key) {
         String sql = "update coa_opening set deleted = 1 where coa_op_id ='" + key.getOpId() + "' and '" + key.getCompCode() + "'";
-        executeSql(sql);
+        executeAndResult(sql);
         return true;
     }
 
@@ -27,7 +23,7 @@ public class COAOpeningDaoImpl extends AbstractDao<String, COAOpening> implement
     }
 
     @Override
-    public void executeSql(String... sql) {
+    public void executeAndResult(String... sql) {
         execSql(sql);
     }
 }

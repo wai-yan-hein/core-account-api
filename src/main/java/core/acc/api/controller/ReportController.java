@@ -56,6 +56,8 @@ public class ReportController {
         String invGroup = Util1.isNull(filter.getInvGroup(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         String cashGroup = Util1.isNull(filter.getCashGroup(), "-");
+        String reAcc = Util1.isNull(filter.getReAcc(), "-");
+        String plAcc = Util1.isNull(filter.getPlAcc(), "-");
         Integer macId = filter.getMacId();
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
@@ -66,8 +68,10 @@ public class ReportController {
                     List<COAOpening> list = reportService.getOpeningTri(opDate, deptCode, curCode, compCode);
                     Util1.writeJsonFile(list, exportPath);
                 }
-                case "OpeningBalanceSheetDetail" -> Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, true, compCode), exportPath);
-                case "OpeningBalanceSheetSummary" -> Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, false, compCode), exportPath);
+                case "OpeningBalanceSheetDetail" ->
+                        Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, true, compCode), exportPath);
+                case "OpeningBalanceSheetSummary" ->
+                        Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, false, compCode), exportPath);
                 case "Income&ExpenditureDetail" -> {
                     reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
@@ -86,11 +90,11 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "BalanceSheetDetail" -> {
-                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, plProcess, bsProcess, true, compCode, macId);
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, true, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "BalanceSheetSummary" -> {
-                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, plProcess, bsProcess, false, compCode, macId);
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, false, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "CreditDetail" -> {
@@ -123,19 +127,17 @@ public class ReportController {
         return Mono.justOrEmpty(ro);
     }
 
-    private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate,
-                                  String invGroup, boolean detail, String compCode, Integer macId) {
+    private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate, String invGroup, boolean detail, String compCode, Integer macId) {
         return reportService.getProfitLost(plProcess, opDate, fromDate, toDate, invGroup, detail, compCode, macId);
     }
 
-    private List<Financial> calBS(String fromDate, String toDate, String opDate, String invGroup, String plProcess,
-                                  String bsProcess, boolean detail, String compCode, Integer macId) {
+    private List<Financial> calBS(String fromDate, String toDate, String opDate, String invGroup, String reAcc, String plAcc, String plProcess, String bsProcess, boolean detail, String compCode, Integer macId) {
         double prvProfit = 0.0;
         if (!fromDate.equals(opDate)) {
             prvProfit = reportService.getProfit(opDate, opDate, Util1.minusDay(fromDate, 1), invGroup, plProcess, compCode, macId);
         }
         double curProfit = reportService.getProfit(opDate, fromDate, toDate, invGroup, plProcess, compCode, macId);
-        return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, detail, prvProfit, curProfit, compCode, macId);
+        return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, reAcc, plAcc, detail, prvProfit, curProfit, compCode, macId);
     }
 
     @GetMapping(path = "/get-report-result")

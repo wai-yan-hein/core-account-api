@@ -96,8 +96,9 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public int delete(DepartmentKey key) {
-        String strSql = "update department set deleted =1 where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
-        return execUpdateOrDelete(strSql);
+        String sql = "update department set deleted =1 where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        execSql(sql);
+        return 1;
     }
 
     @Override

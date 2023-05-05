@@ -1,5 +1,6 @@
 package core.acc.api.dao;
 
+import core.acc.api.common.Util1;
 import core.acc.api.entity.CurExchange;
 import core.acc.api.entity.ExchangeKey;
 import lombok.extern.slf4j.Slf4j;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Repository
@@ -33,25 +35,19 @@ public class ExchangeDaoImpl extends AbstractDao<ExchangeKey, CurExchange> imple
                 "where deleted = 0\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and date(ex_date) between '" + fromDate + "' and '" + toDate + "'";
-        ResultSet rs = getResultSet(sql);
-        if (rs != null) {
-            try {
-                while (rs.next()) {
-                    CurExchange ex = new CurExchange();
-                    ExchangeKey key = new ExchangeKey();
-                    key.setCompCode(rs.getString("comp_code"));
-                    key.setExCode(rs.getString("ex_code"));
-                    ex.setKey(key);
-                    ex.setHomeCur(rs.getString("home_cur"));
-                    ex.setExCur(rs.getString("exchange_cur"));
-                    ex.setExRate(rs.getDouble("ex_date"));
-                    ex.setRemark(rs.getString("remark"));
-                    list.add(ex);
-                }
-            } catch (Exception e) {
-                log.error("search : " + e.getMessage());
-            }
-        }
+        List<Map<String,Object>> result = getList(sql);
+        result.forEach((rs)->{
+            CurExchange ex = new CurExchange();
+            ExchangeKey key = new ExchangeKey();
+            key.setCompCode(Util1.getString(rs.get("comp_code")));
+            key.setExCode(Util1.getString(rs.get("ex_code")));
+            ex.setKey(key);
+            ex.setHomeCur(Util1.getString(rs.get("home_cur")));
+            ex.setExCur(Util1.getString(rs.get("exchange_cur")));
+            ex.setExRate(Util1.getDouble(rs.get("ex_date")));
+            ex.setRemark(Util1.getString(rs.get("remark")));
+            list.add(ex);
+        });
         return null;
     }
 }
