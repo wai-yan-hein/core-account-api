@@ -339,7 +339,7 @@ public class Util1 {
         return str.strip();
     }
 
-    public static java.util.List<DateModel> generateDate(String fromDate) {
+    public static java.util.List<DateModel> generateDate(String opDate,String fromDate) {
         java.util.List<DateModel> list = new ArrayList<>();
         LocalDate startDate = LocalDate.parse(fromDate);
         LocalDate todayDate = LocalDate.now();
@@ -359,15 +359,21 @@ public class Util1 {
             list.add(m);
             startDate = startDate.plusMonths(1);
         }
+        //all
+        DateModel all = new DateModel();
+        String todayDateStr = todayDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        all.setDescription("All");
+        all.setStartDate(opDate);
+        all.setEndDate(todayDateStr);
+        list.add(0, all);
         //today
         DateModel today = new DateModel();
-        String todayDateStr = todayDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         today.setDescription("Today");
         today.setMonth(todayDate.getMonthValue());
         today.setYear(todayDate.getYear());
         today.setStartDate(todayDateStr);
         today.setEndDate(todayDateStr);
-        list.add(0, today);
+        list.add(1, today);
         //yesterday
         DateModel yesterday = new DateModel();
         LocalDate yesDate = LocalDate.now().minusDays(1);
@@ -377,10 +383,10 @@ public class Util1 {
         yesterday.setYear(yesDate.getYear());
         yesterday.setStartDate(yesterdayStr);
         yesterday.setEndDate(yesterdayStr);
-        list.add(1, yesterday);
+        list.add(2, yesterday);
         DateModel custom = new DateModel();
         custom.setDescription("Custom");
-        list.add(2, custom);
+        list.add(3, custom);
         return list;
     }
 

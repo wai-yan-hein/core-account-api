@@ -135,8 +135,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
-        return glDao.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId);
+    public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String coaCode, String projectNo, String compCode, Integer macId) {
+        return glDao.searchJournal(fromDate, toDate, vouNo, description, reference,coaCode,projectNo, compCode, macId);
     }
 
     @Override
@@ -191,8 +191,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc) {
-        glDao.deleteVoucherByAcc(vouNo, tranSource, srcAcc);
+    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc, String compCode) {
+        glDao.deleteVoucherByAcc(vouNo, tranSource, srcAcc, compCode);
     }
 
     @Override

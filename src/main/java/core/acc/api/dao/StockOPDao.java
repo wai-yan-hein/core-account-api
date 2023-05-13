@@ -10,5 +10,5 @@ public interface StockOPDao {
 
     void delete(StockOPKey key);
 
-    List<StockOP> search(String fromDate, String toDate, String deptCode,String curCode, String compCode);
+    List<StockOP> search(String fromDate, String toDate, String deptCode,String curCode,String projectNo, String compCode);
 }

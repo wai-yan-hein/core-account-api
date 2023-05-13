@@ -13,5 +13,6 @@ public interface COAOpeningService {
 
     TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr, String compCode, Integer macId, String traderCode) throws Exception;
 
-    List<COAOpening> searchOpening(String opDate,String deptCode, String curCode, String traderType, String coaLv1, String coaLv2, String coaLv3, String compCode);
+    List<COAOpening> searchOpening(String opDate,String deptCode, String curCode, String traderType, String coaLv1,
+                                   String coaLv2, String coaLv3,String projectNo, String compCode);
 }

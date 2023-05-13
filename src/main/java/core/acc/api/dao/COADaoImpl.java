@@ -16,7 +16,7 @@ import java.util.Map;
 public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements COADao {
     @Override
     public ChartOfAccount save(ChartOfAccount coa) {
-        persist(coa);
+        saveOrUpdate(coa, coa.getKey());
         return coa;
     }
 
@@ -161,7 +161,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
             coa.setDeptCode(Util1.getString(rs.get("dept_code")));
             coa.setDeleted(Util1.getBoolean(rs.get("deleted")));
             list.add(coa);
-        }); return list;
+        });
+        return list;
     }
 
     @Override

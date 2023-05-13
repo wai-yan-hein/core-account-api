@@ -11,7 +11,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public Department save(Department dept) {
-        persist(dept);
+        saveOrUpdate(dept,dept.getKey());
         return dept;
     }
 

@@ -36,6 +36,8 @@ public class StockOP {
     private Date updatedDate;
     @Column(name = "deleted")
     private boolean deleted;
+    @Column(name = "project_no")
+    private String projectNo;
     @Transient
     private String coaCodeUser;
     @Transient

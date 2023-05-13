@@ -33,8 +33,8 @@ public class StockOPServiceImpl implements StockOPService {
     }
 
     @Override
-    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode, String compCode) {
-        return dao.search(fromDate, toDate, deptCode, curCode, compCode);
+    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode,String projectNo, String compCode) {
+        return dao.search(fromDate, toDate, deptCode, curCode,projectNo, compCode);
     }
 
     private String getTranCode(Integer deptId, String compCode) {

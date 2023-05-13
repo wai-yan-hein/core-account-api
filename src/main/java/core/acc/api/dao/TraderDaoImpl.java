@@ -14,7 +14,7 @@ import java.util.List;
 public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements TraderDao {
     @Override
     public Trader save(Trader t) {
-        persist(t);
+        saveOrUpdate(t, t.getKey());
         return t;
     }
 
@@ -31,14 +31,8 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
 
     @Override
     public List<Trader> getTrader(String text, String compCode) {
-        String filter = "where active =1\n" +
-                "and deleted =0\n"+
-                "and comp_code ='" + compCode + "'\n" +
-                "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
-        String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" +
-                "from trader\n" + filter + "\n" +
-                "order by user_code,trader_name\n" +
-                "limit 100\n";
+        String filter = "where active =1\n" + "and deleted =0\n" + "and comp_code ='" + compCode + "'\n" + "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
+        String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" + "from trader\n" + filter + "\n" + "order by user_code,trader_name\n" + "limit 100\n";
         ResultSet rs = getResult(sql);
         List<Trader> list = new ArrayList<>();
         try {

@@ -9,7 +9,7 @@ import java.util.List;
 public class CurrencyDaoImpl extends AbstractDao<String, Currency> implements CurrencyDao {
     @Override
     public Currency save(Currency currency) {
-        persist(currency);
+        saveOrUpdate(currency,currency.getCurCode());
         return currency;
     }
 

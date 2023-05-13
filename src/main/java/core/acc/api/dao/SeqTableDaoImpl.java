@@ -19,7 +19,7 @@ public class SeqTableDaoImpl extends AbstractDao<SeqKey, SeqTable> implements Se
 
     @Override
     public SeqTable save(SeqTable st) {
-        persist(st);
+        saveOrUpdate(st,st.getKey());
         return st;
     }
 

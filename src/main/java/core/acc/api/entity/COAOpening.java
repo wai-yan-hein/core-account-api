@@ -35,6 +35,8 @@ public class COAOpening {
     private String traderCode;
     @Column(name = "deleted")
     private boolean deleted;
+    @Column(name = "project_no")
+    private String projectNo;
     @Transient
     private String coaUsrCode;
     @Transient

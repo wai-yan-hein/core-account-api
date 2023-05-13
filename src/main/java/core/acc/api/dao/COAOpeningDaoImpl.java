@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 
 @Repository
-public class COAOpeningDaoImpl extends AbstractDao<String, COAOpening> implements COAOpeningDao {
+public class COAOpeningDaoImpl extends AbstractDao<OpeningKey, COAOpening> implements COAOpeningDao {
 
     @Override
     public boolean delete(OpeningKey key) {
@@ -18,7 +18,7 @@ public class COAOpeningDaoImpl extends AbstractDao<String, COAOpening> implement
 
     @Override
     public COAOpening save(COAOpening op) {
-        persist(op);
+        saveOrUpdate(op, op.getKey());
         return op;
     }
 

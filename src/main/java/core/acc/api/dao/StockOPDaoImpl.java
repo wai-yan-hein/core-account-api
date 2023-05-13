@@ -14,7 +14,7 @@ import java.util.List;
 public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements StockOPDao {
     @Override
     public StockOP save(StockOP op) {
-        persist(op);
+        saveOrUpdate(op,op.getKey());
         return op;
     }
 
@@ -25,7 +25,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
     }
 
     @Override
-    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode, String compCode) {
+    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode,String projectNo, String compCode) {
         List<StockOP> list = new ArrayList<>();
         String sql = "select a.*,dep.usr_code d_user_code,coa.coa_code_usr,coa.coa_name_eng\n" +
                 "from (\n" +
@@ -36,6 +36,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                 "and date(tran_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and (curr_code ='" + curCode + "' or '-' ='" + curCode + "')\n" +
                 "and (dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
+                "and (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
                 ")a\n" +
                 "join department dep \n" +
                 "on a.dept_code = dep.dept_code\n" +
@@ -68,6 +69,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                     op.setUpdatedBy(rs.getString("updated_by"));
                     op.setUpdatedDate(rs.getTimestamp("updated_date"));
                     op.setClAmt(rs.getDouble("amount"));
+                    op.setProjectNo(rs.getString("project_no"));
                     list.add(op);
                 }
             } catch (Exception e) {

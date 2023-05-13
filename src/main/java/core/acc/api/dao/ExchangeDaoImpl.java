@@ -16,7 +16,7 @@ import java.util.Map;
 public class ExchangeDaoImpl extends AbstractDao<ExchangeKey, CurExchange> implements ExchangeDao {
     @Override
     public CurExchange save(CurExchange ex) {
-        persist(ex);
+        saveOrUpdate(ex,ex.getKey());
         return ex;
     }
 

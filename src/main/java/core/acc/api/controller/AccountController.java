@@ -158,11 +158,15 @@ public class AccountController {
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         String batchNo = Util1.isNull(filter.getBatchNo(), "-");
+        String projectNo = Util1.isAll("-");
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode,
-                reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, summary, macId);
+        List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des,
+                srcAcc, acc, curCode, reference, compCode,
+                tranSource, traderCode,
+                traderType, coaLv2, coaLv1,
+                batchNo, projectNo, summary, macId);
         return Flux.fromIterable(list);
     }
 
@@ -189,7 +193,8 @@ public class AccountController {
         String coaLv3 = Util1.isNull(filter.getCoaCode(), "-");
         String traderType = Util1.isNull(filter.getTraderType(), "-");
         String opDate = Util1.isNull(filter.getOpeningDate(), "-");
-        return Flux.fromIterable(coaOpeningService.searchOpening(opDate,deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, compCode));
+        String projectNo = Util1.isAll(filter.getProjectNo());
+        return Flux.fromIterable(coaOpeningService.searchOpening(opDate, deptCode, curCode, traderType, coaLv1, coaLv2, coaLv3, projectNo, compCode));
     }
 
     @PostMapping(path = "/save-opening")
@@ -225,7 +230,7 @@ public class AccountController {
 
     @PostMapping(path = "/delete-gl-by-account")
     public ResponseEntity<?> deleteGlByAccount(@RequestBody Gl gl) {
-        glService.deleteVoucherByAcc(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode());
+        glService.deleteVoucherByAcc(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode(), gl.getKey().getCompCode());
         return ResponseEntity.ok("deleted.");
     }
 
@@ -300,9 +305,11 @@ public class AccountController {
         String vouNo = Util1.isNull(filter.getGlVouNo(), "-");
         String description = Util1.isAll(filter.getDesp());
         String reference = Util1.isAll(filter.getReference());
+        String projectNo = Util1.isAll(filter.getProjectNo());
+        String coaCode = Util1.isAll(filter.getCoaCode());
         String compCode = filter.getCompCode();
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, compCode, macId));
+        return ResponseEntity.ok(glService.searchJournal(fromDate, toDate, vouNo, description, reference, coaCode, projectNo, compCode, macId));
     }
 
     @PostMapping(path = "/search-voucher")
@@ -357,7 +364,8 @@ public class AccountController {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
-        return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, compCode));
+        String projectNo = Util1.isAll(filter.getProjectNo());
+        return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode,projectNo, compCode));
     }
 
     @PostMapping(path = "/search-exchange")
@@ -385,8 +393,9 @@ public class AccountController {
     }
 
     @GetMapping(path = "/getDate")
-    public Flux<?> getDate(@RequestParam String startDate) {
-        return Flux.fromIterable(Util1.generateDate(startDate));
+    public Flux<?> getDate(@RequestParam String startDate, @RequestParam String compCode) {
+        String opDate = reportService.getOpeningDate(compCode);
+        return Flux.fromIterable(Util1.generateDate(startDate, opDate));
     }
 
 }

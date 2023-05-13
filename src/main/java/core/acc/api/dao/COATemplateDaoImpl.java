@@ -10,7 +10,7 @@ import java.util.List;
 public class COATemplateDaoImpl extends AbstractDao<COATemplateKey, COATemplate> implements COATemplateDao {
     @Override
     public COATemplate save(COATemplate obj) {
-        persist(obj);
+        saveOrUpdate(obj, obj.getKey());
         return obj;
     }
 

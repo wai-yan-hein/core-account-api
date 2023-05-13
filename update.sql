@@ -123,3 +123,9 @@ add primary key (gl_code, comp_code);
 
 alter table department
 add column deleted bit(1) not null default 0 after map_dept_id;
+
+alter table coa_opening
+add column project_no varchar(15) null after deleted;
+
+alter table stock_op_value
+add column project_no varchar(15) null after deleted;
