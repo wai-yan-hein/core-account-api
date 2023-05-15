@@ -23,8 +23,6 @@ public interface COADao {
 
     List<ChartOfAccount> getCOATree(String compCode);
 
-    List<ChartOfAccount> getAllChild(String parent, String compCode);
-
     List<ChartOfAccount> getTraderCOA(String compCode);
 
     List<ChartOfAccount> search(String updatedDate);
