@@ -129,3 +129,18 @@ add column project_no varchar(15) null after deleted;
 
 alter table stock_op_value
 add column project_no varchar(15) null after deleted;
+
+create table coa_template (
+  coa_code varchar(15) not null,
+  bus_id varchar(15) not null,
+  coa_code_usr varchar(15) default null,
+  coa_name_eng varchar(255) default null,
+  coa_name_mya varchar(255) default null,
+  active bit(1) default null,
+  coa_parent varchar(15) default null,
+  coa_level int(11) default null,
+  cur_code varchar(15) default null,
+  dept_code varchar(15) default null,
+  credit bit(1) not null default b'0',
+  primary key (coa_code,bus_id)
+) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
