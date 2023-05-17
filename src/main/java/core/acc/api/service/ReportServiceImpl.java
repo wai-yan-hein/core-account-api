@@ -77,11 +77,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
-                                        String acc, String curCode, String reference, String compCode,
-                                        String tranSource, String traderCode, String traderType,
-                                        String coaLv2, String coaLv1, String batchNo, String projectNo,
-                                        boolean summary, Integer macId) throws SQLException {
+    public List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc, String acc, String curCode, String reference, String compCode, String tranSource, String traderCode, String traderType, String coaLv2, String coaLv1, String batchNo, String projectNo, boolean summary, Integer macId) throws SQLException {
         String coaFilter = "";
         if (!coaLv2.equals("-")) {
             coaFilter += "where coa3.coa_parent = '" + coaLv2 + "'\n";
@@ -123,19 +119,7 @@ public class ReportServiceImpl implements ReportService {
         }
         List<Gl> list = new ArrayList<>();
         if (summary) {
-            String sql = "select a.*,dep.usr_code d_user_code,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" +
-                    "from (\n" +
-                    "select gl_date,gl_code,dept_id,cur_code,source_ac_id,account_id,dept_code,trader_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
-                    "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
-                    "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" +
-                    "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                    "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" +
-                    "group by source_ac_id,account_id,dept_code\n" + ")a\n" +
-                    "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" +
-                    "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" +
-                    "left join chart_of_account coa3\n" + "on a.account_id = coa3.coa_code\n" +
-                    "and a.comp_code = coa3.comp_code\n" + "left join chart_of_account coa2\n" +
-                    "on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" + "order by coa.coa_code_usr\n";
+            String sql = "select a.*,dep.usr_code d_user_code,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" + "from (\n" + "select gl_date,gl_code,dept_id,cur_code,source_ac_id,account_id,dept_code,trader_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" + "group by source_ac_id,account_id,dept_code\n" + ")a\n" + "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" + "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" + "on a.account_id = coa3.coa_code\n" + "and a.comp_code = coa3.comp_code\n" + "left join chart_of_account coa2\n" + "on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" + "order by coa.coa_code_usr\n";
             ResultSet rs = dao.executeAndResult(sql);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
@@ -220,11 +204,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate,
-                                         String invGroup, boolean detail,String projectNo,
-                                         String compCode, Integer macId) {
-        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", plProcess,
-                "-", projectNo,true, macId);
+    public List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate, String invGroup, boolean detail, String projectNo, String compCode, Integer macId) {
+        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", plProcess, "-", projectNo, true, macId);
         double ttlIncome = 0.0;
         double ttlOpInv = 0.0;
         double ttlClInv = 0.0;
@@ -327,8 +308,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess,String projectNo, String compCode, Integer macId) {
-        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", plProcess, "-", projectNo,true, macId);
+    public double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess, String projectNo, String compCode, Integer macId) {
+        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", plProcess, "-", projectNo, true, macId);
         AtomicReference<Double> opAmt = new AtomicReference<>(0.0);
         AtomicReference<Double> clAmt = new AtomicReference<>(0.0);
         List<Financial> opList = getInvOpeningDetail(opDate, stDate, invGroup, compCode, macId);
@@ -351,10 +332,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup, String reAcc, String plAcc,
-                                           boolean detail, double prvProfit, double curProfit,
-                                           String projectNo,String compCode, Integer macId) {
-        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", "-", bsProcess, projectNo,false, macId);
+    public List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup, String reAcc, String plAcc, boolean detail, double prvProfit, double curProfit, String projectNo, String compCode, Integer macId) {
+        genTriBalance(compCode, stDate, enDate, opDate, "-", "-", "-", "-", bsProcess, projectNo, false, macId);
         List<Financial> list = new ArrayList<>();
         if (!bsProcess.equals("-")) {
             updateInvClosing(stDate, enDate, invGroup, compCode, macId);
@@ -576,9 +555,7 @@ public class ReportServiceImpl implements ReportService {
 
 
     @Override
-    public void genTriBalance(String compCode, String stDate, String enDate, String opDate, String currency,
-                              String coaLv1, String coaLv2, String plProcess, String bsProcess,
-                              String projectNo,boolean netChange, Integer macId) {
+    public void genTriBalance(String compCode, String stDate, String enDate, String opDate, String currency, String coaLv1, String coaLv2, String plProcess, String bsProcess, String projectNo, boolean netChange, Integer macId) {
         String delSql1 = "delete from tmp_tri where mac_id =" + macId + "";
         String delSql2 = "delete from tmp_closing where mac_id =" + macId + "";
         dao.exeSql(delSql1, delSql2);
@@ -604,69 +581,8 @@ public class ReportServiceImpl implements ReportService {
             str = new StringBuilder(str.substring(0, str.length() - 1));
             coaFilter = "select coa_code \n" + "from chart_of_account \n" + "where coa_parent in (select coa_code from chart_of_account where coa_parent in (" + str + ") and comp_code='" + compCode + "')";
         }
-        String opSql = "insert into tmp_closing(coa_code, cur_code,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
-                "select source_acc_id,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" +
-                "from (\n" +
-                "select source_acc_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
-                "from (\n" +
-                "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
-                "from coa_opening\n" +
-                "where date(op_date)='" + opDate + "'\n" + "and deleted =0\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and comp_code = '" + compCode + "'\n" +
-                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
-                "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
-                "and (dr_amt>0 or cr_amt>0)\n" +
-                "group by source_acc_id, cur_code\n" +
-                "\tunion all\n" +
-                "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" +
-                "from gl \n" +
-                "where account_id in (" + coaFilter + ")\n" +
-                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and comp_code = '" + compCode + "'\n" +
-                "and deleted =0\n" +
-                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
-                "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
-                "group by account_id, cur_code\n" +
-                "\tunion all\n" +
-                "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
-                "from gl \n" +
-                "where source_ac_id in (" + coaFilter + ")\n" +
-                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" +
-                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
-                "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
-                "group by source_ac_id, cur_code\n" + ")a\n" +
-                "group by source_acc_id,cur_code)b";
-        String sql = "insert into tmp_tri(coa_code, curr_id,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" +
-                "select coa_code,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" +
-                "from (\n" +
-                "select coa_code,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" +
-                "from (\n" + "select coa_code, cur_code,dr_amt,cr_amt,dept_code\n" +
-                "from tmp_closing\n" + "where mac_id =" + macId + "\n" +
-                "and comp_code ='" + compCode + "'\n" +
-                "\tunion all\n" +
-                "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" +
-                "from gl \n" +
-                "where account_id in (" + coaFilter + ")\n" +
-                "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and comp_code = '" + compCode + "'\n" +
-                "and deleted =0\n" +
-                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
-                "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
-                "group by account_id, cur_code\n" +
-                "\tunion all\n" +
-                "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" +
-                "from gl \n" + "where source_ac_id in (" + coaFilter + ")\n" +
-                "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" +
-                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" +
-                "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" +
-                "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
-                "group by source_ac_id, cur_code\n" + ")a\n" + "group by coa_code,cur_code)b";
+        String opSql = "insert into tmp_closing(coa_code, cur_code,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" + "select source_acc_id,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" + "from (\n" + "select source_acc_id,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" + "from (\n" + "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" + "from coa_opening\n" + "where date(op_date)='" + opDate + "'\n" + "and deleted =0\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" + "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "and (dr_amt>0 or cr_amt>0)\n" + "group by source_acc_id, cur_code\n" + "\tunion all\n" + "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" + "from gl \n" + "where account_id in (" + coaFilter + ")\n" + "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" + "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "group by account_id, cur_code\n" + "\tunion all\n" + "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" + "from gl \n" + "where source_ac_id in (" + coaFilter + ")\n" + "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + stDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" + "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "group by source_ac_id, cur_code\n" + ")a\n" + "group by source_acc_id,cur_code)b";
+        String sql = "insert into tmp_tri(coa_code, curr_id,dept_code, dr_amt, cr_amt,comp_code,mac_id)\n" + "select coa_code,cur_code,dept_code,round(if(balance>0,balance,0),2) dr_amt,round(if(balance<0,balance*-1,0),2) cr_amt,'" + compCode + "'," + macId + "\n" + "from (\n" + "select coa_code,cur_code,dept_code,sum(dr_amt)-sum(cr_amt) balance\n" + "from (\n" + "select coa_code, cur_code,dr_amt,cr_amt,dept_code\n" + "from tmp_closing\n" + "where mac_id =" + macId + "\n" + "and comp_code ='" + compCode + "'\n" + "\tunion all\n" + "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,dept_code\n" + "from gl \n" + "where account_id in (" + coaFilter + ")\n" + "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" + "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "group by account_id, cur_code\n" + "\tunion all\n" + "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,dept_code\n" + "from gl \n" + "where source_ac_id in (" + coaFilter + ")\n" + "and date(gl_date) between '" + stDate + "' and '" + enDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and (cur_code ='" + currency + "' or '-'='" + currency + "')\n" + "and (project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "group by source_ac_id, cur_code\n" + ")a\n" + "group by coa_code,cur_code)b";
         if (!netChange) {
             dao.exeSql(opSql);
         }
@@ -699,51 +615,12 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency, String traderCode,
-                               String coaCode,String projectNo, Integer macId) {
+    public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency, String traderCode, String coaCode, String projectNo, Integer macId) {
         String coaFilter = "select distinct account_code from trader where comp_code='" + compCode + "' and account_code is not null";
         if (!coaCode.equals("-")) {
             coaFilter = "'" + coaCode + "'";
         }
-        String sql = "select source_acc_id,trader_code,b.cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,coa.coa_name_eng\n" +
-                "from (\n" +
-                "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
-                "from (\n" +
-                "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
-                "\tfrom  coa_opening \n" +
-                "\twhere comp_code = '" + compCode + "'\n" +
-                "\tand deleted =0\n" +
-                "\tand date(op_date) = '" + opDate + "'\n" +
-                "\tand source_acc_id in (" + coaFilter + ")\n" +
-                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
-                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
-                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_acc_id\n" +
-                "\t\t\tunion all\n" +
-                "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
-                "\tfrom gl \n" + "\twhere source_ac_id in (" + coaFilter + ")\n" +
-                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
-                "\tand comp_code = '" + compCode + "'\n" + "\tand deleted =0\n" +
-                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
-                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
-                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "\tand trader_code is not null\n" +
-                "\tgroup by  cur_code,trader_code,source_ac_id\n" +
-                "\t\t\tunion all\n" +
-                "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" +
-                "\tfrom gl \n" +
-                "\twhere account_id in (" + coaFilter + ")\n" +
-                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
-                "\tand comp_code = '" + compCode + "'\n" + "\tand deleted =0\n" +
-                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
-                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
-                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
-                "\tand trader_code is not null\n" +
-                "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" +
-                "group by source_acc_id,trader_code,cur_code\n" + ")b\n" + "join trader t on b.trader_code = t.code\n" +
-                "and b.comp_code = t.comp_code\n" +
-                "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" +
-                "and b.comp_code = coa.comp_code\n" + "order by t.user_code";
+        String sql = "select source_acc_id,trader_code,b.cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,coa.coa_name_eng\n" + "from (\n" + "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" + "from (\n" + "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom  coa_opening \n" + "\twhere comp_code = '" + compCode + "'\n" + "\tand deleted =0\n" + "\tand date(op_date) = '" + opDate + "'\n" + "\tand source_acc_id in (" + coaFilter + ")\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_acc_id\n" + "\t\t\tunion all\n" + "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere source_ac_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted =0\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_ac_id\n" + "\t\t\tunion all\n" + "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere account_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted =0\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" + "group by source_acc_id,trader_code,cur_code\n" + ")b\n" + "join trader t on b.trader_code = t.code\n" + "and b.comp_code = t.comp_code\n" + "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" + "and b.comp_code = coa.comp_code\n" + "order by t.user_code";
         List<VApar> list = new ArrayList<>();
         try {
             ResultSet rs = dao.executeAndResult(sql);
@@ -1042,7 +919,7 @@ public class ReportServiceImpl implements ReportService {
                         if (tmp != null) {
                             listGl.get(0).setOpening(tmp.getOpening());
                         } else {
-                            listGl.get(0).setOpening(0);
+                            listGl.get(0).setOpening(0.0);
                         }
                         list.addAll(listGl);
                     }
@@ -1072,6 +949,29 @@ public class ReportServiceImpl implements ReportService {
             }
         } catch (Exception e) {
             log.error(e.getMessage());
+        }
+        return list;
+    }
+
+    @Override
+    public List<Gl> getCashBook(String startDate, String endDate, String cashGroup, String curCode, String compCode) {
+        String sql = "select a.gl_date,a.source_ac_id,a.cur_code,sum(a.dr_amt) dr_amt,sum(a.cr_amt) cr_amt,coa.coa_code_usr,coa.coa_name_eng\n" + "from (\n" + "select gl_date,cur_code,source_ac_id,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and source_ac_id in (select coa_code from chart_of_account where coa_parent ='" + cashGroup + "' and comp_code ='" + compCode + "')\n" + "and cur_code ='" + curCode + "'\n" + "group by source_ac_id\n" + "\tunion all\n" + "select gl_date,cur_code,account_id,comp_code,sum(cr_amt) dr_amt,sum(dr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and account_id in (select coa_code from chart_of_account where coa_parent ='" + cashGroup + "' and comp_code ='" + compCode + "')\n" + "and cur_code ='" + curCode + "'\n" + "group by account_id\n" + ")a\n" + "join chart_of_account coa\n" + "where a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "group by source_ac_id\n" + "order by coa.coa_code_usr;";
+        List<Gl> list = new ArrayList<>();
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                Gl gl = new Gl();
+                gl.setGlDateStr(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
+                gl.setDrAmt(Util1.getDouble(rs.getDouble("dr_amt")));
+                gl.setCrAmt(Util1.getDouble(rs.getDouble("cr_amt")));
+                gl.setCurCode(rs.getString("cur_code"));
+                gl.setSrcUserCode(rs.getString("coa_code_usr"));
+                gl.setSrcAccCode(rs.getString("source_ac_id"));
+                gl.setSrcAccName(rs.getString("coa_name_eng"));
+                list.add(gl);
+            }
+        } catch (Exception e) {
+            log.error("getCashBook : " + e.getMessage());
         }
         return list;
     }

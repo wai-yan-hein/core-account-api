@@ -85,17 +85,19 @@ public class Gl {
     @Transient
     private String srcAccName;
     @Transient
+    private String srcUserCode;
+    @Transient
     private String accName;
     @Transient
     private String vouDate;
     @Transient
     private boolean edit;
     @Transient
-    private double opening;
+    private Double opening;
     @Transient
-    private double closing;
+    private Double closing;
     @Transient
-    private double amount;
+    private Double amount;
     @Transient
     private String event;
 

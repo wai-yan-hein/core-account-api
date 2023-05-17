@@ -162,11 +162,7 @@ public class AccountController {
         Integer macId = filter.getMacId();
         boolean summary = filter.isSummary();
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des,
-                srcAcc, acc, curCode, reference, compCode,
-                tranSource, traderCode,
-                traderType, coaLv2, coaLv1,
-                batchNo, projectNo, summary, macId);
+        List<Gl> list = reportService.getIndividualLedger(fromDate, toDate, des, srcAcc, acc, curCode, reference, compCode, tranSource, traderCode, traderType, coaLv2, coaLv1, batchNo, projectNo, summary, macId);
         return Flux.fromIterable(list);
     }
 
@@ -365,7 +361,7 @@ public class AccountController {
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         String projectNo = Util1.isAll(filter.getProjectNo());
-        return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode,projectNo, compCode));
+        return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, projectNo, compCode));
     }
 
     @PostMapping(path = "/search-exchange")
@@ -396,6 +392,25 @@ public class AccountController {
     public Flux<?> getDate(@RequestParam String startDate, @RequestParam String compCode) {
         String opDate = reportService.getOpeningDate(compCode);
         return Flux.fromIterable(Util1.generateDate(startDate, opDate));
+    }
+
+    @PostMapping(path = "/getCashBook")
+    public Flux<?> getCashBook(@RequestBody ReportFilter filter) {
+        String compCode = filter.getCompCode();
+        String startDate = filter.getFromDate();
+        String endDate = filter.getToDate();
+        String cashGroup = filter.getCashGroup();
+        String curCode = filter.getCurCode();
+        Integer macId = Util1.getInteger(filter.getMacId());
+        reportService.insertTmp(filter.getListDepartment(),macId,compCode);
+        String opDate = reportService.getOpeningDate(compCode);
+        List<Gl> list = reportService.getCashBook(startDate, endDate, cashGroup, curCode, compCode);
+        list.forEach(gl -> {
+            TmpOpening op = coaOpeningService.getCOAOpening(gl.getSrcAccCode(), opDate, startDate, curCode, compCode, macId, "-");
+            gl.setOpening(op.getOpening());
+            gl.setClosing(gl.getDrAmt() - gl.getCrAmt() + gl.getOpening());
+        });
+        return Flux.fromIterable(list);
     }
 
 }
