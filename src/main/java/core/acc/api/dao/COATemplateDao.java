@@ -11,4 +11,6 @@ public interface COATemplateDao {
     List<COATemplate> getChild(Integer busId, String coaCode);
 
     COATemplate findById(COATemplateKey key);
+
+    List<COATemplate> getAllCOATemplate(Integer busId);
 }

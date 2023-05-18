@@ -132,6 +132,11 @@ public class AccountController {
         return ResponseEntity.ok(coaService.save(coa));
     }
 
+    @GetMapping(path = "/save-coa-from-template")
+    public ResponseEntity<?> saveCOA(@RequestParam Integer busId, String compCode) {
+        return ResponseEntity.ok(coaService.saveCOA(busId, compCode));
+    }
+
     @PostMapping(path = "/process-coa")
     public ResponseEntity<?> processCOA(@RequestBody ChartOfAccount coa) {
         if (coa.getMigCode() != null) {

@@ -2,6 +2,7 @@ package core.acc.api.service;
 
 import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
+import io.swagger.models.auth.In;
 
 import java.util.Date;
 import java.util.List;
@@ -35,4 +36,6 @@ public interface COAService {
     List<ChartOfAccount> findAllActive(String compCode);
 
     Date getMaxDate();
+
+    List<ChartOfAccount> saveCOA(Integer busId, String compCode);
 }
