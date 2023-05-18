@@ -11,8 +11,8 @@ public interface COAOpeningService {
 
     boolean delete(OpeningKey key);
 
-    TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr, String compCode, Integer macId, String traderCode) throws Exception;
+    TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr, String compCode, Integer macId, String traderCode);
 
-    List<COAOpening> searchOpening(String opDate,String deptCode, String curCode, String traderType, String coaLv1,
-                                   String coaLv2, String coaLv3,String projectNo, String compCode);
+    List<COAOpening> searchOpening(String opDate, String deptCode, String curCode, String traderType, String coaLv1,
+                                   String coaLv2, String coaLv3, String projectNo, String compCode);
 }

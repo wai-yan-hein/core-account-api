@@ -63,4 +63,5 @@ public interface ReportService {
 
     List<Financial> getCOAList(String compCode);
 
+    List<Gl> getCashBook(String startDate, String endDate, String cashGroup, String curCode, String compCode);
 }
