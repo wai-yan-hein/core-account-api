@@ -260,6 +260,11 @@ public class AccountController {
         return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
 
+    @GetMapping(path = "/getTraderByDate")
+    public Flux<Trader> getTraderByDate(@RequestParam String updatedDate) {
+        return Flux.fromIterable(traderService.SearchByDate(updatedDate));
+    }//***pannn
+
     @GetMapping(path = "/get-supplier")
     public ResponseEntity<List<Trader>> getSupplier(@RequestParam String compCode) {
         return ResponseEntity.ok(traderService.getSupplier(compCode));
@@ -387,6 +392,11 @@ public class AccountController {
     @GetMapping(path = "/getDate")
     public Flux<?> getDate(@RequestParam String startDate) {
         return Flux.fromIterable(Util1.generateDate(startDate));
+    }
+
+    @GetMapping(path = "/getCOAByDate")
+    public Flux<?> getCOAByDate(@RequestParam String updatedDate) {
+        return Flux.fromIterable(coaService.search(updatedDate));
     }
 
 }

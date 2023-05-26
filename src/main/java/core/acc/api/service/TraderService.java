@@ -16,6 +16,8 @@ public interface TraderService {
 
     List<Trader> getSupplier(String compCode);
 
+    List<Trader> SearchByDate(String updDate);
+
     void delete(TraderKey t);
 
 }

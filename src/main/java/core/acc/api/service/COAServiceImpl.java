@@ -104,7 +104,6 @@ public class COAServiceImpl implements COAService {
     public List<ChartOfAccount> findAllActive(String compCode) {
         return dao.findAllActive(compCode);
     }
-
     @Override
     public Date getMaxDate() {
         return dao.getMaxDate();

@@ -123,3 +123,6 @@ add primary key (gl_code, comp_code);
 
 alter table department
 add column deleted bit(1) not null default 0 after map_dept_id;
+
+alter table trader
+add column deleted bit(1) not null default 0 after mac_id;

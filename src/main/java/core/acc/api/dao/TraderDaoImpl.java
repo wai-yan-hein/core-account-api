@@ -74,6 +74,12 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
     }
 
     @Override
+    public List<Trader> SearchByDate(String updDate) {
+        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and updatedDate>'" + updDate + "'";
+        return findHSQL(hsql);
+    }
+
+    @Override
     public void delete(TraderKey key) {
         String sql = "update trader set deleted =1 where comp_code ='" + key.getCompCode() + "' and code ='" + key.getCode() + "'";
         execSql(sql);

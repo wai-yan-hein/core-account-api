@@ -52,6 +52,11 @@ public class TraderServiceImpl implements TraderService {
     }
 
     @Override
+    public List<Trader> SearchByDate(String updDate) {
+        return traderDao.SearchByDate(updDate);
+    }
+
+    @Override
     public void delete(TraderKey t) {
         traderDao.delete(t);
     }
