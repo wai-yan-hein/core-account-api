@@ -23,7 +23,8 @@ public interface GlService {
 
     List<VDescription> getBatchNo(String str, String compCode);
 
-    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description,
+                           String reference,String coaCode,String projectNo, String compCode, Integer macId);
 
     List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId);
 
@@ -44,7 +45,7 @@ public interface GlService {
 
     void deleteInvVoucher(String refNo, String tranSource, String compCode);
 
-    void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc);
+    void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc,String compCode);
 
     List<String> shootTri();
 

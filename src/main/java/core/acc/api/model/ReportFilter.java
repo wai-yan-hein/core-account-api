@@ -43,4 +43,5 @@ public class ReportFilter {
     private String expenseAcc;
     private String plAcc;
     private String reAcc;
+    private String projectNo;
 }

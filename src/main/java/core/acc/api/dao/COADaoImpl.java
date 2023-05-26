@@ -16,7 +16,7 @@ import java.util.Map;
 public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements COADao {
     @Override
     public ChartOfAccount save(ChartOfAccount coa) {
-        persist(coa);
+        saveOrUpdate(coa, coa.getKey());
         return coa;
     }
 
@@ -28,7 +28,22 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> getCOA(String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select c1.coa_code,c1.coa_code_usr,c1.coa_name_eng,ifnull(c2.coa_name_eng,'Head') parent_name,c1.coa_level\n" + "from chart_of_account c1\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code\n" + "where c1.deleted =0\n" + "and c1.active =1\n" + "and c1.comp_code ='" + compCode + "'\n" + "order by c1.coa_level,c1.coa_code_usr,c1.coa_name_eng";
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
+                "from (\n" +
+                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" +
+                "from chart_of_account\n" +
+                "where active = 1\n" +
+                "and deleted = 0\n" +
+                "and coa_level = 3\n" +
+                "and comp_code ='" + compCode + "'\n" +
+//                "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
+                "limit 20\n" + ")a\n" +
+                "left join chart_of_account c1\n" +
+                "on a.coa_parent = c1.coa_code\n" +
+                "and a.comp_code = c1.comp_code\n" +
+                "left join chart_of_account c2\n" +
+                "on c1.coa_parent = c2.coa_code\n" +
+                "and c1.comp_code = c2.comp_code";
         List<Map<String, Object>> result = getList(sql);
         result.forEach(rs -> {
             ChartOfAccount coa = new ChartOfAccount();
@@ -38,7 +53,12 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
             coa.setKey(key);
             coa.setCoaCodeUsr(Util1.getString(rs.get("coa_code_usr")));
             coa.setCoaNameEng(Util1.getString(rs.get("coa_name_eng")));
-            coa.setGroupName(Util1.getString(rs.get("parent_name")));
+            coa.setGroupCode(Util1.getString(rs.get("group_code")));
+            coa.setGroupUsrCode(Util1.getString(rs.get("group_usr_code")));
+            coa.setGroupName(Util1.getString(rs.get("group_name")));
+            coa.setHeadCode(Util1.getString(rs.get("head_code")));
+            coa.setHeadUsrCode(Util1.getString(rs.get("head_usr_code")));
+            coa.setHeadName(Util1.getString(rs.get("head_name")));
             coa.setCoaLevel(Util1.getInteger(rs.get("coa_level")));
             list.add(coa);
         });
@@ -67,7 +87,22 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = 0\n" + "and (coa_level =" + level + " or 0 =" + level + ")\n" + "and comp_code ='" + compCode + "'\n" + "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" + "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
+                "from (\n" +
+                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" +
+                "from chart_of_account\n" +
+                "where active = 1\n" +
+                "and deleted = 0\n" +
+                "and (coa_level =" + level + " or 0 =" + level + ")\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
+                "limit 20\n" + ")a\n" +
+                "left join chart_of_account c1\n" +
+                "on a.coa_parent = c1.coa_code\n" +
+                "and a.comp_code = c1.comp_code\n" +
+                "left join chart_of_account c2\n" +
+                "on c1.coa_parent = c2.coa_code\n" +
+                "and c1.comp_code = c2.comp_code";
         List<Map<String, Object>> result = getList(sql);
         result.forEach((rs) -> {
             ChartOfAccount coa = new ChartOfAccount();
@@ -102,13 +137,6 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         return chart;
     }
 
-    @Override
-    public List<ChartOfAccount> getAllChild(String parent, String compCode) {
-        String strSql = "select o from ChartOfAccount o where o.key.compCode = '" + compCode + "' and o.code = '" + parent + "' and o.deleted =0";
-        List<ChartOfAccount> listAllChild = findHSQL(strSql);
-        getChild(listAllChild, parent, compCode);
-        return listAllChild;
-    }
 
     @Override
     public List<ChartOfAccount> getTraderCOA(String compCode) {
@@ -161,7 +189,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
             coa.setDeptCode(Util1.getString(rs.get("dept_code")));
             coa.setDeleted(Util1.getBoolean(rs.get("deleted")));
             list.add(coa);
-        }); return list;
+        });
+        return list;
     }
 
     @Override

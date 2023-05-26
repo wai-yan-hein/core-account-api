@@ -23,7 +23,6 @@ import java.util.Map;
 public abstract class AbstractDao<PK extends Serializable, T> {
 
     private final Class<T> persistentClass;
-
     @SuppressWarnings("unchecked")
     public AbstractDao() {
         this.persistentClass = (Class<T>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
@@ -39,8 +38,12 @@ public abstract class AbstractDao<PK extends Serializable, T> {
         return entityManager.find(persistentClass, key);
     }
 
-    public void persist(T entity) {
-        entityManager.persist(entity);
+
+    public void saveOrUpdate(T entity,PK pk) {
+        T t = entityManager.find(persistentClass, pk);
+        if (t == null) entityManager.persist(entity);
+        else entityManager.merge(entity);
+
     }
 
     public void update(T entity) {

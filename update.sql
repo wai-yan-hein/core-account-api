@@ -124,5 +124,28 @@ add primary key (gl_code, comp_code);
 alter table department
 add column deleted bit(1) not null default 0 after map_dept_id;
 
+<<<<<<< HEAD
 alter table trader
 add column deleted bit(1) not null default 0 after mac_id;
+=======
+alter table coa_opening
+add column project_no varchar(15) null after deleted;
+
+alter table stock_op_value
+add column project_no varchar(15) null after deleted;
+
+create table coa_template (
+  coa_code varchar(15) not null,
+  bus_id varchar(15) not null,
+  coa_code_usr varchar(15) default null,
+  coa_name_eng varchar(255) default null,
+  coa_name_mya varchar(255) default null,
+  active bit(1) default null,
+  coa_parent varchar(15) default null,
+  coa_level int(11) default null,
+  cur_code varchar(15) default null,
+  dept_code varchar(15) default null,
+  credit bit(1) not null default b'0',
+  primary key (coa_code,bus_id)
+) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
+>>>>>>> 010156203b4925dad2a5de4c7e66ce3ad2de9baa

@@ -21,9 +21,10 @@ public interface GlDao {
     List<VDescription> getDescription(String str, String compCode);
 
     List<VDescription> getReference(String str, String compCode);
+
     List<VDescription> getBatchNo(String str, String compCode);
 
-    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId);
+    List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String coaCode, String projectNo, String compCode, Integer macId);
 
     List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId);
 
@@ -31,7 +32,7 @@ public interface GlDao {
 
     boolean deleteVoucher(String glVouNo, String compCode);
 
-    void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc);
+    void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc, String compCode);
 
     List<Gl> getJournal(String glVouNo, String compCode);
 

@@ -20,7 +20,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public Gl save(Gl gl) throws Exception {
-        persist(gl);
+        saveOrUpdate(gl, gl.getKey());
         return gl;
     }
 
@@ -131,7 +131,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String compCode, Integer macId) {
+    public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String coaCode, String projectNo, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
         String filter = " tran_source ='GV'\n" + "and comp_code ='" + compCode + "'\n" + "and deleted =0\n" + "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
@@ -143,7 +143,13 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!reference.equals("-")) {
             filter += "and reference like '" + reference + "%'\n";
         }
-        String sql = "select gl_date,description,reference,gl_vou_no,sum(dr_amt) amount\n" + "from gl\n" + "where " + filter + "" + "group by gl_vou_no\n" + "order by gl_date";
+        if (!coaCode.equals("-")) {
+            filter += "and (source_ac_id = '" + coaCode + "' or account_id ='" + coaCode + "')\n";
+        }
+        if (!projectNo.equals("-")) {
+            filter += "and project_no = '" + projectNo + "'\n";
+        }
+        String sql = "select gl_date,description,reference,gl_vou_no,project_no,sum(dr_amt) amount\n" + "from gl\n" + "where " + filter + "" + "group by gl_vou_no\n" + "order by gl_date";
         try {
             List<Map<String, Object>> result = getList(sql);
             result.forEach((rs) -> {
@@ -152,6 +158,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setDescription(Util1.getString(rs.get("description")));
                 g.setReference(Util1.getString(rs.get("reference")));
                 g.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
+                g.setProjectNo(Util1.getString(rs.get("project_no")));
                 g.setDrAmt(Util1.getDouble(rs.get("amount")));
                 list.add(g);
             });
@@ -205,7 +212,6 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public boolean deleteInvVoucher(String refNo, String tranSource, String compCode) {
         String sql = "update gl set deleted =1,intg_upd_status = null where ref_no ='" + refNo + "' and tran_source='" + tranSource + "' and comp_code ='" + compCode + "'";
         execSql(sql);
-        //log.info("deleted voucher : " + tranSource);
         return true;
     }
 
@@ -217,15 +223,20 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc) {
-        String sql = "delete from gl where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "' and source_ac_id ='" + srcAcc + "'";
+    public void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc, String compCode) {
+        String sql = "update gl set deleted = 1 where ref_no ='" + vouNo + "' and tran_source='" + tranSource + "' and source_ac_id ='" + srcAcc + "' and comp_code ='" + compCode + "'";
         execSql(sql);
     }
 
     @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" + "t.user_code t_user_code,t.trader_name,g.tran_source,\n" + "d.usr_code d_user_code,coa.coa_name_eng\n" + "from gl g\n" + "join department d on g.dept_code = d.dept_code\n" + "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.source_ac_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and g.tran_source ='GV'\n" + "and g.deleted =0\n" + "order by g.gl_code";
+        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" +
+                "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
+                "d.usr_code d_user_code,coa.coa_name_eng,g.project_no\n" +
+                "from gl g\n" +
+                "join department d on g.dept_code = d.dept_code\n" +
+                "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.source_ac_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and g.tran_source ='GV'\n" + "and g.deleted =0\n" + "order by g.gl_code";
         try {
             List<Map<String, Object>> result = getList(sql);
             result.forEach((rs) -> {
@@ -250,6 +261,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
                 g.setTranSource(Util1.getString(rs.get("tran_source")));
                 g.setCurCode(Util1.getString(rs.get("cur_code")));
+                g.setProjectNo(Util1.getString(rs.get("project_no")));
                 list.add(g);
             });
         } catch (Exception e) {

@@ -21,27 +21,30 @@ public interface ReportService {
     List<Gl> getIndividualLedger(String fromDate, String toDate, String desp, String srcAcc,
                                  String acc, String curCode, String reference,
                                  String compCode, String tranSource, String traderCode, String traderType,
-                                 String coaLv2, String coaLv1, String batchNo, boolean summary, Integer macId) throws SQLException;
+                                 String coaLv2, String coaLv1, String batchNo,String projectNo,
+                                 boolean summary, Integer macId) throws SQLException;
 
     List<Financial> getProfitLost(String plProcess, String opDate, String stDate, String enDate, String invGroup,
-                                  boolean detail, String compCode, Integer macId);
+                                  boolean detail,String projectNo, String compCode, Integer macId);
 
-    double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess, String compCode, Integer macId);
+    double getProfit(String opDate, String stDate, String enDate, String invGroup, String plProcess,String projectNo,
+                     String compCode, Integer macId);
 
     List<Financial> getBalanceSheet(String bsProcess, String opDate, String stDate, String enDate, String invGroup,String reAcc,String plAcc,
-                                    boolean detail, double prvProfit, double curProfit, String compCode, Integer macId);
+                                    boolean detail, double prvProfit, double curProfit,
+                                    String projectNo,String compCode, Integer macId);
     List<Financial> getOpeningBalanceSheet(String bsProcess, String opDate, boolean detail, String compCode);
     void executeAndResult(String... sql) throws Exception;
 
 
     void genTriBalance(String compCode, String stDate, String enDate,
                        String opDate, String currency, String coaLv1, String coaLv2, String plProcess, String bsProcess,
-                       boolean netChange, Integer macId);
+                       String projectNo, boolean netChange, Integer macId);
 
     List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2,String compCode, Integer macId);
 
     List<VApar> genArAp(String compCode, String opDate,
-                        String clDate, String currency, String traderCode, String coaCode, Integer macId);
+                        String clDate, String currency, String traderCode, String coaCode,String projectNo, Integer macId);
 
     List<Financial> getIncomeAndExpenditure(String process, boolean detail, Integer macId);
 
@@ -60,4 +63,5 @@ public interface ReportService {
 
     List<Financial> getCOAList(String compCode);
 
+    List<Gl> getCashBook(String startDate, String endDate, String cashGroup, String curCode, String compCode);
 }

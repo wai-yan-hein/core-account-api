@@ -59,6 +59,7 @@ public class ReportController {
         String reAcc = Util1.isNull(filter.getReAcc(), "-");
         String plAcc = Util1.isNull(filter.getPlAcc(), "-");
         Integer macId = filter.getMacId();
+        String projectNo = Util1.isAll(filter.getProjectNo());
         String reportName = filter.getReportName();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
@@ -73,7 +74,7 @@ public class ReportController {
                 case "OpeningBalanceSheetSummary" ->
                         Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, false, compCode), exportPath);
                 case "Income&ExpenditureDetail" -> {
-                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess, true, macId);
+                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess,projectNo, true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
@@ -82,19 +83,19 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "Profit&LossDetail" -> {
-                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, true, compCode, macId);
+                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, true,projectNo, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "Profit&LossSummary" -> {
-                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, false, compCode, macId);
+                    List<Financial> data = calPl(plProcess, opDate, fromDate, toDate, invGroup, false,projectNo, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "BalanceSheetDetail" -> {
-                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, true, compCode, macId);
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, true,projectNo, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "BalanceSheetSummary" -> {
-                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, false, compCode, macId);
+                    List<Financial> data = calBS(fromDate, toDate, opDate, invGroup, reAcc, plAcc, plProcess, bsProcess, false,projectNo, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "CreditDetail" -> {
@@ -127,17 +128,20 @@ public class ReportController {
         return Mono.justOrEmpty(ro);
     }
 
-    private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate, String invGroup, boolean detail, String compCode, Integer macId) {
-        return reportService.getProfitLost(plProcess, opDate, fromDate, toDate, invGroup, detail, compCode, macId);
+    private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate, String invGroup,
+                                  boolean detail,String projectNo, String compCode, Integer macId) {
+        return reportService.getProfitLost(plProcess, opDate, fromDate, toDate, invGroup, detail,projectNo, compCode, macId);
     }
 
-    private List<Financial> calBS(String fromDate, String toDate, String opDate, String invGroup, String reAcc, String plAcc, String plProcess, String bsProcess, boolean detail, String compCode, Integer macId) {
+    private List<Financial> calBS(String fromDate, String toDate, String opDate, String invGroup, String reAcc,
+                                  String plAcc, String plProcess, String bsProcess, boolean detail,
+                                  String projectNo,String compCode, Integer macId) {
         double prvProfit = 0.0;
         if (!fromDate.equals(opDate)) {
-            prvProfit = reportService.getProfit(opDate, opDate, Util1.minusDay(fromDate, 1), invGroup, plProcess, compCode, macId);
+            prvProfit = reportService.getProfit(opDate, opDate, Util1.minusDay(fromDate, 1), invGroup, plProcess,projectNo, compCode, macId);
         }
-        double curProfit = reportService.getProfit(opDate, fromDate, toDate, invGroup, plProcess, compCode, macId);
-        return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, reAcc, plAcc, detail, prvProfit, curProfit, compCode, macId);
+        double curProfit = reportService.getProfit(opDate, fromDate, toDate, invGroup, plProcess,projectNo, compCode, macId);
+        return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, reAcc, plAcc, detail, prvProfit, curProfit,projectNo, compCode, macId);
     }
 
     @GetMapping(path = "/get-report-result")
@@ -147,9 +151,9 @@ public class ReportController {
 
     @PostMapping(path = "/get-tri-balance")
     public Flux<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
-        String coaCode = filter.getCoaCode();
-        String coaLv1 = filter.getCoaLv1();
-        String coaLv2 = filter.getCoaLv2();
+        String coaCode = Util1.isNull(filter.getCoaCode(),"-");
+        String coaLv1 = Util1.isNull(filter.getCoaLv1(),"-");
+        String coaLv2 = Util1.isNull(filter.getCoaLv2(),"-");
         String compCode = filter.getCompCode();
         String stDate = filter.getFromDate();
         String enDate = filter.getToDate();
@@ -157,8 +161,9 @@ public class ReportController {
         String currency = filter.getCurCode();
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();
+        String projectNo = Util1.isAll(filter.getProjectNo());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-", netChange, macId);
+        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-",projectNo, netChange, macId);
         return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId));
     }
 
@@ -171,8 +176,9 @@ public class ReportController {
         String currency = Util1.isNull(filter.getCurCode(), "-");
         Integer macId = filter.getMacId();
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
+        String projectNo = Util1.isAll(filter.getProjectNo());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, macId);
+        List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode,projectNo, macId);
         return Flux.fromIterable(list);
     }
 
