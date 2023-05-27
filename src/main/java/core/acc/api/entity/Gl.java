@@ -15,7 +15,7 @@ import java.util.List;
 public class Gl {
     @EmbeddedId
     private GlKey key;
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "gl_date")
     private Date glDate;
     @Column(name = "description")

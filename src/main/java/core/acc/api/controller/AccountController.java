@@ -68,43 +68,21 @@ public class AccountController {
         return Mono.just(departmentService.save(department));
     }
 
-    //Currency
-    @GetMapping(path = "/find-currency")
-    public Mono<Currency> findCurrency(@RequestParam String curCode) {
-        return Mono.just(currencyService.findByCode(curCode));
-    }
-
-    @PostMapping(path = "/save-currency")
-    public ResponseEntity<ReturnObject> saveCurrency(@RequestBody Currency currency) {
-        Currency c = currencyService.save(currency);
-        ro.setData(c);
-        ro.setMessage("Save Currency");
-        return ResponseEntity.ok(ro);
-    }
-
-    @GetMapping(path = "/get-currency")
-    public ResponseEntity<List<Currency>> getCurrency() {
-        List<Currency> currency = currencyService.getCurrency();
-        return ResponseEntity.ok(currency);
-    }
 
     //Chart Of Account
     @GetMapping(path = "/get-coa-tree")
-    public ResponseEntity<List<ChartOfAccount>> getCOATree(@RequestParam String compCode) {
-        List<ChartOfAccount> chart = coaService.getCOATree(compCode);
-        return ResponseEntity.ok(chart);
+    public Flux<?> getCOATree(@RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOATree(compCode));
     }
 
     @GetMapping(path = "/get-coa")
-    public ResponseEntity<List<ChartOfAccount>> getCOAGroup(@RequestParam String compCode) {
-        List<ChartOfAccount> chart = coaService.getCOA(compCode);
-        return ResponseEntity.ok(chart);
+    public Flux<?> getCOAGroup(@RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOA(compCode));
     }
 
     @GetMapping(path = "/get-coa3")
-    public ResponseEntity<List<ChartOfAccount>> getCOA3(@RequestParam String headCode, @RequestParam String compCode) {
-        List<ChartOfAccount> chart = coaService.getCOA(headCode, compCode);
-        return ResponseEntity.ok(chart);
+    public Flux<?> getCOA3(@RequestParam String headCode, @RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOA(headCode, compCode));
     }
 
     @GetMapping(path = "/search-coa")
@@ -113,8 +91,8 @@ public class AccountController {
     }
 
     @GetMapping(path = "/get-trader-coa")
-    public ResponseEntity<?> getTraderCOA(@RequestParam String compCode) {
-        return ResponseEntity.ok(coaService.getTraderCOA(compCode));
+    public Flux<?> getTraderCOA(@RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getTraderCOA(compCode));
     }
 
     @GetMapping(path = "/get-coa-child")
@@ -123,23 +101,23 @@ public class AccountController {
     }
 
     @PostMapping(path = "/find-coa")
-    public ResponseEntity<?> findCOA(@RequestBody COAKey key) {
-        return ResponseEntity.ok(coaService.findById(key));
+    public Mono<?> findCOA(@RequestBody COAKey key) {
+        return Mono.justOrEmpty(coaService.findById(key));
     }
 
     @PostMapping(path = "/save-coa")
-    public ResponseEntity<?> saveCOA(@RequestBody ChartOfAccount coa) {
-        return ResponseEntity.ok(coaService.save(coa));
+    public Mono<?> saveCOA(@RequestBody ChartOfAccount coa) {
+        return Mono.justOrEmpty(coaService.save(coa));
     }
 
     @PostMapping(path = "/process-coa")
-    public ResponseEntity<?> processCOA(@RequestBody ChartOfAccount coa) {
+    public Mono<?> processCOA(@RequestBody ChartOfAccount coa) {
         if (coa.getMigCode() != null) {
             coa = coaService.save(coa);
             String code = String.format("%s,%s", coa.getMigCode(), coa.getKey().getCoaCode());
-            return ResponseEntity.ok(code);
+            return Mono.justOrEmpty(code);
         }
-        return ResponseEntity.ok(null);
+        return null;
     }
 
     @PostMapping(path = "/search-gl")
@@ -402,7 +380,7 @@ public class AccountController {
         String cashGroup = filter.getCashGroup();
         String curCode = filter.getCurCode();
         Integer macId = Util1.getInteger(filter.getMacId());
-        reportService.insertTmp(filter.getListDepartment(),macId,compCode);
+        reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         String opDate = reportService.getOpeningDate(compCode);
         List<Gl> list = reportService.getCashBook(startDate, endDate, cashGroup, curCode, compCode);
         list.forEach(gl -> {

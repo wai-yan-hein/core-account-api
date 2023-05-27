@@ -202,13 +202,16 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public Date getMaxDate() {
         String sql = "select max(modify_date) date from chart_of_account";
-        List<Map<String, Object>> result = getList(sql);
-        if (!result.isEmpty()) {
-            Map<String, Object> rs = result.get(0);
-            Date date = Util1.toDate(rs.get("date"));
-            if (date != null) {
-                return date;
+        ResultSet rs = getResult(sql);
+        try {
+            if (rs.next()) {
+                Date date = rs.getTimestamp("date");
+                if (date != null) {
+                    return date;
+                }
             }
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return Util1.getOldDate();
     }

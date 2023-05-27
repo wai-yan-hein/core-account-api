@@ -145,38 +145,40 @@ public class ReportServiceImpl implements ReportService {
             }
         } else {
             String sql = "select a.*,dep.usr_code d_user_code,t.user_code t_user_code,t.discriminator,t.trader_name,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" + "from (\n" + "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" + "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, trader_code, comp_code, tran_source, gl_vou_no,\n" + "remark, mac_id, ref_no,dept_id,batch_no,project_no\n" + "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted =0\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + "" + filter + "\n" + "order by gl_date,tran_source,gl_code\n" + ")a\n" + "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" + "left join trader t on \n" + "a.trader_code = t.code\n" + "and a.comp_code = t.comp_code\n" + "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" + "on a.account_id = coa3.coa_code\n" + "and a.comp_code = coa3.comp_code\n" + "left join chart_of_account coa2\n" + "on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + "" + coaFilter + "\n" + "order by a.gl_date,a.tran_source,a.gl_code\n";
-            List<Map<String, Object>> result = dao.executeAndList(sql);
-            result.forEach(row -> {
+            ResultSet rs = dao.executeAndResult(sql);
+            while (rs.next()) {
                 Gl v = new Gl();
                 GlKey key = new GlKey();
-                key.setCompCode(Util1.getString(row.get("comp_code")));
-                key.setGlCode(Util1.getString(row.get("gl_code")));
-                key.setDeptId(Util1.getInteger(row.get("dept_id")));
+                key.setCompCode(rs.getString("comp_code"));
+                key.setGlCode(rs.getString("gl_code"));
+                key.setDeptId(rs.getInt("dept_id"));
                 v.setKey(key);
-                v.setGlDate(Util1.toDate(row.get("gl_date")));
+                v.setGlDate(rs.getTimestamp("gl_date"));
+                v.setCreatedDate(rs.getTimestamp("created_date"));
                 v.setVouDate(Util1.toDateStr(v.getGlDate(), "dd/MM/yyyy"));
-                v.setDescription(String.valueOf(row.get("description")));
-                v.setSrcAccCode(Util1.getString(row.get("source_ac_id")));
-                v.setAccCode(Util1.getString(row.get("account_id")));
-                v.setCurCode(Util1.getString(row.get("cur_code")));
-                v.setDrAmt(Util1.getDouble(row.get("dr_amt")));
-                v.setCrAmt(Util1.getDouble(row.get("cr_amt")));
-                v.setReference(Util1.getString(row.get("reference")));
-                v.setRefNo(Util1.getString(row.get("ref_no")));
-                v.setDeptCode(Util1.getString(row.get("dept_code")));
-                v.setVouNo(Util1.getString(row.get("voucher_no")));
-                v.setDeptUsrCode(Util1.getString(row.get("d_user_code")));
-                v.setTraderCode(Util1.getString(row.get("trader_code")));
-                v.setTraderName(Util1.getString(row.get("trader_name")));
-                v.setTranSource(Util1.getString(row.get("tran_source")));
-                v.setGlVouNo(Util1.getString(row.get("gl_vou_no")));
-                v.setSrcAccName(Util1.getString(row.get("src_acc_name")));
-                v.setAccName(Util1.getString(row.get("acc_name")));
-                v.setMacId(Util1.getInteger(row.get("mac_id")));
-                v.setBatchNo(Util1.getString(row.get("batch_no")));
-                v.setProjectNo(Util1.getString(row.get("project_no")));
+                v.setDescription(rs.getString("description"));
+                v.setSrcAccCode(rs.getString("source_ac_id"));
+                v.setAccCode(rs.getString("account_id"));
+                v.setCurCode(rs.getString("cur_code"));
+                v.setDrAmt(rs.getDouble("dr_amt"));
+                v.setCrAmt(rs.getDouble("cr_amt"));
+                v.setReference(rs.getString("reference"));
+                v.setRefNo(rs.getString("ref_no"));
+                v.setDeptCode(rs.getString("dept_code"));
+                v.setVouNo(rs.getString("voucher_no"));
+                v.setDeptUsrCode(rs.getString("d_user_code"));
+                v.setTraderCode(rs.getString("trader_code"));
+                v.setTraderName(rs.getString("trader_name"));
+                v.setTranSource(rs.getString("tran_source"));
+                v.setGlVouNo(rs.getString("gl_vou_no"));
+                v.setSrcAccName(rs.getString("src_acc_name"));
+                v.setAccName(rs.getString("acc_name"));
+                v.setMacId(rs.getInt("mac_id"));
+                v.setBatchNo(rs.getString("batch_no"));
+                v.setProjectNo(rs.getString("project_no"));
                 list.add(v);
-            });
+            }
+
         }
         if (!list.isEmpty()) {
             list.forEach(gl -> {

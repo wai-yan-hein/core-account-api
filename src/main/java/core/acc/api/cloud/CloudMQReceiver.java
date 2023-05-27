@@ -40,9 +40,7 @@ import java.util.List;
 public class CloudMQReceiver {
     private final String SAVE = "SAVE";
     private final String REC = "REC";
-    private final Gson gson = new GsonBuilder()
-            .setDateFormat(DateFormat.FULL, DateFormat.FULL)
-            .create();
+    private final Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();
     @Value("${cloud.activemq.listen.queue}")
     private String listenQ;
 
@@ -254,7 +252,7 @@ public class CloudMQReceiver {
                             }.getType());
                             if (!list.isEmpty()) {
                                 list.forEach(this::update);
-                                log.info("gl transaction successfully sent to server : " + list.size());
+                                log.info("gl transaction successfully sent to " + senderQ + " : " + list.size());
                             }
                         }
                     }
@@ -296,8 +294,7 @@ public class CloudMQReceiver {
 
     private void update(Gl gl) {
         GlKey key = gl.getKey();
-        String sql = "update gl set intg_upd_status ='" + SAVE + "'\n"
-                + "where gl_code ='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        String sql = "update gl set intg_upd_status ='" + SAVE + "'\n" + "where gl_code ='" + key.getGlCode() + "' and comp_code ='" + key.getCompCode() + "'";
         try {
             service.executeAndResult(sql);
         } catch (Exception e) {
@@ -307,8 +304,7 @@ public class CloudMQReceiver {
 
     private void update(ChartOfAccount coa) {
         COAKey key = coa.getKey();
-        String sql = "update chart_of_account set intg_upd_status ='" + SAVE + "'\n"
-                + "where coa_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        String sql = "update chart_of_account set intg_upd_status ='" + SAVE + "'\n" + "where coa_code ='" + key.getCoaCode() + "' and comp_code ='" + key.getCompCode() + "'";
         try {
             service.executeAndResult(sql);
         } catch (Exception e) {
