@@ -4,6 +4,7 @@ import core.acc.api.common.Util1;
 import core.acc.api.dao.DepartmentDao;
 import core.acc.api.entity.Department;
 import core.acc.api.entity.DepartmentKey;
+import core.acc.api.entity.Trader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -74,5 +75,10 @@ public class DepartmentServiceImpl implements DepartmentService {
     private String getDepCode(Integer macId, String compCode) {
         int seqNo = seqService.getSequence(macId, "DEP", "-", compCode);
         return String.format("%0" + 3 + "d", macId) + "-" + String.format("%0" + 4 + "d", seqNo);
+    }
+
+    @Override
+    public List<Department> SearchByDate(String updDate) {
+        return dao.SearchByDate(updDate);
     }
 }

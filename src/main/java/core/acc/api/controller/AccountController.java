@@ -67,6 +67,10 @@ public class AccountController {
     public Mono<?> saveDepartment(@RequestBody Department department) {
         return Mono.just(departmentService.save(department));
     }
+    @GetMapping(path = "/get-DepartmentByDate")
+    public Flux<?> searchByDate(@RequestParam String updatedDate) {
+        return Flux.fromIterable(departmentService.SearchByDate(updatedDate));
+    }
 
     //Currency
     @GetMapping(path = "/find-currency")
@@ -135,6 +139,11 @@ public class AccountController {
     @GetMapping(path = "/save-coa-from-template")
     public ResponseEntity<?> saveCOA(@RequestParam Integer busId, String compCode) {
         return ResponseEntity.ok(coaService.saveCOA(busId, compCode));
+    }
+
+    @GetMapping(path = "/get-COAByDate")
+    public Flux<?> getCOAByDate(@RequestParam String updatedDate) {
+        return Flux.fromIterable(coaService.search(updatedDate));
     }
 
     @PostMapping(path = "/process-coa")
@@ -265,10 +274,10 @@ public class AccountController {
     public Flux<Trader> getTrader(@RequestParam String text, @RequestParam String compCode) {
         return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
-    @GetMapping(path = "/getTraderByDate")
+    @GetMapping(path = "/get-TraderByDate")
     public Flux<Trader> getTraderByDate(@RequestParam String updatedDate) {
         return Flux.fromIterable(traderService.SearchByDate(updatedDate));
-    }//***pannn
+    }
 
     @GetMapping(path = "/get-supplier")
     public ResponseEntity<List<Trader>> getSupplier(@RequestParam String compCode) {
@@ -420,11 +429,6 @@ public class AccountController {
             gl.setClosing(gl.getDrAmt() - gl.getCrAmt() + gl.getOpening());
         });
         return Flux.fromIterable(list);
-    }
-
-    @GetMapping(path = "/getCOAByDate")
-    public Flux<?> getCOAByDate(@RequestParam String updatedDate) {
-        return Flux.fromIterable(coaService.search(updatedDate));
     }
 
 }

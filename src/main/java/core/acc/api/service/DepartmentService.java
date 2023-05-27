@@ -2,6 +2,7 @@ package core.acc.api.service;
 
 import core.acc.api.entity.Department;
 import core.acc.api.entity.DepartmentKey;
+import core.acc.api.entity.Trader;
 
 import java.util.List;
 
@@ -25,4 +26,6 @@ public interface DepartmentService {
     List<Department> findAllActive(String compCode);
 
     String getDepartment(Integer deptId);
+
+    List<Department> SearchByDate(String updDate);
 }

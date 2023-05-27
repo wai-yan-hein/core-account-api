@@ -2,6 +2,7 @@ package core.acc.api.dao;
 
 import core.acc.api.entity.Department;
 import core.acc.api.entity.DepartmentKey;
+import core.acc.api.entity.Trader;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -121,6 +122,12 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     public String getDepartment(Integer deptId) {
         List<Department> list = findHSQL("select o from Department o where o.mapDeptId = " + deptId + "");
         return list.isEmpty() ? null : list.get(0).getKey().getDeptCode();
+    }
+
+    @Override
+    public List<Department> SearchByDate(String updDate) {
+        String hsql = "select o from Department o where o.active = true and o.deleted =0 and updatedDt>'" + updDate + "'";
+        return findHSQL(hsql);
     }
 }
 
