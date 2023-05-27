@@ -60,10 +60,14 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
         String hsql = "select o from Trader o where o.active = true and o.deleted =0 and o.traderType = 'C' and and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
-
     @Override
     public List<Trader> getSupplier(String compCode) {
         String hsql = "select o from Trader o where o.active = true and o.deleted =0 and o.traderType = 'S' and o.key.compCode ='" + compCode + "'";
+        return findHSQL(hsql);
+    }
+    @Override
+    public List<Trader> SearchByDate(String updDate) {
+        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and updatedDate>'" + updDate + "'";
         return findHSQL(hsql);
     }
 

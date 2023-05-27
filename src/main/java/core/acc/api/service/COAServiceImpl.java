@@ -2,13 +2,16 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.COADao;
+import core.acc.api.dao.COATemplateDao;
 import core.acc.api.entity.COAKey;
+import core.acc.api.entity.COATemplate;
 import core.acc.api.entity.ChartOfAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +22,8 @@ public class COAServiceImpl implements COAService {
 
     @Autowired
     private COADao dao;
+    @Autowired
+    COATemplateDao coaTemplateDao;
     @Autowired
     private SeqTableService seqService;
 
@@ -104,10 +109,35 @@ public class COAServiceImpl implements COAService {
     public List<ChartOfAccount> findAllActive(String compCode) {
         return dao.findAllActive(compCode);
     }
-
     @Override
     public Date getMaxDate() {
         return dao.getMaxDate();
+    }
+
+    @Override
+    public List<ChartOfAccount> saveCOA(Integer busId, String compCode) {
+        List<COATemplate> ctList = coaTemplateDao.getAllCOATemplate(busId);
+        List<ChartOfAccount> cList = new ArrayList<>();
+        ctList.forEach(t -> {
+            ChartOfAccount c = new ChartOfAccount();
+            COAKey key = new COAKey();
+            key.setCoaCode(t.getKey().getCoaCode());
+            key.setCompCode(compCode);
+            c.setKey(key);
+            c.setCoaCodeUsr(t.getCoaCodeUsr());
+            c.setCoaNameEng(t.getCoaNameEng());
+            c.setCoaNameMya(t.getCoaNameMya());
+            c.setActive(t.isActive());
+            c.setCreatedBy("1");
+            c.setOption("");
+            c.setCreatedDate(Util1.getTodayDate());
+            c.setModifiedDate(Util1.getTodayDate());
+            c.setCoaParent(t.getCoaParent());
+            c.setCoaLevel(t.getCoaLevel());
+            c.setCredit(t.isCredit());
+            cList.add(save(c));
+        });
+        return cList;
     }
 
 }

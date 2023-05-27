@@ -23,6 +23,12 @@ public class COATemplateDaoImpl extends AbstractDao<COATemplateKey, COATemplate>
     }
 
     @Override
+    public List<COATemplate> getAllCOATemplate(Integer busId) {
+        String hsql = "select o from COATemplate o where o.key.busId =" + busId;
+        return findHSQL(hsql);
+    }
+
+    @Override
     public COATemplate findById(COATemplateKey key) {
         return getByKey(key);
     }

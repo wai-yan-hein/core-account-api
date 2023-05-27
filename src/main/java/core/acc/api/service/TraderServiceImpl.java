@@ -45,12 +45,15 @@ public class TraderServiceImpl implements TraderService {
     public List<Trader> getCustomer(String compCode) {
         return traderDao.getCustomer(compCode);
     }
-
     @Override
     public List<Trader> getSupplier(String compCode) {
         return traderDao.getSupplier(compCode);
     }
 
+    @Override
+    public List<Trader> SearchByDate(String updDate) {
+        return traderDao.SearchByDate(updDate);
+    }
     @Override
     public void delete(TraderKey t) {
         traderDao.delete(t);

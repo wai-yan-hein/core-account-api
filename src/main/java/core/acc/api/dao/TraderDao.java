@@ -15,6 +15,7 @@ public interface TraderDao {
     List<Trader> getCustomer(String compCode);
 
     List<Trader> getSupplier(String compCode);
+    List<Trader> SearchByDate(String updDate);
     void delete(TraderKey t);
 
 }
