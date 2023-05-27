@@ -335,13 +335,17 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public Date getMaxDate() {
         String sql = "select max(modify_date) date from gl";
-        List<Map<String, Object>> result = getList(sql);
-        if (!result.isEmpty()) {
-            Map<String, Object> rs = result.get(0);
-            Date date = Util1.toDate(rs.get("date"));
-            if (date != null) {
-                return date;
+        ResultSet rs = getResult(sql);
+        try {
+            if (rs.next()) {
+                Date date = rs.getTimestamp("date");
+                if (date != null) {
+                    return date;
+                }
             }
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return Util1.getSyncDate();
     }
@@ -350,35 +354,40 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     public List<Gl> search(String updatedDate, String deptCode) {
         List<Gl> list = new ArrayList<>();
         String sql = "select * from gl o where o.dept_code='" + deptCode + "' and o.intg_upd_status is null";
-        List<Map<String, Object>> result = getList(sql);
-        result.forEach((rs) -> {
-            Gl gl = new Gl();
-            GlKey key = new GlKey();
-            key.setCompCode(Util1.getString(rs.get("gl_code")));
-            key.setDeptId(Util1.getInteger(rs.get("dept_id")));
-            key.setCompCode(Util1.getString(rs.get("comp_code")));
-            gl.setKey(key);
-            gl.setGlDate(Util1.toDate(rs.get("gl_date")));
-            gl.setCreatedDate(Util1.toDate(rs.get("created_date")));
-            gl.setModifyDate(Util1.toDate(rs.get("modify_date")));
-            gl.setModifyBy(Util1.getString(rs.get("modify_by")));
-            gl.setDescription(Util1.getString(rs.get("description")));
-            gl.setSrcAccCode(Util1.getString(rs.get("source_ac_id")));
-            gl.setAccCode(Util1.getString(rs.get("account_id")));
-            gl.setCurCode(Util1.getString(rs.get("cur_code")));
-            gl.setDrAmt(Util1.getDouble(rs.get("dr_amt")));
-            gl.setCrAmt(Util1.getDouble(rs.get("cr_amt")));
-            gl.setReference(Util1.getString(rs.get("reference")));
-            gl.setDeptCode(Util1.getString(rs.get("dept_code")));
-            gl.setVouNo(Util1.getString(rs.get("voucher_no")));
-            gl.setTraderCode(Util1.getString(rs.get("trader_code")));
-            gl.setTranSource(Util1.getString(rs.get("tran_source")));
-            gl.setGlVouNo(Util1.getString(rs.get("gl_vou_no")));
-            gl.setRemark(Util1.getString(rs.get("remark")));
-            gl.setRefNo(Util1.getString(rs.get("ref_no")));
-            gl.setMacId(Util1.getInteger(rs.get("mac_id")));
-            list.add(gl);
-        });
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                Gl gl = new Gl();
+                GlKey key = new GlKey();
+                key.setGlCode(rs.getString("gl_code"));
+                key.setDeptId(rs.getInt("dept_id"));
+                key.setCompCode(rs.getString("comp_code"));
+                gl.setKey(key);
+                gl.setGlDate(rs.getDate("gl_date"));
+                gl.setCreatedDate(rs.getTimestamp("created_date"));
+                gl.setModifyDate(rs.getTimestamp("modify_date"));
+                gl.setModifyBy(rs.getString("modify_by"));
+                gl.setDescription(rs.getString("description"));
+                gl.setSrcAccCode(rs.getString("source_ac_id"));
+                gl.setAccCode(rs.getString("account_id"));
+                gl.setCurCode(rs.getString("cur_code"));
+                gl.setDrAmt(rs.getDouble("dr_amt"));
+                gl.setCrAmt(rs.getDouble("cr_amt"));
+                gl.setReference(rs.getString("reference"));
+                gl.setDeptCode(rs.getString("dept_code"));
+                gl.setVouNo(rs.getString("voucher_no"));
+                gl.setTraderCode(rs.getString("trader_code"));
+                gl.setTranSource(rs.getString("tran_source"));
+                gl.setGlVouNo(rs.getString("gl_vou_no"));
+                gl.setRemark(rs.getString("remark"));
+                gl.setRefNo(rs.getString("ref_no"));
+                gl.setMacId(rs.getInt("mac_id"));
+                gl.setDeleted(rs.getBoolean("deleted"));
+                list.add(gl);
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
         return list;
     }
 

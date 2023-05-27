@@ -27,9 +27,9 @@ public class SwaggerConfig {
 
     private ApiInfo apiInfo() {
         return new ApiInfo(
-                "Core Inventory Api",
+                "Core Account Api",
                 "Documentation",
-                "CORE INVENTORY API",
+                "CORE ACCOUNT API",
                 "Terms of service",
                 new Contact("wai yan", "www.google.com", "waiyanhain215@gmail.com"),
                 "License of API", "API license URL", Collections.emptyList());

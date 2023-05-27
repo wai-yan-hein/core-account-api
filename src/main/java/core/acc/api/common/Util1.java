@@ -21,6 +21,7 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +43,18 @@ public class Util1 {
         return obj != null && (obj.toString().equals("1") || obj.toString().equalsIgnoreCase("true"));
 
     }
-
+    public static Date toDateTime(Date date) {
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        SimpleDateFormat f2 = new SimpleDateFormat("dd/MM/yyyy");
+        LocalDateTime now = LocalDateTime.now();
+        String strDate = f2.format(date) + " " + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
+        try {
+            date = formatter.parse(strDate);
+        } catch (ParseException ex) {
+            log.error(String.format("toDateTime: %s", ex.getMessage()));
+        }
+        return date;
+    }
     public static String minusDay(String sqlFormat, int minusDay) {
         LocalDate date = LocalDate.parse(sqlFormat);
         LocalDate minusDays = date.minusDays(minusDay);

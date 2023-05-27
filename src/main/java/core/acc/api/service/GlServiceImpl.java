@@ -32,7 +32,9 @@ public class GlServiceImpl implements GlService {
     @Override
     public Gl save(Gl gl, boolean backup) throws Exception {
         String updatedBy = gl.getModifyBy();
+        gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
         if (Util1.isNull(gl.getKey().getGlCode())) {
+            gl.setCreatedDate(Util1.toDateTime(Util1.getTodayDate()));
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
             String glCode = getGLCode(gl.getGlDate(), gl.getKey().getDeptId(), macId, compCode);
@@ -136,7 +138,7 @@ public class GlServiceImpl implements GlService {
 
     @Override
     public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String coaCode, String projectNo, String compCode, Integer macId) {
-        return glDao.searchJournal(fromDate, toDate, vouNo, description, reference,coaCode,projectNo, compCode, macId);
+        return glDao.searchJournal(fromDate, toDate, vouNo, description, reference, coaCode, projectNo, compCode, macId);
     }
 
     @Override
