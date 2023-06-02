@@ -33,5 +33,7 @@ public interface COADao {
 
     List<ChartOfAccount> findAllActive(String compCode);
 
-    List<ChartOfAccount> getCOA(String headCode, String compCode);
+    List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode);
+
+    List<ChartOfAccount> getCOAByHead(String headCode, String compCode);
 }
