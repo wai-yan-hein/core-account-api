@@ -60,9 +60,15 @@ public class COAServiceImpl implements COAService {
     }
 
     @Override
-    public List<ChartOfAccount> getCOA(String headCode, String compCode) {
-        return dao.getCOA(headCode, compCode);
+    public List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode) {
+        return dao.getCOAByGroup(groupCode,compCode);
     }
+
+    @Override
+    public List<ChartOfAccount> getCOAByHead(String headCode, String compCode) {
+        return dao.getCOAByHead(headCode,compCode);
+    }
+
 
     @Override
     public Boolean delete(COAKey key) {

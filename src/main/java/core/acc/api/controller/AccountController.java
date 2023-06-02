@@ -84,9 +84,13 @@ public class AccountController {
         return Flux.fromIterable(coaService.getCOA(compCode));
     }
 
-    @GetMapping(path = "/get-coa3")
-    public Flux<?> getCOA3(@RequestParam String headCode, @RequestParam String compCode) {
-        return Flux.fromIterable(coaService.getCOA(headCode, compCode));
+    @GetMapping(path = "/getCOAByGroup")
+    public Flux<?> getCOAByGroup(@RequestParam String groupCode, @RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOAByGroup(groupCode, compCode));
+    }
+    @GetMapping(path = "/getCOAByHead")
+    public Flux<?> getCOAByHead(@RequestParam String headCode, @RequestParam String compCode) {
+        return Flux.fromIterable(coaService.getCOAByHead(headCode, compCode));
     }
 
     @GetMapping(path = "/search-coa")
