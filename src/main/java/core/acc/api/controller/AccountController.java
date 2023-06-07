@@ -11,6 +11,7 @@ import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -67,6 +68,7 @@ public class AccountController {
     public Mono<?> saveDepartment(@RequestBody Department department) {
         return Mono.just(departmentService.save(department));
     }
+
     @GetMapping(path = "/get-DepartmentByDate")
     public Flux<?> searchByDate(@RequestParam String updatedDate) {
         return Flux.fromIterable(departmentService.SearchByDate(updatedDate));
@@ -88,6 +90,7 @@ public class AccountController {
     public Flux<?> getCOAByGroup(@RequestParam String groupCode, @RequestParam String compCode) {
         return Flux.fromIterable(coaService.getCOAByGroup(groupCode, compCode));
     }
+
     @GetMapping(path = "/getCOAByHead")
     public Flux<?> getCOAByHead(@RequestParam String headCode, @RequestParam String compCode) {
         return Flux.fromIterable(coaService.getCOAByHead(headCode, compCode));
@@ -195,15 +198,13 @@ public class AccountController {
     }
 
     @PostMapping(path = "/save-gl")
-    public ResponseEntity<Gl> saveGl(@RequestBody Gl gl) throws Exception {
-        gl = glService.save(gl, false);
-        return ResponseEntity.ok(gl);
+    public Mono<Gl> saveGl(@RequestBody Gl gl) {
+        return Mono.justOrEmpty(glService.save(gl, true));
     }
 
     @PostMapping(path = "/save-gl-list")
-    public ResponseEntity<?> saveGl(@RequestBody List<Gl> gl) throws Exception {
-        ReturnObject ro = glService.save(gl);
-        return ResponseEntity.ok(ro);
+    public Mono<?> saveGl(@RequestBody List<Gl> gl) {
+        return Mono.justOrEmpty(glService.save(gl));
     }
 
     @PostMapping(path = "/delete-coa")
@@ -212,12 +213,12 @@ public class AccountController {
     }
 
     @PostMapping(path = "/delete-gl")
-    public ResponseEntity<Boolean> deleteGL(@RequestBody DeleteObj obj) {
+    public Mono<Boolean> deleteGL(@RequestBody DeleteObj obj) {
         GlKey key = new GlKey();
         key.setGlCode(obj.getGlCode());
         key.setCompCode(obj.getCompCode());
         key.setDeptId(obj.getDeptId());
-        return ResponseEntity.ok(glService.delete(key, obj.getModifyBy()));
+        return Mono.justOrEmpty(glService.delete(key, obj.getModifyBy()));
     }
 
     @PostMapping(path = "/delete-gl-by-account")
@@ -256,6 +257,7 @@ public class AccountController {
     public Flux<Trader> getTrader(@RequestParam String text, @RequestParam String compCode) {
         return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
+
     @GetMapping(path = "/get-TraderByDate")
     public Flux<Trader> getTraderByDate(@RequestParam String updatedDate) {
         return Flux.fromIterable(traderService.SearchByDate(updatedDate));

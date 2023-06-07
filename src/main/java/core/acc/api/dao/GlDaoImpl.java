@@ -19,7 +19,7 @@ import java.util.Map;
 public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
-    public Gl save(Gl gl) throws Exception {
+    public Gl save(Gl gl) {
         saveOrUpdate(gl, gl.getKey());
         return gl;
     }

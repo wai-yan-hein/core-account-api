@@ -8,7 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface GlDao {
-    Gl save(Gl gl) throws Exception;
+    Gl save(Gl gl);
 
     Gl findByCode(GlKey key);
 

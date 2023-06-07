@@ -74,7 +74,7 @@ public class ReportController {
                 case "OpeningBalanceSheetSummary" ->
                         Util1.writeJsonFile(reportService.getOpeningBalanceSheet(bsProcess, opDate, false, compCode), exportPath);
                 case "Income&ExpenditureDetail" -> {
-                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess,projectNo, true, macId);
+                    reportService.genTriBalance(compCode, fromDate, toDate, opDate, "-", "-", "-", plProcess, bsProcess,projectNo,"-", true, macId);
                     List<Financial> data = reportService.getIncomeAndExpenditure(ieProcess, true, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
@@ -162,8 +162,10 @@ public class ReportController {
         boolean netChange = filter.isClosing();
         Integer macId = filter.getMacId();
         String projectNo = Util1.isAll(filter.getProjectNo());
+        String tranSource = Util1.isAll(filter.getTranSource());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1, coaLv2, "-", "-",projectNo, netChange, macId);
+        reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1,
+                coaLv2, "-", "-",projectNo, tranSource, netChange, macId);
         return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId));
     }
 

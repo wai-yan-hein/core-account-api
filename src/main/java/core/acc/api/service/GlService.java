@@ -9,9 +9,9 @@ import java.util.Date;
 import java.util.List;
 
 public interface GlService {
-    Gl save(Gl gl, boolean backup) throws Exception;
+    Gl save(Gl gl, boolean backup);
 
-    ReturnObject save(List<Gl> gl) throws Exception;
+    ReturnObject save(List<Gl> gl);
 
     Gl findByCode(GlKey key);
 

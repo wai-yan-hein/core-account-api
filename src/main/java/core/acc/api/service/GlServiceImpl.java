@@ -30,7 +30,7 @@ public class GlServiceImpl implements GlService {
     private GlProcessor glProcessor;
 
     @Override
-    public Gl save(Gl gl, boolean backup) throws Exception {
+    public Gl save(Gl gl, boolean backup)  {
         String updatedBy = gl.getModifyBy();
         gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
         if (Util1.isNull(gl.getKey().getGlCode())) {
@@ -61,7 +61,7 @@ public class GlServiceImpl implements GlService {
 
 
     @Override
-    public ReturnObject save(List<Gl> glList) throws Exception {
+    public ReturnObject save(List<Gl> glList)  {
         ReturnObject ro = new ReturnObject();
         if (!glList.isEmpty()) {
             Gl tmp = glList.get(0);
