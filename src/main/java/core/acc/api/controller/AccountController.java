@@ -167,10 +167,10 @@ public class AccountController {
 
     @PostMapping(path = "/get-coa-opening")
     public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
-        String opDate = filter.getOpeningDate();
+        String compCode = Util1.isNull(filter.getCompCode(), "-");
+        String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
         String curCode = Util1.isNull(filter.getCurCode(), "-");
-        String compCode = Util1.isNull(filter.getCompCode(), "-");
         String traderCode = Util1.isNull(filter.getTraderCode(), "-");
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         Integer macId = filter.getMacId();
