@@ -72,6 +72,12 @@ public class Gl {
     private String batchNo;
     @Column(name = "project_no")
     private String projectNo;
+    @Column(name = "patient_no")
+    private String patientNo;
+    @Column(name = "doctor_id")
+    private String doctorId;
+    @Column(name = "service_id")
+    private String serviceId;
     @Transient
     private String glDateStr;
     @Transient

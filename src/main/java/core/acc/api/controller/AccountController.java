@@ -205,6 +205,7 @@ public class AccountController {
 
     @PostMapping(path = "/save-gl-list")
     public Mono<?> saveGl(@RequestBody List<Gl> gl) {
+        log.info("/save-gl-list");
         return Mono.justOrEmpty(glService.save(gl));
     }
 

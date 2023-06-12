@@ -151,3 +151,8 @@ create table coa_template (
 alter table coa_opening
 add column deleted bit(1) not null default 0 after trader_code;
 
+alter table gl
+add column patient_no varchar(15) null after project_no,
+add column doctor_id varchar(15) null after patient_no,
+add column service_id varchar (15) after doctor_id,
+change column gl_date gl_date timestamp not null ;
