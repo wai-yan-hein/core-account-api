@@ -200,7 +200,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "from chart_of_account\n" +
                 "where coa_parent ='" + groupCode + "'\n" +
                 "and comp_code ='" + compCode + "'\n"+
-                "and active = true and deleted = false";
+                "and active = true and deleted = false\n" +
+                "order by coa_code_usr,coa_name_eng";
         List<Map<String, Object>> result = getList(sql);
         List<ChartOfAccount> list = new ArrayList<>();
         result.forEach((row) -> {
@@ -228,7 +229,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "join chart_of_account coa on a.coa_code = coa.coa_parent\n" +
                 "and a.comp_code=coa.comp_code\n" +
                 "and coa.active =true and coa.deleted =false\n"+
-                "order by coa.coa_code_usr;";
+                "order by coa.coa_code_usr,coa.coa_name_eng";
         ResultSet rs = getResult(sql);
        try {
            while (rs.next()){

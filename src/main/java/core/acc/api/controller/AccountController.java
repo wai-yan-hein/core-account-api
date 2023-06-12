@@ -17,6 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -391,9 +392,9 @@ public class AccountController {
     }
 
     @GetMapping(path = "/getDate")
-    public Flux<?> getDate(@RequestParam String startDate, @RequestParam String compCode) {
+    public Flux<?> getDate(@RequestParam String startDate, @RequestParam String compCode, @RequestParam boolean isAll) {
         String opDate = reportService.getOpeningDate(compCode);
-        return Flux.fromIterable(Util1.generateDate(startDate, opDate));
+        return Flux.fromIterable(Util1.generateDate(startDate, opDate, isAll));
     }
 
     @PostMapping(path = "/getCashBook")
@@ -406,11 +407,23 @@ public class AccountController {
         Integer macId = Util1.getInteger(filter.getMacId());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         String opDate = reportService.getOpeningDate(compCode);
-        List<Gl> list = reportService.getCashBook(startDate, endDate, cashGroup, curCode, compCode);
-        list.forEach(gl -> {
-            TmpOpening op = coaOpeningService.getCOAOpening(gl.getSrcAccCode(), opDate, startDate, curCode, compCode, macId, "-");
+        List<Gl> list = new ArrayList<>();
+        List<ChartOfAccount> chart = coaService.getCOAByGroup(cashGroup, compCode);
+        chart.forEach(coa -> {
+            String srcAcc = coa.getKey().getCoaCode();
+            Gl gl = new Gl();
+            gl.setGlDateStr(Util1.toDateStr(Util1.toDate(startDate), "dd/MM/yyyy"));
+            gl.setCurCode(curCode);
+            gl.setSrcUserCode(coa.getCoaCodeUsr());
+            gl.setSrcAccCode(coa.getKey().getCoaCode());
+            gl.setSrcAccName(coa.getCoaNameEng());
+            TmpOpening op = coaOpeningService.getCOAOpening(srcAcc, opDate, startDate, curCode, compCode, macId, "-");
             gl.setOpening(op.getOpening());
+            Gl obj = reportService.getCashBook(startDate, endDate, srcAcc, curCode, compCode);
+            gl.setDrAmt(obj == null ? 0 : obj.getDrAmt());
+            gl.setCrAmt(obj == null ? 0 : obj.getCrAmt());
             gl.setClosing(gl.getDrAmt() - gl.getCrAmt() + gl.getOpening());
+            list.add(gl);
         });
         return Flux.fromIterable(list);
     }

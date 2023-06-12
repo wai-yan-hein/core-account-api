@@ -43,6 +43,7 @@ public class Util1 {
         return obj != null && (obj.toString().equals("1") || obj.toString().equalsIgnoreCase("true"));
 
     }
+
     public static Date toDateTime(Date date) {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         SimpleDateFormat f2 = new SimpleDateFormat("dd/MM/yyyy");
@@ -55,6 +56,7 @@ public class Util1 {
         }
         return date;
     }
+
     public static String minusDay(String sqlFormat, int minusDay) {
         LocalDate date = LocalDate.parse(sqlFormat);
         LocalDate minusDays = date.minusDays(minusDay);
@@ -351,7 +353,7 @@ public class Util1 {
         return str.strip();
     }
 
-    public static java.util.List<DateModel> generateDate(String opDate,String fromDate) {
+    public static java.util.List<DateModel> generateDate(String opDate, String fromDate, boolean isAll) {
         java.util.List<DateModel> list = new ArrayList<>();
         LocalDate startDate = LocalDate.parse(fromDate);
         LocalDate todayDate = LocalDate.now();
@@ -399,6 +401,9 @@ public class Util1 {
         DateModel custom = new DateModel();
         custom.setDescription("Custom");
         list.add(3, custom);
+        if (!isAll) {
+            list.removeIf((d) -> d.getDescription().equals("All"));
+        }
         return list;
     }
 
