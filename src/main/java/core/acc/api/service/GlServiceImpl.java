@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -34,7 +35,7 @@ public class GlServiceImpl implements GlService {
         String updatedBy = gl.getModifyBy();
         gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
         if (Util1.isNull(gl.getKey().getGlCode())) {
-            gl.setCreatedDate(Util1.toDateTime(Util1.getTodayDate()));
+            gl.setCreatedDate(LocalDateTime.now());
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
             String glCode = getGLCode(gl.getGlDate(), gl.getKey().getDeptId(), macId, compCode);
@@ -68,7 +69,7 @@ public class GlServiceImpl implements GlService {
             String vouNo = tmp.getRefNo();
             String tranSource = tmp.getTranSource();
             String compCode = tmp.getKey().getCompCode();
-            Date glDate = tmp.getGlDate();
+            LocalDateTime glDate = tmp.getGlDate();
             boolean delete = tmp.isDeleted();
             String glVouNo = tmp.getGlVouNo();
             if (tmp.isEdit()) {
@@ -181,11 +182,6 @@ public class GlServiceImpl implements GlService {
         return glDao.getMaxDate();
     }
 
-    @Override
-    public List<Gl> search(String updatedDate, String deptCode) {
-        return glDao.search(updatedDate, deptCode);
-    }
-
 
     @Override
     public void deleteInvVoucher(String refNo, String tranSource, String compCode) {
@@ -243,7 +239,7 @@ public class GlServiceImpl implements GlService {
         }
     }
 
-    private String getGLCode(Date date, Integer deptId, Integer macId, String compCode) {
+    private String getGLCode(LocalDateTime date, Integer deptId, Integer macId, String compCode) {
         String period = Util1.toDateStr(date, "ddMMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
@@ -257,7 +253,7 @@ public class GlServiceImpl implements GlService {
         return "L-" + deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);
     }
 
-    private String getVouNo(Date glDate, Integer deptId, Integer macId, String compCode, String type) {
+    private String getVouNo(LocalDateTime glDate, Integer deptId, Integer macId, String compCode, String type) {
         String period = Util1.toDateStr(glDate, "MMyy");
         int seqNo = seqService.getSequence(macId, type, period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId);

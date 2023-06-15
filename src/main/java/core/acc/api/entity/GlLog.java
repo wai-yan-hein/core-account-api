@@ -2,7 +2,9 @@ package core.acc.api.entity;
 
 import lombok.Data;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 @Data
 @Entity
@@ -22,9 +24,8 @@ public class GlLog {
     private Date logDate;
     @Column(name = "gl_code")
     private String glCode;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "gl_date")
-    private Date glDate;
+    @Column(name = "gl_date", columnDefinition = "TIMESTAMP")
+    private LocalDateTime glDate;
     @Column(name = "description")
     private String description;
     @Column(name = "source_ac_id")
@@ -45,12 +46,10 @@ public class GlLog {
     private String vouNo;
     @Column(name = "trader_code")
     private String traderCode;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_date")
-    private Date createdDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "modify_date")
-    private Date modifyDate;
+    @Column(name = "created_date", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdDate;
+    @Column(name = "modify_date", columnDefinition = "TIMESTAMP")
+    private LocalDateTime modifyDate;
     @Column(name = "modify_by")
     private String modifyBy;
     @Column(name = "user_code")

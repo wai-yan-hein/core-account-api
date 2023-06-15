@@ -41,7 +41,6 @@ public interface GlService {
 
     Date getMaxDate();
 
-    List<Gl> search(String updatedDate, String deptCode);
 
     void deleteInvVoucher(String refNo, String tranSource, String compCode);
 

@@ -44,8 +44,6 @@ public interface GlDao {
 
     Date getMaxDate();
 
-    List<Gl> search(String updatedDate, String deptCode);
-
     List<String> shootTri();
 
 

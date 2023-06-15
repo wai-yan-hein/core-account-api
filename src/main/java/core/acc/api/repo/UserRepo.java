@@ -77,7 +77,7 @@ public class UserRepo {
                                 .queryParam("compCode", "-")
                                 .build())
                         .retrieve().toEntityList(SystemProperty.class);
-                ResponseEntity<List<SystemProperty>> block = result.block(Duration.ofMinutes(1));
+                ResponseEntity<List<SystemProperty>> block = result.block(Duration.ofMinutes(15));
                 if (block != null) {
                     List<SystemProperty> list = block.getBody();
                     if (list != null) {

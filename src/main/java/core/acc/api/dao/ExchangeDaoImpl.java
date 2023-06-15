@@ -22,7 +22,7 @@ public class ExchangeDaoImpl extends AbstractDao<ExchangeKey, CurExchange> imple
 
     @Override
     public boolean delete(ExchangeKey key) {
-        String sql = "update cur_exchange set deleted =1 where ex_code ='" + key.getExCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        String sql = "update cur_exchange set deleted = true where ex_code ='" + key.getExCode() + "' and comp_code ='" + key.getCompCode() + "'";
         execSql(sql);
         return true;
     }
@@ -32,7 +32,7 @@ public class ExchangeDaoImpl extends AbstractDao<ExchangeKey, CurExchange> imple
         List<CurExchange> list = new ArrayList<>();
         String sql = "select *\n" +
                 "from cur_exchange\n" +
-                "where deleted = 0\n" +
+                "where deleted = false\n" +
                 "and comp_code ='" + compCode + "'\n" +
                 "and date(ex_date) between '" + fromDate + "' and '" + toDate + "'";
         List<Map<String,Object>> result = getList(sql);

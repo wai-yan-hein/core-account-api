@@ -1,7 +1,6 @@
 package core.acc.api.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.models.auth.In;
 import lombok.Data;
 
 @Data

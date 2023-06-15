@@ -97,7 +97,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public int delete(DepartmentKey key) {
-        String sql = "update department set deleted =1 where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
+        String sql = "update department set deleted = true where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
         execSql(sql);
         return 1;
     }
@@ -115,7 +115,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public List<Department> findAllActive(String compCode) {
-        return findHSQL("select o from Department o where o.key.compCode ='"+compCode+"' and o.active =1 and o.deleted =0");
+        return findHSQL("select o from Department o where o.key.compCode ='"+compCode+"' and o.active =1 and o.deleted = false");
     }
 
     @Override
@@ -126,7 +126,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public List<Department> SearchByDate(String updDate) {
-        String hsql = "select o from Department o where o.active = true and o.deleted =0 and updatedDt>'" + updDate + "'";
+        String hsql = "select o from Department o where o.active = true and o.deleted = false and updatedDt>'" + updDate + "'";
         return findHSQL(hsql);
     }
 }

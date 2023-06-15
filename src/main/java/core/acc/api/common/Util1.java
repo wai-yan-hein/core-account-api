@@ -16,14 +16,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.temporal.ChronoUnit;
@@ -44,17 +42,9 @@ public class Util1 {
 
     }
 
-    public static Date toDateTime(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-        SimpleDateFormat f2 = new SimpleDateFormat("dd/MM/yyyy");
+    public static LocalDateTime toDateTime(LocalDateTime date) {
         LocalDateTime now = LocalDateTime.now();
-        String strDate = f2.format(date) + " " + now.getHour() + ":" + now.getMinute() + ":" + now.getSecond();
-        try {
-            date = formatter.parse(strDate);
-        } catch (ParseException ex) {
-            log.error(String.format("toDateTime: %s", ex.getMessage()));
-        }
-        return date;
+        return LocalDateTime.of(date.toLocalDate(), LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
     }
 
     public static String minusDay(String sqlFormat, int minusDay) {
@@ -144,6 +134,11 @@ public class Util1 {
         }
 
         return strDate;
+    }
+
+    public static String toDateStr(LocalDateTime dateTime, String format) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+        return dateTime.format(formatter);
     }
 
     public static String toDateStr(String strDate, String inFormat, String outFormat) {

@@ -20,7 +20,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
 
     @Override
     public void delete(StockOPKey key) {
-        String sql = "update stock_op_value set deleted = 1 where tran_code= '" + key.getTranCode() + "' and comp_code='" + key.getCompCode() + "' and dept_id =" + key.getDeptId() + "";
+        String sql = "update stock_op_value set deleted = true where tran_code= '" + key.getTranCode() + "' and comp_code='" + key.getCompCode() + "' and dept_id =" + key.getDeptId() + "";
         execSql(sql);
     }
 
@@ -32,7 +32,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                 "select * \n" +
                 "from stock_op_value\n" +
                 "where comp_code ='" + compCode + "'\n" +
-                "and deleted =0\n" +
+                "and deleted = false\n" +
                 "and date(tran_date) between '" + fromDate + "' and '" + toDate + "'\n" +
                 "and (curr_code ='" + curCode + "' or '-' ='" + curCode + "')\n" +
                 "and (dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +

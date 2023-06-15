@@ -2,8 +2,7 @@ package core.acc.api.entity;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import jakarta.persistence.*;
 import java.io.Serializable;
 
 @Embeddable

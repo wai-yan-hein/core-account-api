@@ -97,8 +97,6 @@ alter table gl
 add column batch_no varchar(15) null after deleted,
 add column project_no varchar(15) null after batch_no;
 
-alter table coa_opening
-add column deleted bit(1) not null default 0 after trader_code;
 
 alter table trader
 add column deleted bit(1) not null default 0 after group_code;

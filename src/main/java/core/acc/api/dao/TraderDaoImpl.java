@@ -25,13 +25,13 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
 
     @Override
     public List<Trader> getTrader(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and o.key.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.deleted = false and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
 
     @Override
     public List<Trader> getTrader(String text, String compCode) {
-        String filter = "where active =1\n" + "and deleted =0\n" + "and comp_code ='" + compCode + "'\n" + "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
+        String filter = "where active =1\n" + "and deleted = false\n" + "and comp_code ='" + compCode + "'\n" + "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
         String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" + "from trader\n" + filter + "\n" + "order by user_code,trader_name\n" + "limit 100\n";
         ResultSet rs = getResult(sql);
         List<Trader> list = new ArrayList<>();
@@ -57,23 +57,23 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
 
     @Override
     public List<Trader> getCustomer(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and o.traderType = 'C' and and o.key.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.deleted = false and o.traderType = 'C' and and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
     @Override
     public List<Trader> getSupplier(String compCode) {
-        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and o.traderType = 'S' and o.key.compCode ='" + compCode + "'";
+        String hsql = "select o from Trader o where o.active = true and o.deleted = false and o.traderType = 'S' and o.key.compCode ='" + compCode + "'";
         return findHSQL(hsql);
     }
     @Override
     public List<Trader> SearchByDate(String updDate) {
-        String hsql = "select o from Trader o where o.active = true and o.deleted =0 and updatedDate>'" + updDate + "'";
+        String hsql = "select o from Trader o where o.active = true and o.deleted = false and updatedDate>'" + updDate + "'";
         return findHSQL(hsql);
     }
 
     @Override
     public void delete(TraderKey key) {
-        String sql = "update trader set deleted =1 where comp_code ='" + key.getCompCode() + "' and code ='" + key.getCode() + "'";
+        String sql = "update trader set deleted = true where comp_code ='" + key.getCompCode() + "' and code ='" + key.getCode() + "'";
         execSql(sql);
     }
 }

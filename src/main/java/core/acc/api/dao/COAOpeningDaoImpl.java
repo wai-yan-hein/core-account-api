@@ -11,7 +11,7 @@ public class COAOpeningDaoImpl extends AbstractDao<OpeningKey, COAOpening> imple
 
     @Override
     public boolean delete(OpeningKey key) {
-        String sql = "update coa_opening set deleted = 1 where coa_op_id ='" + key.getOpId() + "' and '" + key.getCompCode() + "'";
+        String sql = "update coa_opening set deleted = true where coa_op_id ='" + key.getOpId() + "' and '" + key.getCompCode() + "'";
         executeAndResult(sql);
         return true;
     }

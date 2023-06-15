@@ -1,6 +1,5 @@
 package core.acc.api.controller;
 
-import core.acc.api.cloud.CloudMQSender;
 import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
 import core.acc.api.model.DeleteObj;
@@ -45,8 +44,6 @@ public class AccountController {
     private ConverterService converterService;
     @Autowired
     private ExchangeService exchangeService;
-    @Autowired(required = false)
-    private CloudMQSender cloudMQSender;
     @Autowired
     private YearEndService yearEndService;
 

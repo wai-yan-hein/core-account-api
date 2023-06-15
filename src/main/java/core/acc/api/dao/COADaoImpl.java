@@ -28,7 +28,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> getCOA(String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = 0\n" + "and coa_level = 3\n" + "and comp_code ='" + compCode + "'\n" +
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = false\n" + "and coa_level = 3\n" + "and comp_code ='" + compCode + "'\n" +
 //                "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
                 "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
         List<Map<String, Object>> result = getList(sql);
@@ -54,7 +54,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public Boolean delete(COAKey key) {
-        String sql = "update chart_of_account set deleted =1 where comp_code ='" + key.getCompCode() + "' and coa_code='" + key.getCoaCode() + "'";
+        String sql = "update chart_of_account set deleted = true where comp_code ='" + key.getCompCode() + "' and coa_code='" + key.getCoaCode() + "'";
         execSql(sql);
         return true;
     }
@@ -67,14 +67,14 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOAChild(String parentCode, String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.key.compCode = '" + compCode + "' and o.deleted =0 order by o.coaCodeUsr";
+        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parentCode + "' and o.key.compCode = '" + compCode + "' and o.deleted = false order by o.coaCodeUsr";
         return findHSQL(hsql);
     }
 
     @Override
     public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = 0\n" + "and (coa_level =" + level + " or 0 =" + level + ")\n" + "and comp_code ='" + compCode + "'\n" + "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" + "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = false\n" + "and (coa_level =" + level + " or 0 =" + level + ")\n" + "and comp_code ='" + compCode + "'\n" + "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" + "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
         List<Map<String, Object>> result = getList(sql);
         result.forEach((rs) -> {
             ChartOfAccount coa = new ChartOfAccount();
@@ -101,7 +101,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOATree(String compCode) {
-        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.key.compCode = '" + compCode + "' and o.deleted =0";
+        String hsql = "select o from ChartOfAccount o where  o.coaParent = '#' and o.key.compCode = '" + compCode + "' and o.deleted = false";
         List<ChartOfAccount> chart = findHSQL(hsql);
         for (ChartOfAccount coa : chart) {
             getChild(coa, compCode);
@@ -190,7 +190,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> findAllActive(String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.key.compCode ='" + compCode + "' and o.active =1 and o.deleted =0";
+        String hsql = "select o from ChartOfAccount o where o.key.compCode ='" + compCode + "' and o.active =1 and o.deleted = false";
         return findHSQL(hsql);
     }
 
@@ -259,7 +259,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     private void getChild(ChartOfAccount parent, String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getKey().getCoaCode() + "' and o.key.compCode = '" + compCode + "' and o.deleted =0";
+        String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getKey().getCoaCode() + "' and o.key.compCode = '" + compCode + "' and o.deleted = false";
         List<ChartOfAccount> chart = findHSQL(hsql);
         parent.setChild(chart);
         if (!chart.isEmpty()) {
