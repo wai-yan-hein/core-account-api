@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -135,39 +136,9 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     }
 
     @Override
-    public List<ChartOfAccount> search(String updatedDate) {
-        List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select * from chart_of_account where modify_date > '" + updatedDate + "'";
-        ResultSet rs = getResult(sql);
-        try {
-            while (rs.next()) {
-                ChartOfAccount coa = new ChartOfAccount();
-                COAKey key = new COAKey();
-                key.setCoaCode(rs.getString("coa_code"));
-                key.setCompCode(rs.getString("comp_code"));
-                coa.setKey(key);
-                coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
-                coa.setCoaNameEng(rs.getString("coa_name_eng"));
-                coa.setCoaNameMya(rs.getString("coa_name_mya"));
-                coa.setActive(rs.getBoolean("active"));
-                coa.setCreatedDate(rs.getTimestamp("created_date").toLocalDateTime());
-                coa.setModifiedDate(rs.getTimestamp("modify_date").toLocalDateTime());
-                coa.setCreatedBy(rs.getString("created_by"));
-                coa.setModifiedBy(rs.getString("updated_by"));
-                coa.setCoaParent(rs.getString("coa_parent"));
-                coa.setOption(rs.getString("coa_option"));
-                coa.setCoaLevel(rs.getInt("coa_level"));
-                coa.setCurCode(rs.getString("cur_code"));
-                coa.setMarked(rs.getBoolean("marked"));
-                coa.setDeptCode(rs.getString("dept_code"));
-                coa.setDeleted(rs.getBoolean("deleted"));
-                list.add(coa);
-            }
-        } catch (Exception e) {
-            log.error("search : " + e.getMessage());
-        }
-
-        return list;
+    public List<ChartOfAccount> getUpdatedCOA(LocalDateTime updatedDate) {
+        String hsql = "select o from ChartOfAccount o where modifiedDate>:updatedDate";
+        return createQuery(hsql).setParameter("updatedDate", updatedDate).getResultList();
     }
 
     @Override
@@ -239,14 +210,6 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         return list;
     }
 
-    private void getChild(List<ChartOfAccount> listAllChild, String parent, String compCode) {
-        String strSql = "select o from ChartOfAccount o where o.key.compCode = '" + compCode + "' and o.coaParent = '" + parent + "'";
-        List<ChartOfAccount> listCOA = findHSQL(strSql);
-        if (!listCOA.isEmpty()) {
-            listAllChild.addAll(listCOA);
-        }
-        listCOA.forEach(coa -> getChild(listAllChild, coa.getKey().getCoaCode(), compCode));
-    }
 
     private void getChild(ChartOfAccount parent, String compCode) {
         String hsql = "select o from ChartOfAccount o where o.coaParent = '" + parent.getKey().getCoaCode() + "' and o.key.compCode = '" + compCode + "' and o.deleted = false";

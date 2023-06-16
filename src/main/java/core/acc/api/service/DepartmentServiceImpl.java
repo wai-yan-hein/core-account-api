@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -78,7 +79,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public List<Department> SearchByDate(String updDate) {
-        return dao.SearchByDate(updDate);
+    public List<Department> getUpdatedDepartment(LocalDateTime updatedDate) {
+        return dao.getUpdatedDepartment(updatedDate);
     }
 }

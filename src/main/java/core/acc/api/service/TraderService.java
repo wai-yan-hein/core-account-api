@@ -3,6 +3,7 @@ package core.acc.api.service;
 import core.acc.api.entity.Trader;
 import core.acc.api.entity.TraderKey;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TraderService {
@@ -16,7 +17,7 @@ public interface TraderService {
 
     List<Trader> getSupplier(String compCode);
 
-    List<Trader> SearchByDate(String updDate);
+    List<Trader> getTrader(LocalDateTime updatedDate);
 
     void delete(TraderKey t);
 

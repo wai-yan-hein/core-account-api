@@ -5,6 +5,7 @@ import core.acc.api.entity.DepartmentKey;
 import core.acc.api.entity.Trader;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -12,7 +13,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public Department save(Department dept) {
-        saveOrUpdate(dept,dept.getKey());
+        saveOrUpdate(dept, dept.getKey());
         return dept;
     }
 
@@ -115,7 +116,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public List<Department> findAllActive(String compCode) {
-        return findHSQL("select o from Department o where o.key.compCode ='"+compCode+"' and o.active =1 and o.deleted = false");
+        return findHSQL("select o from Department o where o.key.compCode ='" + compCode + "' and o.active =1 and o.deleted = false");
     }
 
     @Override
@@ -125,9 +126,9 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     }
 
     @Override
-    public List<Department> SearchByDate(String updDate) {
-        String hsql = "select o from Department o where o.active = true and o.deleted = false and updatedDt>'" + updDate + "'";
-        return findHSQL(hsql);
+    public List<Department> getUpdatedDepartment(LocalDateTime updatedDate) {
+        String hsql = "select o from Department o where updatedDt>:updatedDate";
+        return createQuery(hsql).setParameter("updatedDate", updatedDate).getResultList();
     }
 }
 

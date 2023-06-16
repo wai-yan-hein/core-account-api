@@ -3,6 +3,7 @@ package core.acc.api.dao;
 import core.acc.api.entity.Trader;
 import core.acc.api.entity.TraderKey;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface TraderDao {
@@ -15,7 +16,7 @@ public interface TraderDao {
     List<Trader> getCustomer(String compCode);
 
     List<Trader> getSupplier(String compCode);
-    List<Trader> SearchByDate(String updDate);
+    List<Trader> getTrader(LocalDateTime updDate);
     void delete(TraderKey t);
 
 }

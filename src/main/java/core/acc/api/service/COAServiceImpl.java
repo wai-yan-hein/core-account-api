@@ -103,8 +103,8 @@ public class COAServiceImpl implements COAService {
     }
 
     @Override
-    public List<ChartOfAccount> search(String updatedDate) {
-        return dao.search(updatedDate);
+    public List<ChartOfAccount> getUpdatedCOA(LocalDateTime updatedDate) {
+        return dao.getUpdatedCOA(updatedDate);
     }
 
     @Override

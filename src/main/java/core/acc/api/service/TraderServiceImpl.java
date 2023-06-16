@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -51,8 +52,8 @@ public class TraderServiceImpl implements TraderService {
     }
 
     @Override
-    public List<Trader> SearchByDate(String updDate) {
-        return traderDao.SearchByDate(updDate);
+    public List<Trader> getTrader(LocalDateTime updatedDate) {
+        return traderDao.getTrader(updatedDate);
     }
     @Override
     public void delete(TraderKey t) {

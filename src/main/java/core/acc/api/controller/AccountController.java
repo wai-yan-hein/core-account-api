@@ -10,7 +10,6 @@ import core.acc.api.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -63,9 +62,9 @@ public class AccountController {
         return Mono.just(departmentService.save(department));
     }
 
-    @GetMapping(path = "/get-DepartmentByDate")
+    @GetMapping(path = "/getUpdatedDepartment")
     public Flux<?> searchByDate(@RequestParam String updatedDate) {
-        return Flux.fromIterable(departmentService.SearchByDate(updatedDate));
+        return Flux.fromIterable(departmentService.getUpdatedDepartment(Util1.toLocalDateTime(updatedDate)));
     }
 
 
@@ -120,9 +119,9 @@ public class AccountController {
         return ResponseEntity.ok(coaService.saveCOA(busId, compCode));
     }
 
-    @GetMapping(path = "/get-COAByDate")
+    @GetMapping(path = "/getUpdatedCOA")
     public Flux<?> getCOAByDate(@RequestParam String updatedDate) {
-        return Flux.fromIterable(coaService.search(updatedDate));
+        return Flux.fromIterable(coaService.getUpdatedCOA(Util1.toLocalDateTime(updatedDate)));
     }
 
     @PostMapping(path = "/process-coa")
@@ -160,7 +159,7 @@ public class AccountController {
     }
 
     @PostMapping(path = "/get-coa-opening")
-    public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) throws Exception {
+    public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String opDate = reportService.getOpeningDate(compCode);
         String fromDate = filter.getFromDate();
@@ -253,9 +252,9 @@ public class AccountController {
         return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode));
     }
 
-    @GetMapping(path = "/get-TraderByDate")
+    @GetMapping(path = "/getUpdatedTrader")
     public Flux<Trader> getTraderByDate(@RequestParam String updatedDate) {
-        return Flux.fromIterable(traderService.SearchByDate(updatedDate));
+        return Flux.fromIterable(traderService.getTrader(Util1.toLocalDateTime(updatedDate)));
     }
 
     @GetMapping(path = "/get-supplier")

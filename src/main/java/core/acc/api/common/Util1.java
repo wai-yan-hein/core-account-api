@@ -47,6 +47,10 @@ public class Util1 {
         return LocalDateTime.of(date.toLocalDate(), LocalTime.of(now.getHour(), now.getMinute(), now.getSecond()));
     }
 
+    public static LocalDateTime toLocalDateTime(String date) {
+        return LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+    }
+
     public static String minusDay(String sqlFormat, int minusDay) {
         LocalDate date = LocalDate.parse(sqlFormat);
         LocalDate minusDays = date.minusDays(minusDay);
