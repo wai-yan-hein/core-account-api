@@ -4,6 +4,9 @@ import lombok.*;
 import org.hibernate.Hibernate;
 
 import jakarta.persistence.*;
+import org.springframework.cglib.core.Local;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -23,14 +26,12 @@ public class Department implements java.io.Serializable {
     private boolean active;
     @Column(name = "created_by")
     private String createdBy;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_dt")
-    private Date createdDt;
+    @Column(name = "created_dt",columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdDt;
     @Column(name = "updated_by")
     private String updatedBy;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_dt")
-    private Date updatedDt;
+    @Column(name = "updated_dt",columnDefinition = "TIMESTAMP")
+    private LocalDateTime updatedDt;
     @Column(name = "usr_code")
     private String userCode;
     @Column(name = "mac_id")

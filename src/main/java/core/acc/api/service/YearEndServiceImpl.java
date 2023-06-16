@@ -1,12 +1,13 @@
 package core.acc.api.service;
 
-import core.acc.api.common.Util1;
 import core.acc.api.entity.*;
 import core.acc.api.model.YearEnd;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -26,13 +27,13 @@ public class YearEndServiceImpl implements YearEndService {
         copyDepartment(end);
         copyCOA(end);
         copyTrader(end);
-        copyOpening(end);
+        copyOpening();
         copySeq(end);
         end.setMessage("year end in account.");
         return end;
     }
 
-    private void copyOpening(YearEnd end) {
+    private void copyOpening() {
         log.info("copied opening.");
     }
 
@@ -55,7 +56,7 @@ public class YearEndServiceImpl implements YearEndService {
                     coa.setCoaNameMya(yn.getCoaNameMya());
                     coa.setCoaParent(yn.getCoaParent());
                     coa.setCreatedBy(end.getCreateBy());
-                    coa.setCreatedDate(Util1.getTodayDate());
+                    coa.setCreatedDate(LocalDateTime.now());
                     coa.setDeleted(yn.isDeleted());
                     coa.setCurCode(yn.getCurCode());
                     coa.setDeptCode(yn.getDeptCode());
@@ -87,7 +88,7 @@ public class YearEndServiceImpl implements YearEndService {
             t.setCreatedBy(end.getCreateBy());
             t.setAddress(yn.getAddress());
             t.setEmail(yn.getEmail());
-            t.setCreatedDate(Util1.getTodayDate());
+            t.setCreatedDate(LocalDateTime.now());
             t.setMacId(macId);
             t.setPhone(yn.getPhone());
             t.setRegCode(yn.getRegCode());
@@ -111,7 +112,7 @@ public class YearEndServiceImpl implements YearEndService {
             d.setDeptName(dep.getDeptName());
             d.setActive(dep.isActive());
             d.setDeleted(dep.isDeleted());
-            d.setCreatedDt(Util1.getTodayDate());
+            d.setCreatedDt(LocalDateTime.now());
             d.setCreatedBy(end.getCreateBy());
             d.setMacId(macId);
             departmentService.save(d);

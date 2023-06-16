@@ -138,30 +138,35 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     public List<ChartOfAccount> search(String updatedDate) {
         List<ChartOfAccount> list = new ArrayList<>();
         String sql = "select * from chart_of_account where modify_date > '" + updatedDate + "'";
-        List<Map<String, Object>> result = getList(sql);
-        result.forEach((rs) -> {
-            ChartOfAccount coa = new ChartOfAccount();
-            COAKey key = new COAKey();
-            key.setCoaCode(Util1.getString(rs.get("coa_code")));
-            key.setCompCode(Util1.getString(rs.get("comp_code")));
-            coa.setKey(key);
-            coa.setCoaCodeUsr(Util1.getString(rs.get("coa_code_usr")));
-            coa.setCoaNameEng(Util1.getString(rs.get("coa_name_eng")));
-            coa.setCoaNameMya(Util1.getString(rs.get("coa_name_mya")));
-            coa.setActive(Util1.getBoolean(rs.get("active")));
-            coa.setCreatedDate(Util1.toDate(rs.get("created_date")));
-            coa.setModifiedDate(Util1.toDate(rs.get("modify_date")));
-            coa.setCreatedBy(Util1.getString(rs.get("created_by")));
-            coa.setModifiedBy(Util1.getString(rs.get("updated_by")));
-            coa.setCoaParent(Util1.getString(rs.get("coa_parent")));
-            coa.setOption(Util1.getString(rs.get("coa_option")));
-            coa.setCoaLevel(Util1.getInteger(rs.get("coa_level")));
-            coa.setCurCode(Util1.getString(rs.get("cur_code")));
-            coa.setMarked(Util1.getBoolean(rs.get("marked")));
-            coa.setDeptCode(Util1.getString(rs.get("dept_code")));
-            coa.setDeleted(Util1.getBoolean(rs.get("deleted")));
-            list.add(coa);
-        });
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                ChartOfAccount coa = new ChartOfAccount();
+                COAKey key = new COAKey();
+                key.setCoaCode(rs.getString("coa_code"));
+                key.setCompCode(rs.getString("comp_code"));
+                coa.setKey(key);
+                coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
+                coa.setCoaNameEng(rs.getString("coa_name_eng"));
+                coa.setCoaNameMya(rs.getString("coa_name_mya"));
+                coa.setActive(rs.getBoolean("active"));
+                coa.setCreatedDate(rs.getTimestamp("created_date").toLocalDateTime());
+                coa.setModifiedDate(rs.getTimestamp("modify_date").toLocalDateTime());
+                coa.setCreatedBy(rs.getString("created_by"));
+                coa.setModifiedBy(rs.getString("updated_by"));
+                coa.setCoaParent(rs.getString("coa_parent"));
+                coa.setOption(rs.getString("coa_option"));
+                coa.setCoaLevel(rs.getInt("coa_level"));
+                coa.setCurCode(rs.getString("cur_code"));
+                coa.setMarked(rs.getBoolean("marked"));
+                coa.setDeptCode(rs.getString("dept_code"));
+                coa.setDeleted(rs.getBoolean("deleted"));
+                list.add(coa);
+            }
+        } catch (Exception e) {
+            log.error("search : " + e.getMessage());
+        }
+
         return list;
     }
 
@@ -196,12 +201,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode) {
-        String sql = "select coa_code,coa_name_eng,comp_code\n" +
-                "from chart_of_account\n" +
-                "where coa_parent ='" + groupCode + "'\n" +
-                "and comp_code ='" + compCode + "'\n"+
-                "and active = true and deleted = false\n" +
-                "order by coa_code_usr,coa_name_eng";
+        String sql = "select coa_code,coa_name_eng,comp_code\n" + "from chart_of_account\n" + "where coa_parent ='" + groupCode + "'\n" + "and comp_code ='" + compCode + "'\n" + "and active = true and deleted = false\n" + "order by coa_code_usr,coa_name_eng";
         List<Map<String, Object>> result = getList(sql);
         List<ChartOfAccount> list = new ArrayList<>();
         result.forEach((row) -> {
@@ -219,20 +219,10 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> getCOAByHead(String headCode, String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql="select coa.coa_code,coa.coa_code_usr,coa.coa_name_eng,coa.comp_code\n" +
-                "from(\n" +
-                "select coa_code,comp_code\n" +
-                "from chart_of_account\n" +
-                "where coa_parent ='"+headCode+"'\n" +
-                "and comp_code ='"+compCode+"'\n" +
-                ")a\n" +
-                "join chart_of_account coa on a.coa_code = coa.coa_parent\n" +
-                "and a.comp_code=coa.comp_code\n" +
-                "and coa.active =true and coa.deleted =false\n"+
-                "order by coa.coa_code_usr,coa.coa_name_eng";
+        String sql = "select coa.coa_code,coa.coa_code_usr,coa.coa_name_eng,coa.comp_code\n" + "from(\n" + "select coa_code,comp_code\n" + "from chart_of_account\n" + "where coa_parent ='" + headCode + "'\n" + "and comp_code ='" + compCode + "'\n" + ")a\n" + "join chart_of_account coa on a.coa_code = coa.coa_parent\n" + "and a.comp_code=coa.comp_code\n" + "and coa.active =true and coa.deleted =false\n" + "order by coa.coa_code_usr,coa.coa_name_eng";
         ResultSet rs = getResult(sql);
-       try {
-           while (rs.next()){
+        try {
+            while (rs.next()) {
                 ChartOfAccount coa = new ChartOfAccount();
                 COAKey key = new COAKey();
                 key.setCoaCode(rs.getString("coa_code"));
@@ -241,10 +231,10 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 coa.setCoaNameEng(rs.getString("coa_name_eng"));
                 coa.setCoaCodeUsr(rs.getString("coa_code_usr"));
                 list.add(coa);
-           }
-       }catch (Exception e){
-
-       }
+            }
+        } catch (Exception e) {
+            log.error("getCOAByHead : " + e.getMessage());
+        }
 
         return list;
     }

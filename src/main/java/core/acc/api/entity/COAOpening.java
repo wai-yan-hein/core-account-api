@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -26,9 +28,8 @@ public class COAOpening {
     private Double drAmt;
     @Column(name = "user_code")
     private String userCode;
-    @Temporal(TemporalType.DATE)
-    @Column(name = "created_date")
-    private Date createdDate;
+    @Column(name = "created_date", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdDate;
     @Column(name = "dept_code")
     private String deptCode;
     @Column(name = "trader_code")

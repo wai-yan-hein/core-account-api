@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -136,8 +137,8 @@ public class COAServiceImpl implements COAService {
             c.setActive(t.isActive());
             c.setCreatedBy("1");
             c.setOption("");
-            c.setCreatedDate(Util1.getTodayDate());
-            c.setModifiedDate(Util1.getTodayDate());
+            c.setCreatedDate(LocalDateTime.now());
+            c.setModifiedDate(LocalDateTime.now());
             c.setCoaParent(t.getCoaParent());
             c.setCoaLevel(t.getCoaLevel());
             c.setCredit(t.isCredit());

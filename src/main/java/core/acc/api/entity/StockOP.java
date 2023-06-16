@@ -3,6 +3,8 @@ package core.acc.api.entity;
 import lombok.Data;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Data
@@ -26,14 +28,12 @@ public class StockOP {
     private Double clAmt;
     @Column(name = "created_by")
     private String createdBy;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_date")
+    @Column(name = "created_date",columnDefinition = "TIMESTAMP")
     private Date createdDate;
     @Column(name = "updated_by")
     private String updatedBy;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "updated_date")
-    private Date updatedDate;
+    @Column(name = "updated_date",columnDefinition = "TIMESTAMP")
+    private LocalDateTime updatedDate;
     @Column(name = "deleted")
     private boolean deleted;
     @Column(name = "project_no")

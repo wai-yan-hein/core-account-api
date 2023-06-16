@@ -35,15 +35,11 @@ public class AccountController {
     @Autowired
     private TraderService traderService;
     @Autowired
-    private CurrencyService currencyService;
-    @Autowired
     private ReportService reportService;
     @Autowired
     private StockOPService stockOPService;
     @Autowired
     private ConverterService converterService;
-    @Autowired
-    private ExchangeService exchangeService;
     @Autowired
     private YearEndService yearEndService;
 
@@ -363,14 +359,6 @@ public class AccountController {
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         String projectNo = Util1.isAll(filter.getProjectNo());
         return ResponseEntity.ok(stockOPService.search(fromDate, toDate, deptCode, curCode, projectNo, compCode));
-    }
-
-    @PostMapping(path = "/search-exchange")
-    public Flux<?> searchExchange(@RequestBody ReportFilter filter) {
-        String fromDate = Util1.isNull(filter.getFromDate(), "-");
-        String toDate = Util1.isNull(filter.getToDate(), "-");
-        String compCode = Util1.isNull(filter.getCompCode(), "-");
-        return Flux.fromIterable(exchangeService.search(fromDate, toDate, compCode));
     }
 
     @GetMapping(path = "/convert-to-unicode")

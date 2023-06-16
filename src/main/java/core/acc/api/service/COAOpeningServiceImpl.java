@@ -118,7 +118,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                     coa.setDrAmt(rs.getDouble("dr_amt"));
                     coa.setCrAmt(rs.getDouble("cr_amt"));
                     coa.setUserCode(rs.getString("user_code"));
-                    coa.setCreatedDate(rs.getDate("created_date"));
+                    coa.setCreatedDate(rs.getTimestamp("created_date").toLocalDateTime());
                     coa.setDeptCode(rs.getString("dept_code"));
                     coa.setTraderCode(rs.getString("trader_code"));
                     coa.setSrcAccName(rs.getString("coa_name_eng"));

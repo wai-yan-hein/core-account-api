@@ -19,9 +19,8 @@ public class GlLog {
     private Integer logMac;
     @Column(name = "log_status")
     private String logStatus;
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "log_date")
-    private Date logDate;
+    @Column(name = "log_date",columnDefinition = "TIMESTAMP")
+    private LocalDateTime logDate;
     @Column(name = "gl_code")
     private String glCode;
     @Column(name = "gl_date", columnDefinition = "TIMESTAMP")

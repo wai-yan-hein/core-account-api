@@ -67,7 +67,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                     op.setCreatedBy(rs.getString("created_by"));
                     op.setCreatedDate(rs.getTimestamp("created_date"));
                     op.setUpdatedBy(rs.getString("updated_by"));
-                    op.setUpdatedDate(rs.getTimestamp("updated_date"));
+                    op.setUpdatedDate(rs.getTimestamp("updated_date").toLocalDateTime());
                     op.setClAmt(rs.getDouble("amount"));
                     op.setProjectNo(rs.getString("project_no"));
                     list.add(op);

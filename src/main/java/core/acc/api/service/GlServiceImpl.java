@@ -229,7 +229,7 @@ public class GlServiceImpl implements GlService {
                 l.setGlVouNo(gl.getGlVouNo());
                 l.setReference(gl.getReference());
                 l.setRefNo(gl.getRefNo());
-                l.setLogDate(Util1.getTodayDate());
+                l.setLogDate(LocalDateTime.now());
                 l.setLogMac(macId);
                 l.setMacId(gl.getMacId());
                 l.setLogStatus(del ? "DEL-" + type : "EDIT-" + type);
