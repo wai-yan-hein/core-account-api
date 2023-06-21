@@ -60,11 +60,6 @@ public abstract class AbstractDao<PK extends Serializable, T> {
         }
     }
 
-
-    public List<Map<String, Object>> getList(String sql) {
-        return jdbcTemplate.queryForList(sql);
-    }
-
     @Transactional
     public ResultSet getResult(String sql) {
         return jdbcTemplate.execute((ConnectionCallback<ResultSet>) con -> {

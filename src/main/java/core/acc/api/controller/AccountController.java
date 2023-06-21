@@ -42,6 +42,11 @@ public class AccountController {
     @Autowired
     private YearEndService yearEndService;
 
+    @GetMapping(path = "/hello")
+    public Mono<?> hello() {
+        return Mono.just("Hello");
+    }
+
     @GetMapping(path = "/get-department")
     public Flux<?> getDepartment(@RequestParam String compCode) {
         return Flux.fromIterable(departmentService.findAll(compCode));

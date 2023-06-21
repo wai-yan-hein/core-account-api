@@ -8,6 +8,5 @@ public interface ReportDao {
 
     void exeSql(String... strSql);
 
-    List<Map<String,Object>> executeAndList(String sql);
     ResultSet executeAndResult(String sql);
 }
