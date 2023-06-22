@@ -157,3 +157,6 @@ change column gl_date gl_date timestamp not null ;
 
 alter table chart_of_account
 change column modify_date modify_date timestamp not null default current_timestamp() on update current_timestamp() ;
+
+alter table coa_opening
+change column created_date created_date timestamp null default null ;

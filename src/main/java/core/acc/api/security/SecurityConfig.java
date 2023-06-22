@@ -28,6 +28,7 @@ public class SecurityConfig {
         log.info("security configured.");
         return http.authorizeExchange((auth) -> auth
                         .pathMatchers("/auth/**",
+                                "/account/**",
                                 "/v2/api-docs",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -62,8 +63,6 @@ public class SecurityConfig {
     public ServerSecurityContextRepository securityContextRepository() {
         return new WebSessionServerSecurityContextRepository();
     }
-
-
 
 
     @Bean
