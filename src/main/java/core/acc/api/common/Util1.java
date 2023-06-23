@@ -16,15 +16,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 /**
@@ -35,7 +36,7 @@ public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
     private static final DecimalFormat df0 = new DecimalFormat("0");
     public static String SYNC_DATE;
-    public static final Gson gson = new GsonBuilder().setDateFormat(DateFormat.FULL, DateFormat.FULL).create();
+    public static final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
 
     public static boolean getBoolean(Object obj) {
         return obj != null && (obj.toString().equals("1") || obj.toString().equalsIgnoreCase("true"));
