@@ -1,5 +1,6 @@
 package core.acc.api.dao;
 
+import core.acc.api.common.Util1;
 import core.acc.api.entity.Trader;
 import core.acc.api.entity.TraderKey;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +33,13 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
 
     @Override
     public List<Trader> getTrader(String text, String compCode) {
-        String filter = "where active =1\n" + "and deleted = false\n" + "and comp_code ='" + compCode + "'\n" + "and (user_code like '" + text + "%' or trader_name like '" + text + "%') \n";
-        String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" + "from trader\n" + filter + "\n" + "order by user_code,trader_name\n" + "limit 100\n";
+        text = Util1.cleanStr(text);
+        String filter = "where active =true\n" +
+                "and deleted = false\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and (LOWER(REPLACE(user_code, ' ', '')) like '" + text + "%' or LOWER(REPLACE(trader_name, ' ', '')) like '" + text + "%') \n";
+        String sql = "select code trader_code,user_code,trader_name,account_code,discriminator\n" +
+                "from trader\n" + filter + "\n" + "order by user_code,trader_name\n" + "limit 100\n";
         ResultSet rs = getResult(sql);
         List<Trader> list = new ArrayList<>();
         try {

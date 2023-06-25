@@ -350,7 +350,10 @@ public class Util1 {
     }
 
     public static String cleanStr(String str) {
-        return str.strip();
+        if (str != null) {
+            return str.replaceAll(" ", "").toLowerCase();
+        }
+        return "";
     }
 
     public static java.util.List<DateModel> generateDate(String opDate, String fromDate, boolean isAll) {
