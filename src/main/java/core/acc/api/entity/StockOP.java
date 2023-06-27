@@ -29,7 +29,7 @@ public class StockOP {
     @Column(name = "created_by")
     private String createdBy;
     @Column(name = "created_date",columnDefinition = "TIMESTAMP")
-    private Date createdDate;
+    private LocalDateTime createdDate;
     @Column(name = "updated_by")
     private String updatedBy;
     @Column(name = "updated_date",columnDefinition = "TIMESTAMP")
