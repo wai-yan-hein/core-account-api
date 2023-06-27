@@ -78,8 +78,11 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> searchCOA(String str, Integer level, String compCode) {
+        str = Util1.cleanStr(str);
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = false\n" + "and (coa_level =" + level + " or 0 =" + level + ")\n" + "and comp_code ='" + compCode + "'\n" + "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" + "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
+        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = false\n" + "and (coa_level =" + level + " or 0 =" + level + ")\n" + "and comp_code ='" + compCode + "'\n" +
+                "and (LOWER(REPLACE(coa_code_usr, ' ', '')) like '" + str + "%' or LOWER(REPLACE(coa_name_eng, ' ', '')) like '" + str + "%')\n" +
+                "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
         ResultSet rs = getResult(sql);
         try {
             while (rs.next()) {
@@ -194,7 +197,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
             }
         } catch (Exception e) {
             log.error("getCOAByGroup : " + e.getMessage());
-        } return list;
+        }
+        return list;
     }
 
     @Override
