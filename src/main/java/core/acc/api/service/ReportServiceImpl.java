@@ -367,7 +367,7 @@ public class ReportServiceImpl implements ReportService {
                         if (isEmpty(reAcc, compCode, macId)) {
                             Financial re = new Financial();
                             if (prvProfit != 0) {
-                                re.setCoaName("Retained earning");
+                                re.setCoaName("Retained Earning");
                                 re.setAmount(prvProfit);
                                 re.setGroupName(re.getCoaName());
                                 re.setHeadName("CAPITAL");
