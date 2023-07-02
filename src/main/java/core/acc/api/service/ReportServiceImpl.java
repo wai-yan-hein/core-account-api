@@ -5,6 +5,7 @@ import core.acc.api.dao.ReportDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
+import core.acc.api.model.VoucherInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -975,6 +976,44 @@ public class ReportServiceImpl implements ReportService {
             log.error("getCashBook : " + e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public List<VoucherInfo> getIntegrationVoucher(String fromDate, String toDate, String tranSource, String compCode) {
+        List<VoucherInfo> list = new ArrayList<>();
+        String sql = "";
+        if (tranSource.equals("OPD") || tranSource.equals("OT") || tranSource.equals("DC")) {
+            sql = "select ref_no,sum(ifnull(dr_amt,0)) amt\n" +
+                    "from gl\n" +
+                    "where tran_source='" + tranSource + "'\n" +
+                    "and deleted =false\n" +
+                    "and date(gl_date)  between '" + fromDate + "' and '" + toDate + "'\n" +
+                    "and comp_code='" + compCode + "'\n" +
+                    "and ifnull(dr_amt,0)>0\n" +
+                    "group by ref_no\n"+
+                    "order by ref_no;";
+        } else {
+            sql = "select ref_no,ifnull(dr_amt,0)+ifnull(cr_amt,0) amt\n" +
+                    "from gl\n" +
+                    "where tran_source='" + tranSource + "'\n" +
+                    "and deleted =false\n" +
+                    "and date(gl_date)  between '" + fromDate + "' and '" + toDate + "'\n" +
+                    "and comp_code='" + compCode + "'\n" +
+                    "order by ref_no;";
+        }
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                VoucherInfo info = VoucherInfo.builder()
+                        .vouNo(rs.getString("ref_no"))
+                        .vouTotal(rs.getDouble("amt"))
+                        .build();
+                list.add(info);
+            }
+        } catch (Exception e) {
+            log.error("getVoucherInfo : " + e.getMessage());
+        }
+        return list;
     }
 
     private String getHeadSqlDetail(String head, Integer macId) {

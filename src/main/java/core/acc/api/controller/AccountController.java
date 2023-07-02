@@ -416,5 +416,10 @@ public class AccountController {
         });
         return Flux.fromIterable(list);
     }
+    @GetMapping(path = "/getIntegrationVoucher")
+    private Flux<?> getIntegrationVoucher(@RequestParam String fromDate,@RequestParam String toDate
+            ,@RequestParam String tranSource,@RequestParam String compCode){
+        return Flux.fromIterable(reportService.getIntegrationVoucher(fromDate,toDate,tranSource,compCode));
+    }
 
 }
