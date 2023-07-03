@@ -6,6 +6,7 @@ import core.acc.api.entity.VApar;
 import core.acc.api.entity.VTriBalance;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
+import core.acc.api.model.VoucherInfo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -66,4 +67,5 @@ public interface ReportService {
     List<Financial> getCOAList(String compCode);
 
     Gl getCashBook(String startDate, String endDate, String srcAcc, String curCode, String compCode);
+    List<VoucherInfo> getIntegrationVoucher(String fromDate,String toDate,String tranSource,String compCode);
 }
