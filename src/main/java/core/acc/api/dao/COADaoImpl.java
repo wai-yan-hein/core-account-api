@@ -5,7 +5,6 @@ import core.acc.api.entity.COAKey;
 import core.acc.api.entity.ChartOfAccount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
-
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
