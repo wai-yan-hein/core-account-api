@@ -466,7 +466,7 @@ public class ReportServiceImpl implements ReportService {
 
     private void updateRetainEarning(String reAcc, double reAmt, String compCode, Integer macId) {
         if (!reAcc.equals("-")) {
-            String sql = "update tmp_tri set dr_amt=dr_amt+" + reAmt * -1 + " where coa_code='" + reAcc + "' and mac_id =" + macId + " and comp_code ='" + compCode + "'";
+            String sql = "update tmp_tri set cr_amt=cr_amt+" + reAmt + " where coa_code='" + reAcc + "' and mac_id =" + macId + " and comp_code ='" + compCode + "'";
             dao.exeSql(sql);
         }
     }
