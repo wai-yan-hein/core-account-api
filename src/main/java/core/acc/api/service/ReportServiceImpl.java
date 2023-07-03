@@ -455,13 +455,13 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private boolean isEmpty(String coaCode, String compCode, Integer macId) {
-        String sql = "select * from tmp_tri where coa_code ='" + coaCode + "' and comp_code ='" + compCode + "' and mac_id =" + macId;
+        String sql = "select coa_code from tmp_tri where coa_code ='" + coaCode + "' and comp_code ='" + compCode + "' and mac_id =" + macId;
         try {
-            return dao.executeAndResult(sql).next();
+            return !dao.executeAndResult(sql).next();
         } catch (Exception e) {
             log.error("isEmpty : " + e.getMessage());
         }
-        return false;
+        return true;
     }
 
     private void updateRetainEarning(String reAcc, double reAmt, String compCode, Integer macId) {
@@ -990,7 +990,7 @@ public class ReportServiceImpl implements ReportService {
                     "and date(gl_date)  between '" + fromDate + "' and '" + toDate + "'\n" +
                     "and comp_code='" + compCode + "'\n" +
                     "and ifnull(dr_amt,0)>0\n" +
-                    "group by ref_no\n"+
+                    "group by ref_no\n" +
                     "order by ref_no;";
         } else {
             sql = "select ref_no,ifnull(dr_amt,0)+ifnull(cr_amt,0) amt\n" +
