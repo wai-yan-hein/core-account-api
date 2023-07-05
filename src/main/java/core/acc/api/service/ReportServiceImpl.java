@@ -695,9 +695,39 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public double getTraderLastBalance(String toDate, String traderCode, String compCode) {
+    public double getTraderLastBalance(String opDate, String toDate, String curCode, String traderCode, String compCode) {
         double lastBalance = 0.0;
-        String sql = "select source_acc_id,account_id,cur_code,sum(dr_amt) -sum(cr_amt) balance\n" + "from (\n" + "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" + "\tfrom  coa_opening op\n" + "\twhere\n" + "\tcomp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" + "\tand trader_code ='" + traderCode + "'\n" + "\tgroup by  op.cur_code,op.trader_code\n" + "\t\t\tunion all\n" + "    select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" + "\tfrom gl \n" + "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" + "\tand date(gl_date) <= '" + toDate + "' \n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand trader_code ='" + traderCode + "'\n" + "\tgroup by  cur_code,trader_code\n" + "\t\t\tunion all\n" + "    select account_id,source_ac_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" + "\tfrom gl \n" + "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" + "\tand date(gl_date) <= '" + toDate + "' \n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand trader_code ='" + traderCode + "'\n" + "\tgroup by cur_code,trader_code\n" + ")a\n" + "group by cur_code";
+        String sql = "select source_acc_id,account_id,cur_code,sum(dr_amt) -sum(cr_amt) balance\n" +
+                "from (\n" +
+                "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" +
+                "\tfrom  coa_opening op\n" +
+                "\twhere comp_code = '" + compCode + "'\n" +
+                "\tand deleted = false\n" +
+                "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand trader_code ='" + traderCode + "'\n" +
+                "\tgroup by  op.cur_code,op.trader_code\n" +
+                "\t\t\tunion all\n" +
+                "select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
+                "\tfrom gl \n" +
+                "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand date(gl_date) > '" + opDate + "' \n" +
+                "\tand date(gl_date) <= '" + toDate + "' \n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted = false\n" +
+                "\tand trader_code ='" + traderCode + "'\n" +
+                "\tand cur_code ='" + curCode + "'\n" +
+                "\tgroup by  cur_code,trader_code\n" +
+                "\t\t\tunion all\n" +
+                "select account_id,source_ac_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
+                "\tfrom gl \n" +
+                "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
+                "\tand date(gl_date) > '" + opDate + "' \n" +
+                "\tand date(gl_date) <= '" + toDate + "' \n" +
+                "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" +
+                "\tand trader_code ='" + traderCode + "'\n" +
+                "\tand cur_code ='" + curCode + "'\n" +
+                "\tgroup by cur_code,trader_code\n" + ")a\n" +
+                "group by cur_code";
         ResultSet rs = dao.executeAndResult(sql);
         try {
             while (rs.next()) {
@@ -716,7 +746,8 @@ public class ReportServiceImpl implements ReportService {
 
 
     @Override
-    public List<Gl> getTraderBalance(String traderCode, String accCode, String curCode, String fromDate, String toDate, String compCode, Integer macId) {
+    public List<Gl> getTraderBalance(String traderCode, String accCode, String curCode, String opDate,
+                                     String fromDate, String toDate, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
         try {
             String sql = "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,\n" + "dr_amt,cr_amt\n" + "from gl\n" + "where  (source_ac_id = '" + accCode + "' or account_id = '" + accCode + "') \n" + "and date(gl_date) between '" + fromDate + "'  and '" + toDate + "' \n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and (cur_code = '" + curCode + "' or '-' ='" + curCode + "')\n" + "and trader_code = '" + traderCode + "' \n" + "and trader_code is not null\n" + "order by gl_date,gl_code";
@@ -748,7 +779,7 @@ public class ReportServiceImpl implements ReportService {
                     gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
 
                 });
-                double opAmt = getTraderLastBalance(fromDate, traderCode, compCode);
+                double opAmt = getTraderLastBalance(opDate, fromDate, curCode, traderCode, compCode);
                 Gl tb = new Gl();
                 tb.setRemark("Opening");
                 tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));

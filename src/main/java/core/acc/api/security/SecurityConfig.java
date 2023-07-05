@@ -12,8 +12,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.AuthenticationWebFilter;
+import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.web.server.session.WebSessionManager;
 
 @Slf4j
 @Configuration
@@ -43,9 +45,11 @@ public class SecurityConfig {
                         .permitAll()
                         .anyExchange().authenticated())
                 .addFilterAt(webFilter(), SecurityWebFiltersOrder.AUTHORIZATION)
+                .securityContextRepository(securityContextRepository()) // Set custom security context repository
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
+                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .build();
     }
 
@@ -56,12 +60,14 @@ public class SecurityConfig {
         authenticationWebFilter.setServerAuthenticationConverter(new TokenAuthenticationConverter(jwtService));
         authenticationWebFilter.setRequiresAuthenticationMatcher(new JWTHeadersExchangeMatcher());
         authenticationWebFilter.setSecurityContextRepository(new WebSessionServerSecurityContextRepository());
+        NoOpServerSecurityContextRepository sessionConfig = NoOpServerSecurityContextRepository.getInstance();
+        authenticationWebFilter.setSecurityContextRepository(sessionConfig);
         return authenticationWebFilter;
     }
 
     @Bean
     public ServerSecurityContextRepository securityContextRepository() {
-        return new WebSessionServerSecurityContextRepository();
+        return NoOpServerSecurityContextRepository.getInstance(); // Use NoOpServerSecurityContextRepository to disable session management
     }
 
 

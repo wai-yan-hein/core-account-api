@@ -51,12 +51,12 @@ public interface ReportService {
 
     List<Financial> getIncomeAndExpenditure(String process, boolean detail, Integer macId);
 
-    double getTraderLastBalance(String date, String traderCode, String compCode);
+    double getTraderLastBalance(String opDate, String toDate, String curCode, String traderCode, String compCode);
 
     ReturnObject getReportResult(Integer macId);
 
     List<Gl> getTraderBalance(String traderCode, String accCode,
-                              String curCode, String fromDate, String toDate, String compCode, Integer macId);
+                              String curCode,String opDate, String fromDate, String toDate, String compCode, Integer macId);
 
     List<Gl> getIndividualStatement(String sourceAcc, String curCode, String opDate, String fromDate, String toDate, String compCode, Integer macId);
 
