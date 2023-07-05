@@ -82,9 +82,15 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getDescription(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct description\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (description like '" + str + "%')\n" + "and deleted = false\n" + "limit 20";
+        String sql = """
+                select distinct description
+                from gl
+                where comp_code =?
+                and (description like ?)
+                and deleted = false
+                limit 20""";
         try {
-            ResultSet rs = getResult(sql);
+            ResultSet rs = getResult(sql, compCode, str + "%");
             while (rs.next()) {
                 VDescription v = new VDescription();
                 v.setDescription(rs.getString("description"));
@@ -99,9 +105,15 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getReference(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct reference\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (reference like '" + str + "%')\n" + "and deleted = false\n" + "limit 20";
+        String sql = """
+                select distinct reference
+                from gl
+                where comp_code =?
+                and (reference like ?)
+                and deleted = false
+                limit 20""";
         try {
-            ResultSet rs = getResult(sql);
+            ResultSet rs = getResult(sql, compCode, str + "%");
             while (rs.next()) {
                 VDescription v = new VDescription();
                 v.setDescription(rs.getString("reference"));
@@ -116,9 +128,15 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getBatchNo(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
-        String sql = "select distinct batch_no\n" + "from gl\n" + "where comp_code ='" + compCode + "'\n" + "and (batch_no like '" + str + "%')\n" + "and deleted = false\n" + "limit 20";
+        String sql = """
+                select distinct batch_no
+                from gl
+                where comp_code =?
+                and (batch_no like ?)
+                and deleted = false
+                limit 20""";
         try {
-            ResultSet rs = getResult(sql);
+            ResultSet rs = getResult(sql, compCode, str + "%");
             while (rs.next()) {
                 VDescription v = new VDescription();
                 v.setDescription(rs.getString("batch_no"));
@@ -372,15 +390,15 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
             //check gl date
             String sql2 = "select gl_code,tran_source from gl where (gl_date is null or gl_date = '') ";
             ResultSet rs2 = getResult(sql2);
-            while (rs2.next()){
+            while (rs2.next()) {
                 String glCode = rs2.getString("gl_code");
-                String tranSource =rs2.getString("tran_source");
+                String tranSource = rs2.getString("tran_source");
                 logs.add(tranSource + " : Gl date is null in Gl Code : " + glCode);
             }
             //check same account
             String sql3 = "select gl_code,tran_source from gl where source_ac_id = account_id ";
-            ResultSet rs3 =getResult(sql3);
-            while (rs3.next()){
+            ResultSet rs3 = getResult(sql3);
+            while (rs3.next()) {
                 String glCode = rs3.getString("gl_code");
                 String tranSource = rs3.getString("rs3");
                 logs.add(tranSource + " : Source Account Code and Account Code are the same in Gl Code : " + glCode);
@@ -388,9 +406,9 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
             //check gl date
             String sql4 = "select gl_code,tran_source from gl where (dept_code is null or dept_code = '') ";
-            ResultSet rs4= getResult(sql4);
-            while (rs4.next()){
-                String glCode =rs4.getString("gl_code");
+            ResultSet rs4 = getResult(sql4);
+            while (rs4.next()) {
+                String glCode = rs4.getString("gl_code");
                 String tranSource = rs4.getString("tran_source");
                 logs.add(tranSource + " : Department is null in Gl Code : " + glCode);
             }
@@ -410,7 +428,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                     where coa_level <=2
                     )""";
             ResultSet rs5 = getResult(sql5);
-            while (rs5.next()){
+            while (rs5.next()) {
                 String glCode = rs5.getString("gl_code");
                 String tranSource = rs5.getString("tran_source");
                 logs.add(tranSource + " : Chart of Account in GL is Above Level 3 : " + glCode);

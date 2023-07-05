@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +65,21 @@ public abstract class AbstractDao<PK extends Serializable, T> {
     @Transactional
     public ResultSet getResult(String sql) {
         return jdbcTemplate.execute((ConnectionCallback<ResultSet>) con -> {
-            Statement stmt = con.createStatement();
-            return stmt.executeQuery(sql);
+            PreparedStatement stmt = con.prepareStatement(sql);
+            return stmt.executeQuery();
         });
     }
+
+    @Transactional
+    public ResultSet getResult(String sql, Object... params) {
+        return jdbcTemplate.execute((ConnectionCallback<ResultSet>) con -> {
+            PreparedStatement stmt = con.prepareStatement(sql);
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+            return stmt.executeQuery();
+        });
+    }
+
+
 }
