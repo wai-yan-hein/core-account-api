@@ -100,7 +100,7 @@ public class ReportController {
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "CreditDetail" -> {
-                    List<Gl> data = reportService.getTraderBalance(traderCode, coaCode, curCode, fromDate, toDate, compCode, macId);
+                    List<Gl> data = reportService.getTraderBalance(traderCode, coaCode, curCode, opDate, fromDate, toDate, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
                 case "IndividualStatement" -> {
@@ -155,8 +155,8 @@ public class ReportController {
     }
 
     @GetMapping(path = "/get-report-result")
-    public ResponseEntity<?> getResult(@RequestParam Integer macId) {
-        return ResponseEntity.ok(reportService.getReportResult(macId));
+    public Mono<?> getResult(@RequestParam Integer macId) {
+        return Mono.justOrEmpty(reportService.getReportResult(macId));
     }
 
     @PostMapping(path = "/get-tri-balance")
@@ -176,7 +176,7 @@ public class ReportController {
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         reportService.genTriBalance(compCode, stDate, enDate, opDate, currency, coaLv1,
                 coaLv2, "-", "-", projectNo, tranSource, netChange, macId);
-        return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId));
+        return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId)).onErrorResume(throwable -> Flux.empty());
     }
 
     @PostMapping(path = "/get-arap")
@@ -191,11 +191,15 @@ public class ReportController {
         String projectNo = Util1.isAll(filter.getProjectNo());
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
         List<VApar> list = reportService.genArAp(compCode, opDate, enDate, currency, traderCode, coaCode, projectNo, macId);
-        return Flux.fromIterable(list);
+        return Flux.fromIterable(list).onErrorResume(throwable -> Flux.empty());
     }
 
     @GetMapping(path = "/get-trader-balance")
-    public ResponseEntity<Double> getTraderBalance(@RequestParam String date, @RequestParam String traderCode, @RequestParam String compCode) {
-        return ResponseEntity.ok(reportService.getTraderLastBalance(date, traderCode, compCode));
+    public Mono<Double> getTraderBalance(@RequestParam String date,
+                                         @RequestParam String traderCode,
+                                         @RequestParam String curCode,
+                                         @RequestParam String compCode) {
+        String opDate = reportService.getOpeningDate(compCode);
+        return Mono.justOrEmpty(reportService.getTraderLastBalance(opDate, date, curCode, traderCode, compCode));
     }
 }
