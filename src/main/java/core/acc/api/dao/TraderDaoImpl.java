@@ -39,7 +39,7 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
                 where active = true
                 and deleted = false
                 and comp_code = ?
-                and (LOWER(REPLACE(user_code, ' ', '')) LIKE ? OR LOWER(REPLACE(trader_name, ' ', '')) LIKE ?)\s
+                and (LOWER(REPLACE(user_code, ' ', '')) LIKE ? OR LOWER(REPLACE(trader_name, ' ', '')) LIKE ?)
                 """;
         String sql = "SELECT code AS trader_code, user_code, trader_name, account_code, discriminator\n" +
                 "FROM trader\n" +

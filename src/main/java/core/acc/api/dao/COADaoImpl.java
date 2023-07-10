@@ -195,8 +195,14 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode) {
-        String sql = "select coa_code,coa_name_eng,comp_code\n" + "from chart_of_account\n" + "where coa_parent ='" + groupCode + "'\n" + "and comp_code ='" + compCode + "'\n" + "and active = true and deleted = false\n" + "order by coa_code_usr,coa_name_eng";
-        ResultSet rs = getResult(sql);
+        String sql = """
+                select coa_code,coa_name_eng,comp_code
+                from chart_of_account
+                where coa_parent =?
+                and comp_code =?
+                and active = true and deleted = false
+                order by coa_code_usr,coa_name_eng""";
+        ResultSet rs = getResult(sql, groupCode, compCode);
         List<ChartOfAccount> list = new ArrayList<>();
         try {
             while (rs.next()) {
@@ -217,8 +223,19 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> getCOAByHead(String headCode, String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select coa.coa_code,coa.coa_code_usr,coa.coa_name_eng,coa.comp_code\n" + "from(\n" + "select coa_code,comp_code\n" + "from chart_of_account\n" + "where coa_parent ='" + headCode + "'\n" + "and comp_code ='" + compCode + "'\n" + ")a\n" + "join chart_of_account coa on a.coa_code = coa.coa_parent\n" + "and a.comp_code=coa.comp_code\n" + "and coa.active =true and coa.deleted =false\n" + "order by coa.coa_code_usr,coa.coa_name_eng";
-        ResultSet rs = getResult(sql);
+        String sql = """
+                select coa.coa_code,coa.coa_code_usr,coa.coa_name_eng,coa.comp_code
+                from(
+                select coa_code,comp_code
+                from chart_of_account
+                where coa_parent =?
+                and comp_code =?
+                )a
+                join chart_of_account coa on a.coa_code = coa.coa_parent
+                and a.comp_code=coa.comp_code
+                and coa.active =true and coa.deleted =false
+                order by coa.coa_code_usr,coa.coa_name_eng""";
+        ResultSet rs = getResult(sql,headCode,compCode);
         try {
             while (rs.next()) {
                 ChartOfAccount coa = new ChartOfAccount();

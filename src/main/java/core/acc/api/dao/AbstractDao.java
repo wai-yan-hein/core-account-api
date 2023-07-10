@@ -65,8 +65,8 @@ public abstract class AbstractDao<PK extends Serializable, T> {
     @Transactional
     public ResultSet getResult(String sql) {
         return jdbcTemplate.execute((ConnectionCallback<ResultSet>) con -> {
-            PreparedStatement stmt = con.prepareStatement(sql);
-            return stmt.executeQuery();
+            Statement stmt = con.createStatement();
+            return stmt.executeQuery(sql);
         });
     }
 
