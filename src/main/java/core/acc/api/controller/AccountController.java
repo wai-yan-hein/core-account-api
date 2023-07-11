@@ -240,11 +240,10 @@ public class AccountController {
     }
 
     @PostMapping(path = "/delete-trader")
-    public ResponseEntity<?> deleteTrader(@RequestBody TraderKey key) {
+    public Mono<?> deleteTrader(@RequestBody TraderKey key) {
         traderService.delete(key);
         ro.setMessage("Deleted.");
-        log.info("deleted trader.");
-        return ResponseEntity.ok(ro);
+        return Mono.justOrEmpty(ro);
     }
 
     @GetMapping(path = "/get-trader")
