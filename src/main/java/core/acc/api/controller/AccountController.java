@@ -133,8 +133,8 @@ public class AccountController {
     public Mono<?> processCOA(@RequestBody ChartOfAccount coa) {
         if (coa.getMigCode() != null) {
             coa = coaService.save(coa);
-            String code = String.format("%s,%s", coa.getMigCode(), coa.getKey().getCoaCode());
-            return Mono.justOrEmpty(code);
+            String code = coa.getMigCode() + "," + coa.getKey().getCoaCode();
+            return Mono.just(code);
         }
         return null;
     }

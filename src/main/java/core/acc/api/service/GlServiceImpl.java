@@ -31,14 +31,14 @@ public class GlServiceImpl implements GlService {
     private GlProcessor glProcessor;
 
     @Override
-    public Gl save(Gl gl, boolean backup)  {
+    public Gl save(Gl gl, boolean backup) {
         String updatedBy = gl.getModifyBy();
         gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
         if (Util1.isNull(gl.getKey().getGlCode())) {
             gl.setCreatedDate(LocalDateTime.now());
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
-            String glCode = getGLCode(gl.getGlDate(), gl.getKey().getDeptId(), macId, compCode);
+            String glCode = getGLCode(gl.getKey().getDeptId(), macId, compCode);
             GlKey key = gl.getKey();
             key.setGlCode(glCode);
             Gl valid = findByCode(key);
@@ -62,7 +62,7 @@ public class GlServiceImpl implements GlService {
 
 
     @Override
-    public ReturnObject save(List<Gl> glList)  {
+    public ReturnObject save(List<Gl> glList) {
         ReturnObject ro = new ReturnObject();
         if (!glList.isEmpty()) {
             Gl tmp = glList.get(0);
@@ -239,8 +239,8 @@ public class GlServiceImpl implements GlService {
         }
     }
 
-    private String getGLCode(LocalDateTime date, Integer deptId, Integer macId, String compCode) {
-        String period = Util1.toDateStr(date, "ddMMyy");
+    private String getGLCode(Integer deptId, Integer macId, String compCode) {
+        String period = Util1.toDateStr(LocalDateTime.now(), "ddMMyy");
         int seqNo = seqService.getSequence(macId, "GL", period, compCode);
         String deptCode = String.format("%0" + 2 + "d", deptId) + "-";
         return deptCode + String.format("%0" + 2 + "d", macId) + period + String.format("%0" + 5 + "d", seqNo);

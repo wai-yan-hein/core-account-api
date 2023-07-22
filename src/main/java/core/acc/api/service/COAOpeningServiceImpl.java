@@ -57,7 +57,40 @@ public class COAOpeningServiceImpl implements COAOpeningService {
 
     @Override
     public TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr, String compCode, Integer macId, String traderCode) {
-        String opSql = "select source_acc_id,cur_code,balance\n" + "from (\n" + "select source_acc_id,cur_code,sum(dr_amt)-sum(cr_amt) balance\n" + "from (\n" + "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" + "from coa_opening\n" + "where date(op_date)='" + opDate + "'\n" + "and deleted = false\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and source_acc_id ='" + coaCode + "'\n" + "and comp_code = '" + compCode + "'\n" + "and cur_code ='" + curr + "'\n" + "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" + "and (dr_amt>0 or cr_amt>0)\n" + "group by source_acc_id\n" + "\tunion all\n" + "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" + "from gl \n" + "where account_id ='" + coaCode + "'\n" + "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and cur_code ='" + curr + "'\n" + "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" + "group by account_id\n" + "\tunion all\n" + "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" + "from gl \n" + "where source_ac_id ='" + coaCode + "'\n" + "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and cur_code ='" + curr + "'\n" + "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" + "group by source_ac_id\n" + ")a\n" + "group by source_acc_id)b";
+        String opSql = "select source_acc_id,cur_code,balance\n" +
+                "from (\n" +
+                "select source_acc_id,cur_code,sum(dr_amt)-sum(cr_amt) balance\n" +
+                "from (\n" + "select source_acc_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
+                "from coa_opening\n" +
+                "where date(op_date)='" + opDate + "'\n" +
+                "and deleted = false\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and source_acc_id ='" + coaCode + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and cur_code ='" + curr + "'\n" +
+                "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
+                "and (dr_amt>0 or cr_amt>0)\n" + "group by source_acc_id\n" +
+                "\tunion all\n" +
+                "select account_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
+                "from gl \n" + "where account_id ='" + coaCode + "'\n" +
+                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and deleted = false\n" +
+                "and cur_code ='" + curr + "'\n" +
+                "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
+                "group by account_id\n" +
+                "\tunion all\n" +
+                "select source_ac_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
+                "from gl \n" +
+                "where source_ac_id ='" + coaCode + "'\n" +
+                "and date(gl_date) >='" + opDate + "' and date(gl_date)<'" + clDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and deleted = false\n" +
+                "and cur_code ='" + curr + "'\n" +
+                "and (trader_code ='" + traderCode + "' or '-'='" + traderCode + "')\n" +
+                "group by source_ac_id\n" + ")a\n" +
+                "group by source_acc_id)b";
         ResultSet rs = reportDao.executeAndResult(opSql);
         try {
             if (rs.next()) {

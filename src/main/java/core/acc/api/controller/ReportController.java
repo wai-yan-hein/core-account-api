@@ -11,7 +11,6 @@ import core.acc.api.service.ReportService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -129,13 +128,12 @@ public class ReportController {
         return Mono.justOrEmpty(ro);
     }
 
-    private String createFilePath(String path) {
+    private void createFilePath(String path) {
         File file = new File(path);
         File parentDir = file.getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
-        return path;
     }
 
     private List<Financial> calPl(String plProcess, String opDate, String fromDate, String toDate, String invGroup,

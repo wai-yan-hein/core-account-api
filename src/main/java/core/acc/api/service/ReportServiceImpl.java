@@ -702,6 +702,7 @@ public class ReportServiceImpl implements ReportService {
                 "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" +
                 "\tfrom  coa_opening op\n" +
                 "\twhere comp_code = '" + compCode + "'\n" +
+                "\tand date(op_date) ='"+opDate+"'\n"+
                 "\tand deleted = false\n" +
                 "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
@@ -710,8 +711,8 @@ public class ReportServiceImpl implements ReportService {
                 "select source_ac_id,account_id, cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt\n" +
                 "\tfrom gl \n" +
                 "\twhere source_ac_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
-                "\tand date(gl_date) > '" + opDate + "' \n" +
-                "\tand date(gl_date) <= '" + toDate + "' \n" +
+                "\tand date(gl_date) >= '" + opDate + "' \n" +
+                "\tand date(gl_date) < '" + toDate + "' \n" +
                 "\tand comp_code = '" + compCode + "'\n" +
                 "\tand deleted = false\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
@@ -721,8 +722,8 @@ public class ReportServiceImpl implements ReportService {
                 "select account_id,source_ac_id, cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt\n" +
                 "\tfrom gl \n" +
                 "\twhere account_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
-                "\tand date(gl_date) > '" + opDate + "' \n" +
-                "\tand date(gl_date) <= '" + toDate + "' \n" +
+                "\tand date(gl_date) >= '" + opDate + "' \n" +
+                "\tand date(gl_date) < '" + toDate + "' \n" +
                 "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
                 "\tand cur_code ='" + curCode + "'\n" +
@@ -750,7 +751,17 @@ public class ReportServiceImpl implements ReportService {
                                      String fromDate, String toDate, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
         try {
-            String sql = "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,\n" + "dr_amt,cr_amt\n" + "from gl\n" + "where  (source_ac_id = '" + accCode + "' or account_id = '" + accCode + "') \n" + "and date(gl_date) between '" + fromDate + "'  and '" + toDate + "' \n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and (cur_code = '" + curCode + "' or '-' ='" + curCode + "')\n" + "and trader_code = '" + traderCode + "' \n" + "and trader_code is not null\n" + "order by gl_date,gl_code";
+            String sql = "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,\n" +
+                    "dr_amt,cr_amt\n" +
+                    "from gl\n" +
+                    "where  (source_ac_id = '" + accCode + "' or account_id = '" + accCode + "') \n" +
+                    "and date(gl_date) between '" + fromDate + "'  and '" + toDate + "' \n" +
+                    "and comp_code = '" + compCode + "'\n" +
+                    "and deleted = false\n" +
+                    "and (cur_code = '" + curCode + "' or '-' ='" + curCode + "')\n" +
+                    "and trader_code = '" + traderCode + "' \n" +
+                    "and trader_code is not null\n" +
+                    "order by gl_date,gl_code";
             ResultSet rs = dao.executeAndResult(sql);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
