@@ -23,6 +23,7 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public Department save(Department dept) {
+        dept.setUpdatedDt(LocalDateTime.now());
         if (Util1.isNullOrEmpty(dept.getKey().getDeptCode())) {
             Integer macId = dept.getMacId();
             String compCode = dept.getKey().getCompCode();
