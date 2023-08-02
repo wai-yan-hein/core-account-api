@@ -21,6 +21,7 @@ public class TraderServiceImpl implements TraderService {
 
     @Override
     public Trader save(Trader t) {
+        t.setUpdatedDate(LocalDateTime.now());
         if (Util1.isNullOrEmpty(t.getKey().getCode())) {
             t.getKey().setCode(getTraderCode(t.getTraderType(), t.getKey().getCompCode()));
         }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -20,6 +21,7 @@ public class StockOPServiceImpl implements StockOPService {
 
     @Override
     public StockOP save(StockOP op) {
+        op.setUpdatedDate(LocalDateTime.now());
         StockOPKey key = op.getKey();
         if (Util1.isNull(key.getTranCode())) {
             key.setTranCode(getTranCode(key.getDeptId(), key.getCompCode()));

@@ -34,6 +34,7 @@ public class GlServiceImpl implements GlService {
     public Gl save(Gl gl, boolean backup) {
         String updatedBy = gl.getModifyBy();
         gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
+        gl.setModifyDate(LocalDateTime.now());
         if (Util1.isNull(gl.getKey().getGlCode())) {
             gl.setCreatedDate(LocalDateTime.now());
             Integer macId = gl.getMacId();

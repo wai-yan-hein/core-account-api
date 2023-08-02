@@ -30,6 +30,7 @@ public class COAServiceImpl implements COAService {
 
     @Override
     public ChartOfAccount save(ChartOfAccount coa) {
+        coa.setModifiedDate(LocalDateTime.now());
         if (Util1.isNullOrEmpty(coa.getKey().getCoaCode())) {
             Integer macId = coa.getMacId();
             String compCode = coa.getKey().getCompCode();
@@ -62,12 +63,12 @@ public class COAServiceImpl implements COAService {
 
     @Override
     public List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode) {
-        return dao.getCOAByGroup(groupCode,compCode);
+        return dao.getCOAByGroup(groupCode, compCode);
     }
 
     @Override
     public List<ChartOfAccount> getCOAByHead(String headCode, String compCode) {
-        return dao.getCOAByHead(headCode,compCode);
+        return dao.getCOAByHead(headCode, compCode);
     }
 
 
@@ -116,6 +117,7 @@ public class COAServiceImpl implements COAService {
     public List<ChartOfAccount> findAllActive(String compCode) {
         return dao.findAllActive(compCode);
     }
+
     @Override
     public Date getMaxDate() {
         return dao.getMaxDate();
