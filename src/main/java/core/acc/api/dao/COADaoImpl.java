@@ -29,10 +29,22 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
     @Override
     public List<ChartOfAccount> getCOA(String compCode) {
         List<ChartOfAccount> list = new ArrayList<>();
-        String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" + "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" + "from chart_of_account\n" + "where active = 1\n" + "and deleted = false\n" + "and coa_level = 3\n" + "and comp_code ='" + compCode + "'\n" +
-//                "and (coa_code_usr like '" + str + "%' or coa_name_eng like '" + str + "%')\n" +
-                "limit 20\n" + ")a\n" + "left join chart_of_account c1\n" + "on a.coa_parent = c1.coa_code\n" + "and a.comp_code = c1.comp_code\n" + "left join chart_of_account c2\n" + "on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code";
-        ResultSet rs = getResult(sql);
+        String sql = """
+                select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name
+                from (
+                select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level
+                from chart_of_account
+                where active = true
+                and deleted = false
+                and coa_level = 3
+                and comp_code =?)a
+                left join chart_of_account c1
+                on a.coa_parent = c1.coa_code
+                and a.comp_code = c1.comp_code
+                left join chart_of_account c2
+                on c1.coa_parent = c2.coa_code
+                and c1.comp_code = c2.comp_code""";
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 ChartOfAccount coa = new ChartOfAccount();
@@ -235,7 +247,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 and a.comp_code=coa.comp_code
                 and coa.active =true and coa.deleted =false
                 order by coa.coa_code_usr,coa.coa_name_eng""";
-        ResultSet rs = getResult(sql,headCode,compCode);
+        ResultSet rs = getResult(sql, headCode, compCode);
         try {
             while (rs.next()) {
                 ChartOfAccount coa = new ChartOfAccount();

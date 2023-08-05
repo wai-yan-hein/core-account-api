@@ -35,17 +35,7 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
     public List<Trader> getTrader(String text, String compCode) {
         text = Util1.cleanStr(text);
         text = text + "%";
-        String filter = """
-                where active = true
-                and deleted = false
-                and comp_code = ?
-                and (LOWER(REPLACE(user_code, ' ', '')) LIKE ? OR LOWER(REPLACE(trader_name, ' ', '')) LIKE ?)
-                """;
-        String sql = "SELECT code AS trader_code, user_code, trader_name, account_code, discriminator\n" +
-                "FROM trader\n" +
-                filter + "\n" +
-                "ORDER BY user_code, trader_name\n" +
-                "LIMIT 100";
+        String sql = getString();
         ResultSet rs = getResult(sql, compCode, text, text);
         List<Trader> list = new ArrayList<>();
         try {
@@ -66,6 +56,20 @@ public class TraderDaoImpl extends AbstractDao<TraderKey, Trader> implements Tra
         } catch (Exception ignored) {
         }
         return list;
+    }
+
+    private static String getString() {
+        String filter = """
+                where active = true
+                and deleted = false
+                and comp_code = ?
+                and (LOWER(REPLACE(user_code, ' ', '')) LIKE ? OR LOWER(REPLACE(trader_name, ' ', '')) LIKE ?)
+                """;
+        return "SELECT code AS trader_code, user_code, trader_name, account_code, discriminator\n" +
+                "FROM trader\n" +
+                filter + "\n" +
+                "ORDER BY user_code, trader_name\n" +
+                "LIMIT 100";
     }
 
     @Override

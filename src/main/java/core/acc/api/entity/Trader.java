@@ -33,11 +33,11 @@ public class Trader {
     private String remark;
     @Column(name = "mig_code")
     private String migCode;
-    @Column(name = "updated_date",columnDefinition = "TIMESTAMP")
+    @Column(name = "updated_date", columnDefinition = "TIMESTAMP")
     private LocalDateTime updatedDate;
     @Column(name = "updated_by")
     private String updatedUser;
-    @Column(name = "created_date",columnDefinition = "TIMESTAMP")
+    @Column(name = "created_date", columnDefinition = "TIMESTAMP")
     private LocalDateTime createdDate;
     @Column(name = "created_by")
     private String createdBy;
@@ -47,4 +47,8 @@ public class Trader {
     private String userCode;
     @Column(name = "deleted")
     private boolean deleted;
+    @Column(name = "group_code")
+    private String groupCode;
+    @Column(name = "nrc")
+    private String nrc;
 }

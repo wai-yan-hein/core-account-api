@@ -102,6 +102,10 @@ public class ReportController {
                     List<Gl> data = reportService.getTraderBalance(traderCode, coaCode, curCode, opDate, fromDate, toDate, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);
                 }
+                case "SharerHolderStatement" -> {
+                    List<Gl> data = reportService.getSharerHolderStatement(traderCode, coaCode, curCode, opDate, fromDate, toDate, compCode, macId);
+                    Util1.writeJsonFile(data, exportPath);
+                }
                 case "IndividualStatement" -> {
                     List<Gl> data = reportService.getIndividualStatement(srcAcc, curCode, opDate, fromDate, toDate, compCode, macId);
                     Util1.writeJsonFile(data, exportPath);

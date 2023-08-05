@@ -85,8 +85,8 @@ public class GlServiceImpl implements GlService {
                 default -> glDao.deleteInvVoucher(vouNo, tranSource, compCode);
             }
             if (!delete) {
-                for (Gl gl : glList) {
-                    //convert to uni code
+                final String finalGlVouNo = glVouNo; // Declare a final variable to use inside the lambda expression
+                glList.forEach(gl -> {
                     gl.setDescription(Util1.convertToUniCode(gl.getDescription()));
                     gl.setReference(Util1.convertToUniCode(gl.getReference()));
                     if (gl.getSrcAccCode() != null) {
@@ -97,12 +97,11 @@ public class GlServiceImpl implements GlService {
                         }
                         double amt = Util1.getDouble(gl.getDrAmt()) + Util1.getDouble(gl.getCrAmt());
                         if (amt > 0) {
-                            gl.setGlVouNo(glVouNo);
+                            gl.setGlVouNo(finalGlVouNo); // Use the final variable here
                             save(gl, false);
-
                         }
                     }
-                }
+                });
             }
             ro.setGlVouNo(glVouNo);
             ro.setVouNo(vouNo);

@@ -82,11 +82,12 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<VDescription> getDescription(String str, String compCode) {
         List<VDescription> list = new ArrayList<>();
+        str = Util1.cleanStr(str);
         String sql = """
                 select distinct description
                 from gl
                 where comp_code =?
-                and (description like ?)
+                and lower(replace(description, ' ', '')) like ?
                 and deleted = false
                 limit 20""";
         try {
@@ -104,12 +105,13 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
 
     @Override
     public List<VDescription> getReference(String str, String compCode) {
+        str = Util1.cleanStr(str);
         List<VDescription> list = new ArrayList<>();
         String sql = """
                 select distinct reference
                 from gl
                 where comp_code =?
-                and (reference like ?)
+                and lower(replace(reference, ' ', '')) like ?
                 and deleted = false
                 limit 20""";
         try {

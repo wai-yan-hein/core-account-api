@@ -57,6 +57,8 @@ public interface ReportService {
 
     List<Gl> getTraderBalance(String traderCode, String accCode,
                               String curCode,String opDate, String fromDate, String toDate, String compCode, Integer macId);
+    List<Gl> getSharerHolderStatement(String traderCode, String accCode,
+                              String curCode,String opDate, String fromDate, String toDate, String compCode, Integer macId);
 
     List<Gl> getIndividualStatement(String sourceAcc, String curCode, String opDate, String fromDate, String toDate, String compCode, Integer macId);
 

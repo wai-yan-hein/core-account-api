@@ -702,7 +702,7 @@ public class ReportServiceImpl implements ReportService {
                 "\tselect op.source_acc_id,null account_id, op.cur_code,sum(ifnull(op.dr_amt,0)) dr_amt, sum(ifnull(op.cr_amt,0)) cr_amt\n" +
                 "\tfrom  coa_opening op\n" +
                 "\twhere comp_code = '" + compCode + "'\n" +
-                "\tand date(op_date) ='"+opDate+"'\n"+
+                "\tand date(op_date) ='" + opDate + "'\n" +
                 "\tand deleted = false\n" +
                 "\tand source_acc_id in (select distinct account_code from trader where comp_code='" + compCode + "')\n" +
                 "\tand trader_code ='" + traderCode + "'\n" +
@@ -774,6 +774,87 @@ public class ReportServiceImpl implements ReportService {
                     b.setDescription(rs.getString("description"));
                     b.setDrAmt(rs.getDouble("dr_amt"));
                     b.setCrAmt(rs.getDouble("cr_amt"));
+                    list.add(b);
+                }
+            }
+            if (!list.isEmpty()) {
+                list.forEach(gl -> {
+                    String account = Util1.isNull(gl.getAccCode(), "-");
+                    if (account.equals(accCode)) {
+                        //swap amt
+                        double tmpDrAmt = Util1.getDouble(gl.getDrAmt());
+                        gl.setDrAmt(gl.getCrAmt());
+                        gl.setCrAmt(tmpDrAmt);
+                    }
+                    gl.setDrAmt(Util1.toNull(gl.getDrAmt()));
+                    gl.setCrAmt(Util1.toNull(gl.getCrAmt()));
+
+                });
+                double opAmt = getTraderLastBalance(opDate, fromDate, curCode, traderCode, compCode);
+                Gl tb = new Gl();
+                tb.setRemark("Opening");
+                tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
+                tb.setOpening(opAmt);
+                tb.setClosing(opAmt);
+                list.add(0, tb);
+                for (int i = 0; i < list.size(); i++) {
+                    if (i > 0) {
+                        Gl io = list.get(i - 1);
+                        double clAmt = Util1.getDouble(io.getOpening()) + Util1.getDouble(io.getDrAmt()) - Util1.getDouble(io.getCrAmt());
+                        Gl io1 = list.get(i);
+                        io1.setOpening(clAmt);
+                        io1.setClosing(Util1.getDouble(io1.getOpening()) + Util1.getDouble(io1.getDrAmt()) - Util1.getDouble(io1.getCrAmt()));
+                    }
+                }
+                double opening = list.get(0).getOpening();
+                double closing = list.get(list.size() - 1).getClosing();
+                ReturnObject ro = new ReturnObject();
+                ro.setOpAmt(opening);
+                ro.setClAmt(closing);
+                hmRo.put(macId, ro);
+            }
+
+        } catch (Exception ex) {
+            log.error(String.format("getTraderBalance :%s", ex.getMessage()));
+        }
+        return list;
+    }
+
+    @Override
+    public List<Gl> getSharerHolderStatement(String traderCode, String accCode, String curCode, String opDate, String fromDate, String toDate, String compCode, Integer macId) {
+        List<Gl> list = new ArrayList<>();
+        try {
+            String sql = "select a.*,c1.coa_name_eng source_acc_name,c2.coa_name_eng acc_name\n" +
+                    "from (\n" +
+                    "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,dr_amt,cr_amt,comp_code\n" +
+                    "from gl\n" +
+                    "where  (source_ac_id = ? or account_id = ?) \n" +
+                    "and date(gl_date) between ?  and ? \n" +
+                    "and comp_code = ?\n" +
+                    "and deleted = false\n" +
+                    "and cur_code = ?\n" +
+                    "and trader_code = ? \n" +
+                    "and trader_code is not null\n" +
+                    "order by gl_date,gl_code\n" +
+                    ")a\n" +
+                    "join chart_of_account c1 on a.source_ac_id = c1.coa_code\n" +
+                    "and a.comp_code = c1.comp_code\n" +
+                    "join chart_of_account c2 on a.account_id = c2.coa_code\n" +
+                    "and a.comp_code = c2.comp_code";
+            ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode,traderCode);
+            if (!Objects.isNull(rs)) {
+                while (rs.next()) {
+                    Gl b = new Gl();
+                    b.setSrcAccCode(rs.getString("source_ac_id"));
+                    b.setAccCode(rs.getString("account_id"));
+                    b.setGlDateStr(Util1.toDateStr(rs.getDate("gl_date"), "dd/MM/yyyy"));
+                    b.setOpening(0.0);
+                    b.setVouNo(rs.getString("ref_no"));
+                    b.setDescription(rs.getString("description"));
+                    b.setDrAmt(rs.getDouble("dr_amt"));
+                    b.setCrAmt(rs.getDouble("cr_amt"));
+                    b.setSrcAccName(rs.getString("source_acc_name"));
+                    b.setAccName(rs.getString("acc_name"));
                     list.add(b);
                 }
             }
