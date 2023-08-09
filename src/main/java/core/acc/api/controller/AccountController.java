@@ -41,6 +41,10 @@ public class AccountController {
     private ConverterService converterService;
     @Autowired
     private YearEndService yearEndService;
+    @Autowired
+    private TraderGroupService traderGroupService;
+
+    @Autowired
 
     @GetMapping(path = "/hello")
     public Mono<?> hello() {
@@ -102,6 +106,22 @@ public class AccountController {
     @GetMapping(path = "/get-trader-coa")
     public Flux<?> getTraderCOA(@RequestParam String compCode) {
         return Flux.fromIterable(coaService.getTraderCOA(compCode)).onErrorResume(throwable -> Flux.empty());
+    }
+
+    @GetMapping(path = "/getTraderGroup")
+    public Flux<?> getTraderGroup(@RequestParam String compCode) {
+        return Flux.fromIterable(traderGroupService.getTraderGroup(compCode)).onErrorResume(throwable -> Flux.empty());
+    }
+
+    @PostMapping(path = "/findTraderGroup")
+    public Mono<?> findTraderGroup(@RequestBody TraderGroupKey key) {
+        return Mono.justOrEmpty(traderGroupService.findById(key));
+    }
+
+
+    @PostMapping(path = "/saveTraderGroup")
+    public Mono<?> saveTraderGroup(@RequestBody TraderGroup group) {
+        return Mono.justOrEmpty(traderGroupService.save(group));
     }
 
     @GetMapping(path = "/get-coa-child")
@@ -247,9 +267,15 @@ public class AccountController {
     }
 
     @GetMapping(path = "/get-trader")
-    public ResponseEntity<List<Trader>> getTrader(@RequestParam String compCode) {
-        return ResponseEntity.ok(traderService.getTrader(compCode));
+    public Flux<?> getTrader(@RequestParam String compCode) {
+        return Flux.fromIterable(traderService.getTrader(compCode)).onErrorResume(throwable -> Flux.empty());
     }
+
+    @GetMapping(path = "/findTrader")
+    public Mono<?> findTrader(@RequestBody TraderKey key) {
+        return Mono.justOrEmpty(traderService.findById(key));
+    }
+
 
     @GetMapping(path = "/search-trader")
     public Flux<Trader> getTrader(@RequestParam String text, @RequestParam String compCode) {
