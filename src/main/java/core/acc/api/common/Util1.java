@@ -358,7 +358,7 @@ public class Util1 {
 
     public static java.util.List<DateModel> generateDate(String opDate, String fromDate, boolean isAll) {
         java.util.List<DateModel> list = new ArrayList<>();
-        LocalDate startDate = LocalDate.parse(fromDate);
+        LocalDate startDate = LocalDate.parse(fromDate).withDayOfMonth(1);
         LocalDate todayDate = LocalDate.now();
         while (!startDate.isAfter(todayDate.plusMonths(3))) {
             String monthName = startDate.getMonth().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);

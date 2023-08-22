@@ -146,31 +146,32 @@ create table coa_template (
   primary key (coa_code,bus_id)
 ) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
 
-    alter table coa_opening
-    add column deleted bit(1) not null default 0 after trader_code;
+alter table coa_opening
+add column deleted bit(1) not null default 0 after trader_code;
 
-    alter table gl
-    add column patient_no varchar(15) null after project_no,
-    add column doctor_id varchar(15) null after patient_no,
-    add column service_id varchar (15) after doctor_id,
-    change column gl_date gl_date timestamp not null ;
+alter table gl
+add column patient_no varchar(15) null after project_no,
+add column doctor_id varchar(15) null after patient_no,
+add column service_id varchar (15) after doctor_id,
+change column gl_date gl_date timestamp not null ;
 
-    alter table chart_of_account
-    change column modify_date modify_date timestamp not null default current_timestamp() on update current_timestamp() ;
+alter table chart_of_account
+change column modify_date modify_date timestamp not null default current_timestamp() on update current_timestamp() ;
 
-    alter table coa_opening
-    change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp();
 
-    alter table stock_op_value
-    change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp() ,
-    change column updated_date updated_date timestamp not null default current_timestamp() on update current_timestamp() ;
+alter table coa_opening
+change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp();
 
-    create index idx_gl_date on gl (gl_date);
-    create index idx_dept_code on gl (dept_code);
-    create index idx_cur_code on gl (cur_code);
-    create index idx_tran_source on gl (tran_source);
-    create index idx_source_ac_id on gl (source_ac_id);
-    create index idx_account_id on gl (account_id);
+alter table stock_op_value
+change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp() ,
+change column updated_date updated_date timestamp not null default current_timestamp() on update current_timestamp() ;
 
-    alter table trader
-    add column nrc varchar(255) null after deleted;
+create index idx_gl_date on gl (gl_date);
+create index idx_dept_code on gl (dept_code);
+create index idx_cur_code on gl (cur_code);
+create index idx_tran_source on gl (tran_source);
+create index idx_source_ac_id on gl (source_ac_id);
+create index idx_account_id on gl (account_id);
+
+alter table trader
+add column nrc varchar(255) null after deleted;

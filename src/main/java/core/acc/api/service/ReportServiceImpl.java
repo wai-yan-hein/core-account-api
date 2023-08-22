@@ -98,10 +98,10 @@ public class ReportServiceImpl implements ReportService {
             filter += "and tran_source = '" + tranSource + "'\n";
         }
         if (!reference.equals("-")) {
-            filter += "and reference like '" + reference + "%'\n";
+            filter += "and reference like '" + reference.replaceAll("'", "''") + "%'\n";
         }
         if (!desp.equals("-")) {
-            filter += "and description like '" + desp + "%'\n";
+            filter += "and description like '" + desp.replaceAll("'", "''") + "%'\n";
         }
         if (!acc.equals("-")) {
             filter += "and (account_id = '" + acc + "' or source_ac_id ='" + acc + "')";
@@ -145,7 +145,30 @@ public class ReportServiceImpl implements ReportService {
                 }
             }
         } else {
-            String sql = "select a.*,dep.usr_code d_user_code,t.user_code t_user_code,t.discriminator,t.trader_name,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" + "from (\n" + "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" + "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, trader_code, comp_code, tran_source, gl_vou_no,\n" + "remark, mac_id, ref_no,dept_id,batch_no,project_no\n" + "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" + "order by gl_date,tran_source,gl_code\n" + ")a\n" + "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" + "left join trader t on \n" + "a.trader_code = t.code\n" + "and a.comp_code = t.comp_code\n" + "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" + "on a.account_id = coa3.coa_code\n" + "and a.comp_code = coa3.comp_code\n" + "left join chart_of_account coa2\n" + "on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" + "order by a.gl_date,a.tran_source,a.gl_code\n";
+            String sql = "select a.*,dep.usr_code d_user_code,t.user_code t_user_code,t.discriminator,t.trader_name,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" +
+                    "from (\n" + "select gl_code, gl_date, created_date, description, source_ac_id, account_id, \n" +
+                    "cur_code, dr_amt, cr_amt, reference, dept_code, voucher_no, trader_code, comp_code, tran_source, gl_vou_no,\n" +
+                    "remark, mac_id, ref_no,dept_id,batch_no,project_no\n" +
+                    "from gl \n" +
+                    "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                    "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" +
+                    "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                    "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" +
+                    "order by gl_date,tran_source,gl_code\n" + ")a\n" +
+                    "join department dep\n" +
+                    "on a.dept_code = dep.dept_code\n" +
+                    "and a.comp_code = dep.comp_code\n" +
+                    "left join trader t on \n" +
+                    "a.trader_code = t.code\n" + "and a.comp_code = t.comp_code\n" +
+                    "join chart_of_account coa\n" +
+                    "on a.source_ac_id = coa.coa_code\n" +
+                    "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" +
+                    "on a.account_id = coa3.coa_code\n" +
+                    "and a.comp_code = coa3.comp_code\n" +
+                    "left join chart_of_account coa2\n" +
+                    "on coa3.coa_parent = coa2.coa_code\n" +
+                    "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" +
+                    "order by a.gl_date,a.tran_source,a.gl_code\n";
             ResultSet rs = dao.executeAndResult(sql);
             while (rs.next()) {
                 Gl v = new Gl();
@@ -628,7 +651,20 @@ public class ReportServiceImpl implements ReportService {
         if (!coaCode.equals("-")) {
             coaFilter = "'" + coaCode + "'";
         }
-        String sql = "select source_acc_id,trader_code,b.cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,coa.coa_name_eng\n" + "from (\n" + "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" + "from (\n" + "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom  coa_opening \n" + "\twhere comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand date(op_date) = '" + opDate + "'\n" + "\tand source_acc_id in (" + coaFilter + ")\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_acc_id\n" + "\t\t\tunion all\n" + "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere source_ac_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_ac_id\n" + "\t\t\tunion all\n" + "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere account_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" + "group by source_acc_id,trader_code,cur_code\n" + ")b\n" + "join trader t on b.trader_code = t.code\n" + "and b.comp_code = t.comp_code\n" + "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" + "and b.comp_code = coa.comp_code\n" + "order by t.user_code";
+        String sql = "select source_acc_id,trader_code,b.cur_code,if(balance>0,balance,0) dr_amt,if(balance<0,balance*-1,0)cr_amt,b.comp_code,t.user_code,t.trader_name,coa.coa_name_eng\n" +
+                "from (\n" +
+                "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
+                "from (\n" +
+                "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
+                "\tfrom  coa_opening \n" + "\twhere comp_code = '" + compCode + "'\n" +
+                "\tand deleted = false\n" +
+                "\tand date(op_date) = '" + opDate + "'\n" +
+                "\tand source_acc_id in (" + coaFilter + ")\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
+                "\tgroup by  cur_code,trader_code,source_acc_id\n" + "\t\t\tunion all\n" + "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere source_ac_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_ac_id\n" + "\t\t\tunion all\n" + "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere account_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" + "group by source_acc_id,trader_code,cur_code\n" + ")b\n" + "join trader t on b.trader_code = t.code\n" + "and b.comp_code = t.comp_code\n" + "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" + "and b.comp_code = coa.comp_code\n" + "order by t.user_code";
         List<VApar> list = new ArrayList<>();
         try {
             ResultSet rs = dao.executeAndResult(sql);
@@ -841,7 +877,7 @@ public class ReportServiceImpl implements ReportService {
                     "and a.comp_code = c1.comp_code\n" +
                     "join chart_of_account c2 on a.account_id = c2.coa_code\n" +
                     "and a.comp_code = c2.comp_code";
-            ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode,traderCode);
+            ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode, traderCode);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
                     Gl b = new Gl();
@@ -877,7 +913,9 @@ public class ReportServiceImpl implements ReportService {
                 tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
                 tb.setOpening(opAmt);
                 tb.setClosing(opAmt);
-                list.add(0, tb);
+                if(opAmt!=0) {
+                    list.add(0, tb);
+                }
                 for (int i = 0; i < list.size(); i++) {
                     if (i > 0) {
                         Gl io = list.get(i - 1);

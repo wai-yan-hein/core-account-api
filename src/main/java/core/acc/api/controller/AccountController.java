@@ -139,8 +139,8 @@ public class AccountController {
         return Mono.justOrEmpty(coaService.save(coa));
     }
 
-    @GetMapping(path = "/save-coa-from-template")
-    public ResponseEntity<?> saveCOA(@RequestParam Integer busId, String compCode) {
+    @GetMapping(path = "/saveCOAFromTemplate")
+    public ResponseEntity<?> saveCOAFromTemplate(@RequestParam Integer busId, String compCode) {
         return ResponseEntity.ok(coaService.saveCOA(busId, compCode));
     }
 
@@ -271,7 +271,7 @@ public class AccountController {
         return Flux.fromIterable(traderService.getTrader(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/findTrader")
+    @PostMapping(path = "/findTrader")
     public Mono<?> findTrader(@RequestBody TraderKey key) {
         return Mono.justOrEmpty(traderService.findById(key));
     }
@@ -395,7 +395,6 @@ public class AccountController {
         converterService.convertToUnicode();
         return Mono.justOrEmpty("converted.");
     }
-
     @GetMapping(path = "/shoot-tri")
     public Mono<?> shootTri() {
         return Mono.justOrEmpty(glService.shootTri());
@@ -409,6 +408,7 @@ public class AccountController {
     @GetMapping(path = "/getDate")
     public Flux<?> getDate(@RequestParam String startDate, @RequestParam String compCode, @RequestParam boolean isAll) {
         String opDate = reportService.getOpeningDate(compCode);
+        opDate = opDate.equals("1998-10-07") ? startDate : opDate;
         return Flux.fromIterable(Util1.generateDate(startDate, opDate, isAll));
     }
 
