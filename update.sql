@@ -174,3 +174,6 @@ create table coa_template (
 
     alter table trader
     add column nrc varchar(255) null after deleted;
+
+    alter table trader
+    change column user_code user_code varchar(255) null default null;
