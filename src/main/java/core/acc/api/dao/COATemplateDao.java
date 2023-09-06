@@ -9,7 +9,7 @@ public interface COATemplateDao {
     COATemplate save(COATemplate obj);
 
     List<COATemplate> getChild(Integer busId, String coaCode);
-
+    List<COATemplate> getCOATemplateTree(Integer busId, String coaCode);
     COATemplate findById(COATemplateKey key);
 
     List<COATemplate> getAllCOATemplate(Integer busId);
