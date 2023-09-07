@@ -31,4 +31,9 @@ public class TemplateController {
     public ResponseEntity<?> findCOA(@RequestBody COATemplateKey key) {
         return ResponseEntity.ok(coaTemplateService.findById(key));
     }
+
+    @GetMapping(path = "get-coa-template-tree")
+    public Flux<?> getCOATemplateTree(@RequestParam Integer busId, @RequestParam String coaCode) {
+        return Flux.fromIterable(coaTemplateService.getCOATemplateTree(busId, coaCode)).onErrorResume(throwable -> Flux.empty());
+    }
 }
