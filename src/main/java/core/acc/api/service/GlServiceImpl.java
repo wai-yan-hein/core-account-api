@@ -77,7 +77,7 @@ public class GlServiceImpl implements GlService {
                 backupGl(tmp.getKey(), tmp.getModifyBy(), false);
             }
             switch (tranSource) {
-                case "GV", "DR", "CR" -> {
+                case "GV", "DR", "CR","EX" -> {
                     if (Util1.isNullOrEmpty(glVouNo)) {
                         glVouNo = getVouNo(glDate, tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
                     }

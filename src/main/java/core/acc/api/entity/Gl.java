@@ -74,6 +74,10 @@ public class Gl {
     private String doctorId;
     @Column(name = "service_id")
     private String serviceId;
+    @Column(name = "ex_code")
+    private String exCode;
+    @Column(name = "order_id")
+    private Integer orderId;
     @Transient
     private String glDateStr;
     @Transient

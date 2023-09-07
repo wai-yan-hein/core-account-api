@@ -44,29 +44,27 @@ public class AccountController {
     @Autowired
     private TraderGroupService traderGroupService;
 
-    @Autowired
-
     @GetMapping(path = "/hello")
     public Mono<?> hello() {
         return Mono.just("Hello");
     }
 
-    @GetMapping(path = "/get-department")
+    @GetMapping(path = "/getDepartment")
     public Flux<?> getDepartment(@RequestParam String compCode) {
         return Flux.fromIterable(departmentService.findAll(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/find-department")
+    @PostMapping(path = "/findDepartment")
     public Mono<?> findDepartment(@RequestBody DepartmentKey key) {
         return Mono.justOrEmpty(departmentService.findById(key));
     }
 
-    @GetMapping(path = "/get-department-tree")
+    @GetMapping(path = "/getDepartmentTree")
     public Flux<Department> getDepartmentTree(@RequestParam String compCode) {
         return Flux.fromIterable(departmentService.getDepartmentTree(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/save-department")
+    @PostMapping(path = "/saveDepartment")
     public Mono<?> saveDepartment(@RequestBody Department department) {
         return Mono.just(departmentService.save(department));
     }
@@ -78,13 +76,13 @@ public class AccountController {
 
 
     //Chart Of Account
-    @GetMapping(path = "/get-coa-tree")
+    @GetMapping(path = "/getCOATree")
     public Flux<?> getCOATree(@RequestParam String compCode) {
         return Flux.fromIterable(coaService.getCOATree(compCode));
     }
 
-    @GetMapping(path = "/get-coa")
-    public Flux<?> getCOAGroup(@RequestParam String compCode) {
+    @GetMapping(path = "/getCoa")
+    public Flux<?> getCoa(@RequestParam String compCode) {
         return Flux.fromIterable(coaService.getCOA(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
@@ -98,12 +96,12 @@ public class AccountController {
         return Flux.fromIterable(coaService.getCOAByHead(headCode, compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/search-coa")
+    @GetMapping(path = "/searchCOA")
     public Flux<?> searchCOA(@RequestParam String str, @RequestParam Integer level, @RequestParam String compCode) {
         return Flux.fromIterable(coaService.searchCOA(Util1.cleanStr(str), level, compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-trader-coa")
+    @GetMapping(path = "/getTraderCOA")
     public Flux<?> getTraderCOA(@RequestParam String compCode) {
         return Flux.fromIterable(coaService.getTraderCOA(compCode)).onErrorResume(throwable -> Flux.empty());
     }
@@ -124,17 +122,17 @@ public class AccountController {
         return Mono.justOrEmpty(traderGroupService.save(group));
     }
 
-    @GetMapping(path = "/get-coa-child")
+    @GetMapping(path = "/getCOAChild")
     public Flux<?> getCOAChild(@RequestParam String coaCode, @RequestParam String compCode) {
         return Flux.fromIterable(coaService.getCOAChild(coaCode, compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/find-coa")
+    @PostMapping(path = "/findCOA")
     public Mono<?> findCOA(@RequestBody COAKey key) {
         return Mono.justOrEmpty(coaService.findById(key));
     }
 
-    @PostMapping(path = "/save-coa")
+    @PostMapping(path = "/saveCOA")
     public Mono<?> saveCOA(@RequestBody ChartOfAccount coa) {
         return Mono.justOrEmpty(coaService.save(coa));
     }
@@ -149,7 +147,7 @@ public class AccountController {
         return Flux.fromIterable(coaService.getUpdatedCOA(Util1.toLocalDateTime(updatedDate))).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/process-coa")
+    @PostMapping(path = "/processCOA")
     public Mono<?> processCOA(@RequestBody ChartOfAccount coa) {
         if (coa.getMigCode() != null) {
             coa = coaService.save(coa);
@@ -159,7 +157,7 @@ public class AccountController {
         return null;
     }
 
-    @PostMapping(path = "/search-gl")
+    @PostMapping(path = "/searchGl")
     public Flux<?> searchGl(@RequestBody ReportFilter filter) throws SQLException {
         String fromDate = filter.getFromDate();
         String toDate = filter.getToDate();
@@ -183,7 +181,7 @@ public class AccountController {
         return Flux.fromIterable(list).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/get-coa-opening")
+    @PostMapping(path = "/getCOAOpening")
     public Mono<TmpOpening> getCOAOpening(@RequestBody ReportFilter filter) {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String opDate = reportService.getOpeningDate(compCode);
@@ -196,7 +194,7 @@ public class AccountController {
         return Mono.justOrEmpty(coaOpeningService.getCOAOpening(coaCode, opDate, fromDate, curCode, compCode, macId, traderCode));
     }
 
-    @PostMapping(path = "/get-opening")
+    @PostMapping(path = "/getOpening")
     public Flux<?> getOpening(@RequestBody ReportFilter filter) {
         String curCode = Util1.isNull(filter.getCurCode(), "-");
         String compCode = Util1.isNull(filter.getCompCode(), "-");
@@ -211,27 +209,27 @@ public class AccountController {
                 .onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/save-opening")
+    @PostMapping(path = "/saveOpening")
     public Mono<?> saveOpening(@RequestBody COAOpening op) {
         return Mono.just(coaOpeningService.save(op));
     }
 
-    @PostMapping(path = "/save-gl")
+    @PostMapping(path = "/saveGl")
     public Mono<Gl> saveGl(@RequestBody Gl gl) {
         return Mono.justOrEmpty(glService.save(gl, true));
     }
 
-    @PostMapping(path = "/save-gl-list")
-    public Mono<?> saveGl(@RequestBody List<Gl> gl) {
+    @PostMapping(path = "/saveGlList")
+    public Mono<?> saveGlList(@RequestBody List<Gl> gl) {
         return Mono.justOrEmpty(glService.save(gl));
     }
 
-    @PostMapping(path = "/delete-coa")
+    @PostMapping(path = "/deleteCOA")
     public Mono<Boolean> deleteCOA(@RequestBody COAKey key) {
         return Mono.just(coaService.delete(key));
     }
 
-    @PostMapping(path = "/delete-gl")
+    @PostMapping(path = "/deleteGl")
     public Mono<Boolean> deleteGL(@RequestBody DeleteObj obj) {
         GlKey key = new GlKey();
         key.setGlCode(obj.getGlCode());
@@ -240,33 +238,33 @@ public class AccountController {
         return Mono.justOrEmpty(glService.delete(key, obj.getModifyBy()));
     }
 
-    @PostMapping(path = "/delete-gl-by-account")
+    @PostMapping(path = "/deleteGlByAccount")
     public Mono<?> deleteGlByAccount(@RequestBody Gl gl) {
         glService.deleteVoucherByAcc(gl.getRefNo(), gl.getTranSource(), gl.getSrcAccCode(), gl.getKey().getCompCode());
         return Mono.justOrEmpty("deleted.");
     }
 
-    @PostMapping(path = "/delete-gl-by-voucher")
-    public Mono<?> deleteGlByInvVoucher(@RequestBody Gl gl) {
+    @PostMapping(path = "/deleteGlByVoucher")
+    public Mono<?> deleteGlByVoucher(@RequestBody Gl gl) {
         glService.deleteInvVoucher(gl.getRefNo(), gl.getTranSource(), gl.getKey().getCompCode());
         return Mono.just("deleted.");
     }
 
     //Trader
-    @PostMapping(path = "/save-trader")
+    @PostMapping(path = "/saveTrader")
     public Mono<?> getTrader(@RequestBody Trader t) {
         t.setTraderName(Util1.convertToUniCode(t.getTraderName()));
         return Mono.justOrEmpty(traderService.save(t));
     }
 
-    @PostMapping(path = "/delete-trader")
+    @PostMapping(path = "/deleteTrader")
     public Mono<?> deleteTrader(@RequestBody TraderKey key) {
         traderService.delete(key);
         ro.setMessage("Deleted.");
         return Mono.justOrEmpty(ro);
     }
 
-    @GetMapping(path = "/get-trader")
+    @GetMapping(path = "/getTrader")
     public Flux<?> getTrader(@RequestParam String compCode) {
         return Flux.fromIterable(traderService.getTrader(compCode)).onErrorResume(throwable -> Flux.empty());
     }
@@ -277,7 +275,7 @@ public class AccountController {
     }
 
 
-    @GetMapping(path = "/search-trader")
+    @GetMapping(path = "/searchTrader")
     public Flux<Trader> getTrader(@RequestParam String text, @RequestParam String compCode) {
         return Flux.fromIterable(traderService.getTrader(Util1.cleanStr(text), compCode)).onErrorResume(throwable -> Flux.empty());
     }
@@ -287,39 +285,39 @@ public class AccountController {
         return Flux.fromIterable(traderService.getTrader(Util1.toLocalDateTime(updatedDate))).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-supplier")
+    @GetMapping(path = "/getSupplier")
     public Flux<?> getSupplier(@RequestParam String compCode) {
         return Flux.fromIterable(traderService.getSupplier(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-customer")
+    @GetMapping(path = "/getCustomer")
     public Flux<?> getCustomer(@RequestParam String compCode) {
         return Flux.fromIterable(traderService.getCustomer(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-description")
+    @GetMapping(path = "/getDescription")
     public Flux<?> getDescription(@RequestParam String str, @RequestParam String compCode) {
         return Flux.fromIterable(glService.getDescription(Util1.cleanStr(str), compCode));
     }
 
-    @GetMapping(path = "/get-batch-no")
+    @GetMapping(path = "/getBatchNo")
     public Flux<?> getBatchNo(@RequestParam String str, @RequestParam String compCode) {
         return Flux.fromIterable(glService.getBatchNo(Util1.cleanStr(str), compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
     //Ref
-    @GetMapping(path = "/get-reference")
-    public Flux<?> getRef(@RequestParam String str, @RequestParam String compCode) {
+    @GetMapping(path = "/getReference")
+    public Flux<?> getReference(@RequestParam String str, @RequestParam String compCode) {
         return Flux.fromIterable(glService.getReference(Util1.cleanStr(str), compCode));
     }
 
     //TranSource
-    @GetMapping(path = "/get-tran-source")
+    @GetMapping(path = "/getTranSource")
     public Flux<?> getTranSource(@RequestParam String compCode) {
         return Flux.fromIterable(glService.getTranSource(compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/search-journal")
+    @PostMapping(path = "/searchJournal")
     public Flux<?> searchJournal(@RequestBody ReportFilter filter) {
         Integer macId = filter.getMacId();
         String fromDate = filter.getFromDate();
@@ -334,7 +332,7 @@ public class AccountController {
         return Flux.fromIterable(glService.searchJournal(fromDate, toDate, vouNo, description, reference, coaCode, projectNo, compCode, macId)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/search-voucher")
+    @PostMapping(path = "/searchVoucher")
     public Flux<?> searchVoucher(@RequestBody ReportFilter filter) {
         Integer macId = filter.getMacId();
         String fromDate = filter.getFromDate();
@@ -348,39 +346,39 @@ public class AccountController {
         return Flux.fromIterable(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-journal")
+    @GetMapping(path = "/getJournal")
     public Flux<?> getJournal(@RequestParam String glVouNo, @RequestParam String compCode) {
         return Flux.fromIterable(glService.getJournal(glVouNo, compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-voucher")
+    @GetMapping(path = "/getVoucher")
     public Flux<?> getVoucher(@RequestParam String glVouNo, @RequestParam String compCode) {
         return Flux.fromIterable(glService.getVoucher(glVouNo, compCode)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/delete-voucher")
+    @PostMapping(path = "/deleteVoucher")
     public Mono<?> deleteVoucher(@RequestBody DeleteObj obj) {
         return Mono.justOrEmpty(glService.deleteVoucher(obj.getGlVouNo(), obj.getCompCode(), obj.getModifyBy()));
     }
 
-    @PostMapping(path = "/save-stock-op")
+    @PostMapping(path = "/saveStockOP")
     public Mono<?> saveStockOP(@RequestBody StockOP op) {
         return Mono.justOrEmpty(stockOPService.save(op));
     }
 
-    @PostMapping(path = "/delete-stock-op")
+    @PostMapping(path = "/deleteStockOP")
     public Mono<?> deleteStockOP(@RequestBody StockOPKey key) {
         stockOPService.delete(key);
         return Mono.justOrEmpty(true);
     }
 
-    @PostMapping(path = "/delete-op")
+    @PostMapping(path = "/deleteOP")
     public Mono<?> deleteOP(@RequestBody OpeningKey key) {
         return Mono.just(coaOpeningService.delete(key));
     }
 
-    @PostMapping(path = "/search-stock-op")
-    public Flux<?> searchStockOp(@RequestBody ReportFilter filter) {
+    @PostMapping(path = "/searchStockOP")
+    public Flux<?> searchStockOP(@RequestBody ReportFilter filter) {
         String fromDate = Util1.isNull(filter.getFromDate(), "-");
         String toDate = Util1.isNull(filter.getToDate(), "-");
         String compCode = Util1.isNull(filter.getCompCode(), "-");
@@ -395,7 +393,7 @@ public class AccountController {
         converterService.convertToUnicode();
         return Mono.justOrEmpty("converted.");
     }
-    @GetMapping(path = "/shoot-tri")
+    @GetMapping(path = "/shootTri")
     public Mono<?> shootTri() {
         return Mono.justOrEmpty(glService.shootTri());
     }

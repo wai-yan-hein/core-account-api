@@ -166,7 +166,6 @@ alter table stock_op_value
 change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp() ,
 change column updated_date updated_date timestamp not null default current_timestamp() on update current_timestamp() ;
 
-<<<<<<< HEAD
 create index idx_gl_date on gl (gl_date);
 create index idx_dept_code on gl (dept_code);
 create index idx_cur_code on gl (cur_code);
@@ -176,10 +175,12 @@ create index idx_account_id on gl (account_id);
 
 alter table trader
 add column nrc varchar(255) null after deleted;
-=======
-    alter table trader
-    add column nrc varchar(255) null after deleted;
 
-    alter table trader
-    change column user_code user_code varchar(255) null default null;
->>>>>>> 7352eaa371a4d18a28728f9161ae49c04aff07f3
+alter table trader
+change column user_code user_code varchar(255) null default null;
+
+alter table gl
+add column order_id int null after service_id,
+add column ex_code varchar(15) null after order_id;
+
+

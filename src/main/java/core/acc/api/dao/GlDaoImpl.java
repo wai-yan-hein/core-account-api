@@ -153,7 +153,11 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description, String reference, String coaCode, String projectNo, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
-        String filter = " tran_source ='GV'\n" + "and comp_code ='" + compCode + "'\n" + "and deleted = false\n" + "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
+        String filter = " (tran_source ='GV' or tran_source ='EX')\n" +
+                "and comp_code ='" + compCode + "'\n" +
+                "and deleted = false\n" +
+                "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
             filter += "and gl_vou_no ='" + vouNo + "'\n";
         }
@@ -169,7 +173,11 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!projectNo.equals("-")) {
             filter += "and project_no = '" + projectNo + "'\n";
         }
-        String sql = "select gl_date,description,reference,gl_vou_no,project_no,sum(dr_amt) amount\n" + "from gl\n" + "where " + filter + "group by gl_vou_no\n" + "order by gl_date";
+        String sql = "select gl_date,description,reference,gl_vou_no,project_no,tran_source,sum(dr_amt) amount\n" +
+                "from gl\n" +
+                "where " + filter +
+                "group by gl_vou_no\n" +
+                "order by gl_date";
         try {
             ResultSet rs = getResult(sql);
             while (rs.next()) {
@@ -180,6 +188,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setGlVouNo(rs.getString("gl_vou_no"));
                 g.setProjectNo(rs.getString("project_no"));
                 g.setDrAmt(rs.getDouble("amount"));
+                g.setTranSource(rs.getString("tran_source"));
                 list.add(g);
             }
         } catch (Exception e) {
@@ -251,9 +260,25 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> getJournal(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,g.gl_date,g.source_ac_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,\n" + "t.user_code t_user_code,t.trader_name,g.tran_source,\n" + "d.usr_code d_user_code,coa.coa_name_eng,g.project_no\n" + "from gl g\n" + "join department d on g.dept_code = d.dept_code\n" + "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.source_ac_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and g.tran_source ='GV'\n" + "and g.deleted = false\n" + "order by g.gl_code";
+        String sql = """
+                select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,
+                g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.dr_amt,g.cr_amt,
+                t.user_code t_user_code,t.trader_name,g.tran_source,
+                d.usr_code d_user_code,coa.coa_name_eng,g.project_no,g.ex_code
+                from gl g
+                join department d on g.dept_code = d.dept_code
+                and g.comp_code = d.comp_code
+                left join trader t on g.trader_code = t.code
+                and g.comp_code = t.comp_code
+                join chart_of_account coa on g.source_ac_id = coa.coa_code
+                and g.comp_code = coa.comp_code
+                where g.comp_code =?
+                and g.gl_vou_no =?
+                and (g.tran_source ='GV' or g.tran_source ='EX')
+                and g.deleted = false
+                order by g.order_id,g.gl_code""";
         try {
-            ResultSet rs = getResult(sql);
+            ResultSet rs = getResult(sql,compCode,glVouNo);
             while (rs.next()) {
                 Gl g = new Gl();
                 GlKey key = new GlKey();
@@ -274,9 +299,11 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setTraderName(rs.getString("trader_name"));
                 g.setSrcAccName(rs.getString("coa_name_eng"));
                 g.setSrcAccCode(rs.getString("source_ac_id"));
+                g.setAccCode(rs.getString("account_id"));
                 g.setTranSource(rs.getString("tran_source"));
                 g.setCurCode(rs.getString("cur_code"));
                 g.setProjectNo(rs.getString("project_no"));
+                g.setExCode(rs.getString("ex_code"));
                 list.add(g);
             }
 
@@ -435,10 +462,31 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 String tranSource = rs5.getString("tran_source");
                 logs.add(tranSource + " : Chart of Account in GL is Above Level 3 : " + glCode);
             }
-
+            logs.addAll(checkMinusOpening());
             return logs;
         } catch (Exception e) {
             log.error("shootTri : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkMinusOpening() {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select coa_op_id,dr_amt,cr_amt
+                from coa_opening
+                where deleted =false
+                and (ifnull(dr_amt,0)<0 or ifnull(cr_amt,0)<0)""";
+        ResultSet rs = getResult(sql);
+        try {
+            while (rs.next()) {
+                String opId = rs.getString("coa_op_id");
+                double drAmt = rs.getDouble("dr_amt");
+                double crAmt = rs.getDouble("cr_amt");
+                logs.add("Opening Minus Error : " + opId + " - " + "Dr Amt : " + drAmt + " - " + "Cr Amt : " + crAmt);
+            }
+        } catch (Exception e) {
+            log.error("checkMinusOpening : " + e.getMessage());
         }
         return logs;
     }
