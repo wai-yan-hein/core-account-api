@@ -30,7 +30,7 @@ public class ReportController {
 
     private ReturnObject ro = new ReturnObject();
 
-    @PostMapping(value = "/get-report", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/getReport", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<?> getReport(@RequestBody ReportFilter filter) {
         String compCode = Util1.isNull(filter.getCompCode(), "-");
         String opDate = reportService.getOpeningDate(compCode);
@@ -156,12 +156,12 @@ public class ReportController {
         return reportService.getBalanceSheet(bsProcess, opDate, fromDate, toDate, invGroup, reAcc, plAcc, detail, prvProfit, curProfit, projectNo, compCode, macId);
     }
 
-    @GetMapping(path = "/get-report-result")
-    public Mono<?> getResult(@RequestParam Integer macId) {
+    @GetMapping(path = "/getReportResult")
+    public Mono<?> getReportResult(@RequestParam Integer macId) {
         return Mono.justOrEmpty(reportService.getReportResult(macId));
     }
 
-    @PostMapping(path = "/get-tri-balance")
+    @PostMapping(path = "/getTriBalance")
     public Flux<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
@@ -181,8 +181,8 @@ public class ReportController {
         return Flux.fromIterable(reportService.getTriBalance(coaCode, coaLv1, coaLv2, compCode, macId)).onErrorResume(throwable -> Flux.empty());
     }
 
-    @PostMapping(path = "/get-arap")
-    public Flux<?> getArap(@RequestBody ReportFilter filter) {
+    @PostMapping(path = "/getArAp")
+    public Flux<?> getArAp(@RequestBody ReportFilter filter) {
         String compCode = filter.getCompCode();
         String enDate = filter.getToDate();
         String opDate = reportService.getOpeningDate(compCode);
@@ -196,7 +196,7 @@ public class ReportController {
         return Flux.fromIterable(list).onErrorResume(throwable -> Flux.empty());
     }
 
-    @GetMapping(path = "/get-trader-balance")
+    @GetMapping(path = "/getTraderBalance")
     public Mono<Double> getTraderBalance(@RequestParam String date,
                                          @RequestParam String traderCode,
                                          @RequestParam String curCode,

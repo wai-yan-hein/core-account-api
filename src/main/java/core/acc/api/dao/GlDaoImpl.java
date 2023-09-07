@@ -291,8 +291,8 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setDescription(rs.getString("description"));
                 g.setReference(rs.getString("reference"));
                 g.setGlVouNo(rs.getString("gl_vou_no"));
-                g.setDrAmt(rs.getDouble("dr_amt"));
-                g.setCrAmt(rs.getDouble("cr_amt"));
+                g.setDrAmt(Util1.toNull(rs.getDouble("dr_amt")));
+                g.setCrAmt(Util1.toNull(rs.getDouble("cr_amt")));
                 g.setDeptCode(rs.getString("dept_code"));
                 g.setDeptUsrCode(rs.getString("d_user_code"));
                 g.setTraderCode(rs.getString("trader_code"));

@@ -27,12 +27,12 @@ public class TemplateController {
         return Flux.fromIterable(coaTemplateService.getChild(busId, coaCode));
     }
 
-    @PostMapping(path = "/find-coa-template")
-    public ResponseEntity<?> findCOA(@RequestBody COATemplateKey key) {
-        return ResponseEntity.ok(coaTemplateService.findById(key));
+    @PostMapping(path = "/findCOATemplate")
+    public Mono<?> findCOATemplate(@RequestBody COATemplateKey key) {
+        return Mono.just(coaTemplateService.findById(key));
     }
 
-    @GetMapping(path = "get-coa-template-tree")
+    @GetMapping(path = "getCOATemplateTree")
     public Flux<?> getCOATemplateTree(@RequestParam Integer busId, @RequestParam String coaCode) {
         return Flux.fromIterable(coaTemplateService.getCOATemplateTree(busId, coaCode)).onErrorResume(throwable -> Flux.empty());
     }
