@@ -77,7 +77,7 @@ public class GlServiceImpl implements GlService {
                 backupGl(tmp.getKey(), tmp.getModifyBy(), false);
             }
             switch (tranSource) {
-                case "GV", "DR", "CR","EX" -> {
+                case "GV", "DR", "CR", "EX" -> {
                     if (Util1.isNullOrEmpty(glVouNo)) {
                         glVouNo = getVouNo(glDate, tmp.getKey().getDeptId(), tmp.getMacId(), tmp.getKey().getCompCode(), tranSource);
                     }
@@ -90,11 +90,6 @@ public class GlServiceImpl implements GlService {
                     gl.setDescription(Util1.convertToUniCode(gl.getDescription()));
                     gl.setReference(Util1.convertToUniCode(gl.getReference()));
                     if (gl.getSrcAccCode() != null) {
-                        if (Util1.isMultiCur()) {
-                            if (gl.isCash()) {
-                                gl.setSrcAccCode(Util1.getProperty(gl.getCurCode()));
-                            }
-                        }
                         double amt = Util1.getDouble(gl.getDrAmt()) + Util1.getDouble(gl.getCrAmt());
                         if (amt > 0) {
                             gl.setGlVouNo(finalGlVouNo); // Use the final variable here
