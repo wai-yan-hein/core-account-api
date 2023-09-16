@@ -179,6 +179,9 @@ add column nrc varchar(255) null after deleted;
 alter table trader
 change column user_code user_code varchar(255) null default null;
 
+alter table trader
+add column group_code varchar(15) null default null after user_code;
+
 alter table gl
 add column order_id int null after service_id,
 add column ex_code varchar(15) null after order_id;
