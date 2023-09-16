@@ -54,7 +54,6 @@ public class COAOpeningServiceImpl implements COAOpeningService {
         int seqNo = seqService.getSequence(0, "OPENING", "-", compCode);
         return compCode + "-" + String.format("%0" + 4 + "d", seqNo);
     }
-
     @Override
     public TmpOpening getCOAOpening(String coaCode, String opDate, String clDate, String curr, String compCode, Integer macId, String traderCode) {
         String opSql = "select source_acc_id,cur_code,balance\n" +

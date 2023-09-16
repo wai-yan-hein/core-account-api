@@ -183,4 +183,7 @@ alter table gl
 add column order_id int null after service_id,
 add column ex_code varchar(15) null after order_id;
 
+set sql_safe_updates =0;
+#cleaning deleted data
+#delete from gl where deleted = true and mac_id =99;
 

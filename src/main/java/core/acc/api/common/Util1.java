@@ -20,10 +20,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Month;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.*;
@@ -36,8 +33,10 @@ public class Util1 {
     public static HashMap<String, String> hmSysProp = new HashMap<>();
     private static final DecimalFormat df0 = new DecimalFormat("0");
     public static String SYNC_DATE;
-    public static final Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
-
+    public static final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+            .registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeAdapter())
+            .create();
     public static boolean getBoolean(Object obj) {
         return obj != null && (obj.toString().equals("1") || obj.toString().equalsIgnoreCase("true"));
 
@@ -84,7 +83,6 @@ public class Util1 {
     }
 
     public static boolean isDate(String str) {
-
         return str.length() == 10;
     }
 
