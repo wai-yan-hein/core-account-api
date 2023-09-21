@@ -1,12 +1,9 @@
 package core.acc.api.dao;
 
-import core.acc.api.entity.COAKey;
 import core.acc.api.entity.COATemplate;
 import core.acc.api.entity.COATemplateKey;
-import core.acc.api.entity.ChartOfAccount;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
@@ -18,19 +15,32 @@ public class COATemplateDaoImpl extends AbstractDao<COATemplateKey, COATemplate>
     }
 
     @Override
-    public List<COATemplate> getChild(Integer busId, String coaCode) {
+    public List<COATemplate> getCOAChild(Integer busId, String coaCode) {
         String hsql = "select o from COATemplate o where o.key.busId =" + busId + " and o.coaParent = '" + coaCode + "'";
         return findHSQL(hsql);
     }
 
     @Override
-    public List<COATemplate> getCOATemplateTree(Integer busId, String compCode) {
-        List<COATemplate> list = getChild(busId, compCode);
-        List<COATemplate> result = new ArrayList<>(list);
-        for(COATemplate t: list) {
-            result.addAll(getChild(busId, t.getKey().getCoaCode()));
+    public List<COATemplate> getCOATemplateTree(Integer busId) {
+        String hsql = "select o from COATemplate o where  o.coaParent = '#' and o.key.busId = " + busId;
+        List<COATemplate> list = findHSQL(hsql);
+        for (COATemplate coa : list) {
+            getChild(coa);
         }
-        return result;
+        return list;
+    }
+
+    private void getChild(COATemplate parent) {
+        String coaCode = parent.getKey().getCoaCode();
+        Integer busId = parent.getKey().getBusId();
+        String hsql = "select o from COATemplate o where o.coaParent = '" + coaCode + "' and o.key.busId = " + busId;
+        List<COATemplate> chart = findHSQL(hsql);
+        parent.setChild(chart);
+        if (!chart.isEmpty()) {
+            for (COATemplate coa : chart) {
+                getChild(coa);
+            }
+        }
     }
 
     @Override

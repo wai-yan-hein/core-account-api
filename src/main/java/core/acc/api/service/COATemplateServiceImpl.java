@@ -23,13 +23,18 @@ public class COATemplateServiceImpl implements COATemplateService {
     }
 
     @Override
-    public List<COATemplate> getChild(Integer busId, String coaCode) {
-        return dao.getChild(busId, coaCode);
+    public List<COATemplate> getCOAChild(Integer busId, String coaCode) {
+        return dao.getCOAChild(busId, coaCode);
     }
 
     @Override
-    public List<COATemplate> getCOATemplateTree(Integer busId, String coaCode) {
-        return dao.getCOATemplateTree(busId, coaCode);
+    public List<COATemplate> getCOATemplateTree(Integer busId) {
+        return dao.getCOATemplateTree(busId);
+    }
+
+    @Override
+    public List<COATemplate> getCOATemplate(Integer busId) {
+        return dao.getAllCOATemplate(busId);
     }
 
     @Override

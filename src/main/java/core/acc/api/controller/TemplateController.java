@@ -24,7 +24,7 @@ public class TemplateController {
 
     @GetMapping(path = "/getCOAChild")
     public Flux<?> getCOAChild(@RequestParam Integer busId, @RequestParam String coaCode) {
-        return Flux.fromIterable(coaTemplateService.getChild(busId, coaCode));
+        return Flux.fromIterable(coaTemplateService.getCOAChild(busId, coaCode));
     }
 
     @PostMapping(path = "/findCOATemplate")
@@ -32,8 +32,12 @@ public class TemplateController {
         return Mono.just(coaTemplateService.findById(key));
     }
 
-    @GetMapping(path = "getCOATemplateTree")
-    public Flux<?> getCOATemplateTree(@RequestParam Integer busId, @RequestParam String coaCode) {
-        return Flux.fromIterable(coaTemplateService.getCOATemplateTree(busId, coaCode)).onErrorResume(throwable -> Flux.empty());
+    @GetMapping(path = "/getCOATemplateTree")
+    public Flux<?> getCOATemplateTree(@RequestParam Integer busId) {
+        return Flux.fromIterable(coaTemplateService.getCOATemplateTree(busId)).onErrorResume(throwable -> Flux.empty());
+    }
+    @GetMapping(path = "/getCOATemplate")
+    public Flux<?> getCOATemplate(@RequestParam Integer busId) {
+        return Flux.fromIterable(coaTemplateService.getCOATemplate(busId)).onErrorResume(throwable -> Flux.empty());
     }
 }
