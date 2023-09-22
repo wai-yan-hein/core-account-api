@@ -39,11 +39,11 @@ public class ReportServiceImpl implements ReportService {
             deleteTmp(macId);
             if (listStr == null || listStr.isEmpty()) {
                 String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select dept_code," + macId + " mac_id from department";
-                executeAndResult(sql);
+                dao.exeSql(sql);
             } else {
                 for (String str : listStr) {
                     String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select '" + str + "'," + macId;
-                    executeAndResult(sql);
+                    dao.exeSql(sql);
                 }
             }
         } catch (Exception e) {
@@ -919,7 +919,7 @@ public class ReportServiceImpl implements ReportService {
                 tb.setGlDateStr(Util1.toDateStr(fromDate, "yyyy-MM-dd", "dd/MM/yyyy"));
                 tb.setOpening(opAmt);
                 tb.setClosing(opAmt);
-                if(opAmt!=0) {
+                if (opAmt != 0) {
                     list.add(0, tb);
                 }
                 for (int i = 0; i < list.size(); i++) {
@@ -1047,8 +1047,14 @@ public class ReportServiceImpl implements ReportService {
         List<String> listCOA = new ArrayList<>();
         String delSql = "delete from tmp_op_cl where mac_id =" + macId;
         dao.exeSql(delSql);
-        String sql = "select coa_code\n" + "from chart_of_account\n" + "where coa_parent='" + cashGroup + "'\n" + "and comp_code ='" + compCode + "'\n" + "and active = 1\n" + "and deleted = false";
-        ResultSet rs = dao.executeAndResult(sql);
+        String sql = """
+                select coa_code
+                from chart_of_account
+                where coa_parent=?
+                and comp_code =?
+                and active = true
+                and deleted = false""";
+        ResultSet rs = dao.executeAndResult(sql, cashGroup, compCode);
         if (rs != null) {
             try {
                 while (rs.next()) {
@@ -1062,8 +1068,25 @@ public class ReportServiceImpl implements ReportService {
         for (String coaCode : listCOA) {
             try {
                 listGl = new ArrayList<>();
-                log.info(coaCode);
-                sql = "select a.*,dep.dept_name,coa.coa_name_eng src_acc_name,coa1.coa_name_eng coa_name\n" + "from (\n" + "select source_ac_id,account_id,dept_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and (account_id ='" + coaCode + "' or source_ac_id ='" + coaCode + "')\n" + "group by source_ac_id,dept_code\n" + ")a\n" + "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" + "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "join chart_of_account coa1\n" + "on a.account_id = coa1.coa_code\n" + "and a.comp_code = coa1.comp_code";
+                sql = "select a.*,dep.dept_name,coa.coa_name_eng src_acc_name,coa1.coa_name_eng coa_name\n" +
+                        "from (\n" +
+                        "select source_ac_id,account_id,dept_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+                        "from gl \n" +
+                        "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                        "and comp_code = '" + compCode + "'\n" +
+                        "and deleted = false\n" +
+                        "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                        "and (account_id ='" + coaCode + "' or source_ac_id ='" + coaCode + "')\n" +
+                        "group by source_ac_id,dept_code\n" + ")a\n" +
+                        "join department dep\n" +
+                        "on a.dept_code = dep.dept_code\n" +
+                        "and a.comp_code = dep.comp_code\n" +
+                        "left join chart_of_account coa\n" +
+                        "on a.source_ac_id = coa.coa_code\n" +
+                        "and a.comp_code = coa.comp_code\n" +
+                        "left join chart_of_account coa1\n" +
+                        "on a.account_id = coa1.coa_code\n" +
+                        "and a.comp_code = coa1.comp_code";
                 rs = getResult(sql);
                 if (rs != null) {
                     while (rs.next()) {
@@ -1194,7 +1217,7 @@ public class ReportServiceImpl implements ReportService {
     private String getOpeningHeadDetail(String opDate, String headCode, String compCode) {
         return "select op.op_date,op.source_acc_id,op.trader_code,op.cur_code,sum(ifnull(cr_amt,0)-ifnull(dr_amt,0)) amount,\n" + "coa3.coa_name_eng,coa2.coa_name_eng group_name,coa1.coa_name_eng head_name\n" + "from coa_opening op join chart_of_account coa3 on \n" + "op.source_acc_id = coa3.coa_code\n" + "and op.comp_code = coa3.comp_code\n" + "join chart_of_account coa2 on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + "join chart_of_account coa1 on coa2.coa_parent = coa1.coa_code\n" + "and coa2.comp_code = coa1.comp_code\n" + "and coa1.coa_code='" + headCode + "'\n" + "where op.deleted = false\n" + "and op.comp_code ='" + compCode + "'\n" + "and (ifnull(dr_amt,0) >0 or ifnull(cr_amt,0))\n" +
                 "and date(op.op_date)='" + opDate + "'\n" +
-                "group by source_acc_id\n"+
+                "group by source_acc_id\n" +
                 "order by coa3.coa_code_usr,coa2.coa_code_usr,coa2.coa_name_eng";
     }
 

@@ -26,7 +26,6 @@ import java.util.List;
 public class ReportController {
     @Autowired
     private ReportService reportService;
-    private final String exportPath = "temp/";
 
     private ReturnObject ro = new ReturnObject();
 
@@ -135,8 +134,12 @@ public class ReportController {
     private void createFilePath(String path) {
         File file = new File(path);
         File parentDir = file.getParentFile();
-        if (!parentDir.exists()) {
-            parentDir.mkdirs();
+        if (parentDir != null && !parentDir.exists()) {
+            boolean created = parentDir.mkdirs();
+            if (!created) {
+                log.error("Failed to create the parent directory for the file.");
+                // You might want to throw an exception or handle the failure in an appropriate way
+            }
         }
     }
 

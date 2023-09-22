@@ -1,11 +1,10 @@
 package core.acc.api.entity;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -33,5 +32,8 @@ public class COATemplate {
     private String deptCode;
     @Column(name = "credit")
     private boolean credit;
+    @Transient
+    private List<COATemplate> child;
+
 
 }
