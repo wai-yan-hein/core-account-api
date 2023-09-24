@@ -228,6 +228,10 @@ public class AccountController {
     public Mono<Boolean> deleteCOA(@RequestBody COAKey key) {
         return Mono.just(coaService.delete(key));
     }
+    @PostMapping(path = "/deleteDepartment")
+    public Mono<?> deleteDepartment(@RequestBody DepartmentKey key) {
+        return Mono.just(departmentService.delete(key));
+    }
 
     @PostMapping(path = "/deleteGl")
     public Mono<Boolean> deleteGL(@RequestBody DeleteObj obj) {

@@ -76,7 +76,8 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public List<Department> getDepartmentTree(String compCode) {
-        String hsql = "select o from Department o where  o.parentDept = '#' and o.key.compCode = '" + compCode + "'";
+        String hsql = "select o from Department o where o.parentDept = '#' and o.key.compCode = '" + compCode + "'\n" +
+                "and o.active =true and o.deleted = false";
         List<Department> departments = findHSQL(hsql);
         for (Department dep : departments) {
             getChild(dep, compCode);
@@ -85,8 +86,8 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     }
 
     private void getChild(Department parent, String compCode) {
-        String hsql = "select o from Department o where o.parentDept = '" + parent.getKey().getDeptCode()
-                + "' and o.key.compCode = '" + compCode + "'";
+        String hsql = "select o from Department o where o.parentDept = '" + parent.getKey().getDeptCode() + "' and o.key.compCode = '" + compCode + "'\n" +
+                "and o.active =true and o.deleted = false";
         List<Department> departments = findHSQL(hsql);
         parent.setChild(departments);
         if (!departments.isEmpty()) {
@@ -97,21 +98,18 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
     }
 
     @Override
-    public int delete(DepartmentKey key) {
-        String sql = "update department set deleted = true where dept_code ='" + key.getDeptCode() + "' and comp_code ='" + key.getCompCode() + "'";
-        execSql(sql);
-        return 1;
+    public boolean delete(DepartmentKey key) {
+        Department dep = findById(key);
+        dep.setDeleted(true);
+        dep.setUpdatedDt(LocalDateTime.now());
+        update(dep);
+        return true;
     }
 
     @Override
     public List<Department> findAll(String compCode) {
-        String hsql = "select o from Department o where o.key.compCode ='" + compCode + "'";
+        String hsql = "select o from Department o where o.key.compCode ='" + compCode + "' and o.delete = false and o.active = true";
         return findHSQL(hsql);
-    }
-
-    @Override
-    public List<Department> findAll() {
-        return findHSQL("select o from Department o");
     }
 
     @Override
@@ -121,7 +119,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public String getDepartment(Integer deptId) {
-        List<Department> list = findHSQL("select o from Department o where o.mapDeptId = " + deptId + "");
+        List<Department> list = findHSQL("select o from Department o where o.mapDeptId = " + deptId);
         return list.isEmpty() ? null : list.get(0).getKey().getDeptCode();
     }
 

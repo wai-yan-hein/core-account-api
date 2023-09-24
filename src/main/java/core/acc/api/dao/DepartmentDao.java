@@ -18,11 +18,10 @@ public interface DepartmentDao {
 
     List<Department> getDepartmentTree(String compCode);
 
-    int delete(DepartmentKey key);
+    boolean delete(DepartmentKey key);
 
     List<Department> findAll(String compCode);
 
-    List<Department> findAll();
 
     List<Department> findAllActive(String compCode);
 
