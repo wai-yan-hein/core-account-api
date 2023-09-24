@@ -108,7 +108,7 @@ public class DepartmentDaoImpl extends AbstractDao<DepartmentKey, Department> im
 
     @Override
     public List<Department> findAll(String compCode) {
-        String hsql = "select o from Department o where o.key.compCode ='" + compCode + "' and o.delete = false and o.active = true";
+        String hsql = "select o from Department o where o.key.compCode ='" + compCode + "' and o.deleted = false and o.active = true";
         return findHSQL(hsql);
     }
 
