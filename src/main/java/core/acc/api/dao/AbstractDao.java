@@ -44,7 +44,10 @@ public abstract class AbstractDao<PK extends Serializable, T> {
         else entityManager.merge(entity);
 
     }
-
+    @Transactional
+    public void update(T entity) {
+        entityManager.merge(entity);
+    }
     @Transactional
     public TypedQuery<T> createQuery(String hsql) {
         return entityManager.createQuery(hsql, persistentClass);

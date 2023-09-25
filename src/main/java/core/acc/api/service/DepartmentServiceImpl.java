@@ -50,7 +50,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    public int delete(DepartmentKey key) {
+    public boolean delete(DepartmentKey key) {
         return dao.delete(key);
     }
 
@@ -59,10 +59,6 @@ public class DepartmentServiceImpl implements DepartmentService {
         return dao.findAll(compCode);
     }
 
-    @Override
-    public List<Department> findAll() {
-        return dao.findAll();
-    }
 
     @Override
     public List<Department> findAllActive(String compCode) {

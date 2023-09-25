@@ -652,7 +652,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency, String traderCode, String coaCode, String projectNo, Integer macId) {
+    public List<VApar> genArAp(String compCode, String opDate, String clDate, String currency,
+                               String traderCode, String coaCode, String projectNo, Integer macId) {
         String coaFilter = "select distinct account_code from trader where comp_code='" + compCode + "' and account_code is not null";
         if (!coaCode.equals("-")) {
             coaFilter = "'" + coaCode + "'";
@@ -662,15 +663,49 @@ public class ReportServiceImpl implements ReportService {
                 "select source_acc_id,trader_code,cur_code,round(sum(dr_amt),2) -round(sum(cr_amt),2) balance,comp_code\n" +
                 "from (\n" +
                 "\tselect source_acc_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt, sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
-                "\tfrom  coa_opening \n" + "\twhere comp_code = '" + compCode + "'\n" +
+                "\tfrom  coa_opening \n" +
+                "\twhere comp_code = '" + compCode + "'\n" +
                 "\tand deleted = false\n" +
                 "\tand date(op_date) = '" + opDate + "'\n" +
                 "\tand source_acc_id in (" + coaFilter + ")\n" +
                 "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
                 "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
+                "\tand (cur_code ='" + currency + "' or '-' ='" + currency + "')\n" +
                 "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
                 "\tand trader_code is not null\n" +
-                "\tgroup by  cur_code,trader_code,source_acc_id\n" + "\t\t\tunion all\n" + "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere source_ac_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by  cur_code,trader_code,source_ac_id\n" + "\t\t\tunion all\n" + "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" + "\tfrom gl \n" + "\twhere account_id in (" + coaFilter + ")\n" + "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" + "\tand comp_code = '" + compCode + "'\n" + "\tand deleted = false\n" + "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" + "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" + "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "\tand trader_code is not null\n" + "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" + "group by source_acc_id,trader_code,cur_code\n" + ")b\n" + "join trader t on b.trader_code = t.code\n" + "and b.comp_code = t.comp_code\n" + "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" + "and b.comp_code = coa.comp_code\n" + "order by t.user_code";
+                "\tgroup by  cur_code,trader_code,source_acc_id\n" +
+                "\t\t\tunion all\n" +
+                "\tselect source_ac_id,trader_code,cur_code,sum(ifnull(dr_amt,0)) dr_amt,sum(ifnull(cr_amt,0)) cr_amt,comp_code\n" +
+                "\tfrom gl \n" +
+                "\twhere source_ac_id in (" + coaFilter + ")\n" +
+                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted = false\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
+                "\tand (cur_code ='" + currency + "' or '-' ='" + currency + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
+                "\tgroup by  cur_code,trader_code,source_ac_id\n" +
+                "\t\t\tunion all\n" +
+                "\tselect account_id,trader_code,cur_code,sum(ifnull(cr_amt,0)) dr_amt,sum(ifnull(dr_amt,0)) cr_amt,comp_code\n" +
+                "\tfrom gl \n" +
+                "\twhere account_id in (" + coaFilter + ")\n" +
+                "\tand date(gl_date) between  '" + opDate + "' and '" + clDate + "'\n" +
+                "\tand comp_code = '" + compCode + "'\n" +
+                "\tand deleted = false\n" +
+                "\tand (trader_code ='" + traderCode + "' or '-' ='" + traderCode + "')\n" +
+                "\tand (project_no ='" + projectNo + "' or '-' ='" + projectNo + "')\n" +
+                "\tand (cur_code ='" + currency + "' or '-' ='" + currency + "')\n" +
+                "\tand dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                "\tand trader_code is not null\n" +
+                "\tgroup by cur_code,trader_code,account_id\n" + ")a\n" +
+                "group by source_acc_id,trader_code,cur_code\n" + ")b\n" +
+                "join trader t on b.trader_code = t.code\n" +
+                "and b.comp_code = t.comp_code\n" +
+                "join chart_of_account coa on b.source_acc_id = coa.coa_code\n" +
+                "and b.comp_code = coa.comp_code\n" +
+                "order by t.user_code";
         List<VApar> list = new ArrayList<>();
         try {
             ResultSet rs = dao.executeAndResult(sql);
