@@ -94,7 +94,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
         str = str + "%";
         List<ChartOfAccount> list = new ArrayList<>();
         String sql = "select a.*,c1.coa_code group_code,c1.coa_code_usr group_usr_code,c1.coa_name_eng group_name,c2.coa_code head_code,c2.coa_code_usr head_usr_code,c2.coa_name_eng head_name\n" +
-                "from (\n" + "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" +
+                "from (\n" +
+                "select coa_code,coa_code_usr,coa_name_eng,coa_parent,comp_code,coa_level\n" +
                 "from chart_of_account\n" +
                 "where active = true\n" +
                 "and deleted = false\n" +
@@ -107,7 +108,8 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "and a.comp_code = c1.comp_code\n" +
                 "left join chart_of_account c2\n" +
                 "on c1.coa_parent = c2.coa_code\n" +
-                "and c1.comp_code = c2.comp_code";
+                "and c1.comp_code = c2.comp_code\n"+
+                "order by coa_code_usr,coa_name_eng";
         ResultSet rs = getResult(sql, level, level, compCode, str, str);
         try {
             while (rs.next()) {
