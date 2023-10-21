@@ -5,8 +5,8 @@
  */
 package core.acc.api.service;
 
-import core.acc.api.entity.SeqTable;
 import core.acc.api.entity.SeqKey;
+import core.acc.api.entity.SeqTable;
 
 import java.util.List;
 
