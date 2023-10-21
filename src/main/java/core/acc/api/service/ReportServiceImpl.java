@@ -930,7 +930,7 @@ public class ReportServiceImpl implements ReportService {
                     "and a.comp_code = c1.comp_code\n" +
                     "join chart_of_account c2 on a.account_id = c2.coa_code\n" +
                     "and a.comp_code = c2.comp_code\n" +
-                    "order by a.gl_date,a.gl_code";
+                    "order by a.gl_date";
             ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode, traderCode);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
