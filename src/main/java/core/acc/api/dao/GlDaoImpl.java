@@ -316,7 +316,23 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     @Override
     public List<Gl> getVoucher(String glVouNo, String compCode) {
         List<Gl> list = new ArrayList<>();
-        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" + "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" + "g.for_des,g.from_des,g.narration,\n" + "t.user_code t_user_code,t.trader_name,g.tran_source,\n" + "d.usr_code d_user_code,coa.coa_name_eng\n" + "from gl g\n" + "join department d on g.dept_code = d.dept_code\n" + "and g.comp_code = d.comp_code\n" + "left join trader t on g.trader_code = t.code\n" + "and g.comp_code = t.comp_code\n" + "join chart_of_account coa on g.account_id = coa.coa_code\n" + "and g.comp_code = coa.comp_code\n" + "where g.comp_code ='" + compCode + "'\n" + "and g.gl_vou_no ='" + glVouNo + "'\n" + "and (g.tran_source ='DR' or g.tran_source='CR')\n" + "order by g.gl_code";
+        String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" +
+                "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" +
+                "g.for_des,g.from_des,g.narration,\n" +
+                "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
+                "d.usr_code d_user_code,coa.coa_name_eng\n" +
+                "from gl g\n" +
+                "join department d on g.dept_code = d.dept_code\n" +
+                "and g.comp_code = d.comp_code\n" +
+                "left join trader t on g.trader_code = t.code\n" +
+                "and g.comp_code = t.comp_code\n" +
+                "join chart_of_account coa on g.account_id = coa.coa_code\n" +
+                "and g.comp_code = coa.comp_code\n" +
+                "where g.comp_code ='" + compCode + "'\n" +
+                "and g.gl_vou_no ='" + glVouNo + "'\n" +
+                "and g.deleted = false\n"+
+                "and (g.tran_source ='DR' or g.tran_source='CR')\n" +
+                "order by g.gl_code";
         try {
             ResultSet rs = getResult(sql);
             while (rs.next()) {

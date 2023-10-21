@@ -916,7 +916,7 @@ public class ReportServiceImpl implements ReportService {
         try {
             String sql = "select a.*,c1.coa_name_eng source_acc_name,c2.coa_name_eng acc_name\n" +
                     "from (\n" +
-                    "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,dr_amt,cr_amt,comp_code\n" +
+                    "select gl_code,source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,dr_amt,cr_amt,comp_code\n" +
                     "from gl\n" +
                     "where  (source_ac_id = ? or account_id = ?) \n" +
                     "and date(gl_date) between ?  and ? \n" +
@@ -930,7 +930,7 @@ public class ReportServiceImpl implements ReportService {
                     "and a.comp_code = c1.comp_code\n" +
                     "join chart_of_account c2 on a.account_id = c2.coa_code\n" +
                     "and a.comp_code = c2.comp_code\n" +
-                    "order by a.gl_date";
+                    "order by a.gl_date,a.gl_code";
             ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode, traderCode);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
