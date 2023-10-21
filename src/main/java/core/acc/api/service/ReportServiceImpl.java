@@ -629,7 +629,20 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<VTriBalance> getTriBalance(String coaCode, String coaLv1, String coaLv2, String compCode, Integer macId) {
-        String sql = "select coa_code, curr_id, mac_id, dr_amt, cr_amt, dept_code, coa_code_usr, coa_name_eng\n" + "from (\n" + "select tmp.*,coa.coa_code_usr,coa.coa_name_eng,coa.coa_parent coa_lv2,coa1.coa_parent coa_lv1\n" + "from tmp_tri tmp join chart_of_account coa\n" + "on tmp.coa_code = coa.coa_code\n" + "and tmp.comp_code = coa.comp_code\n" + "join chart_of_account coa1\n" + "on coa.coa_parent = coa1.coa_code\n" + "and coa.comp_code =coa1.comp_code\n" + "where tmp.mac_id = " + macId + " \n" + "and tmp.comp_code='" + compCode + "'\n" + "and (tmp.coa_code = '" + coaCode + "' or '-' = '" + coaCode + "'))a\n" + "where (a.coa_lv2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "')\n" + "and (a.coa_lv1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "')";
+        String sql = "select coa_code, curr_id, mac_id, dr_amt, cr_amt, dept_code, coa_code_usr, coa_name_eng\n" +
+                "from (\n" +
+                "select tmp.*,coa.coa_code_usr,coa.coa_name_eng,coa.coa_parent coa_lv2,coa1.coa_parent coa_lv1\n" +
+                "from tmp_tri tmp join chart_of_account coa\n" +
+                "on tmp.coa_code = coa.coa_code\n" +
+                "and tmp.comp_code = coa.comp_code\n" +
+                "join chart_of_account coa1\n" + "on coa.coa_parent = coa1.coa_code\n" +
+                "and coa.comp_code =coa1.comp_code\n" +
+                "where tmp.mac_id = " + macId + " \n" +
+                "and tmp.comp_code='" + compCode + "'\n" +
+                "and (tmp.coa_code = '" + coaCode + "' or '-' = '" + coaCode + "'))a\n" +
+                "where (a.coa_lv2 = '" + coaLv2 + "' or '-' = '" + coaLv2 + "')\n" +
+                "and (a.coa_lv1 = '" + coaLv1 + "' or '-' = '" + coaLv1 + "')\n" +
+                "order by coa_code_usr,coa_name_eng";
         ResultSet rs = dao.executeAndResult(sql);
         List<VTriBalance> balances = new ArrayList<>();
         if (!Objects.isNull(rs)) {
@@ -903,7 +916,7 @@ public class ReportServiceImpl implements ReportService {
         try {
             String sql = "select a.*,c1.coa_name_eng source_acc_name,c2.coa_name_eng acc_name\n" +
                     "from (\n" +
-                    "select source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,dr_amt,cr_amt,comp_code\n" +
+                    "select gl_code,source_ac_id,account_id,gl_date,ref_no,description,trader_code, cur_code,dr_amt,cr_amt,comp_code\n" +
                     "from gl\n" +
                     "where  (source_ac_id = ? or account_id = ?) \n" +
                     "and date(gl_date) between ?  and ? \n" +
@@ -912,12 +925,12 @@ public class ReportServiceImpl implements ReportService {
                     "and cur_code = ?\n" +
                     "and trader_code = ? \n" +
                     "and trader_code is not null\n" +
-                    "order by gl_date,gl_code\n" +
                     ")a\n" +
                     "join chart_of_account c1 on a.source_ac_id = c1.coa_code\n" +
                     "and a.comp_code = c1.comp_code\n" +
                     "join chart_of_account c2 on a.account_id = c2.coa_code\n" +
-                    "and a.comp_code = c2.comp_code";
+                    "and a.comp_code = c2.comp_code\n" +
+                    "order by a.gl_date,a.gl_code";
             ResultSet rs = dao.executeAndResult(sql, accCode, accCode, fromDate, toDate, compCode, curCode, traderCode);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {

@@ -4,8 +4,6 @@ import core.acc.api.entity.COAOpening;
 import core.acc.api.entity.OpeningKey;
 import org.springframework.stereotype.Repository;
 
-import java.sql.ResultSet;
-
 @Repository
 public class COAOpeningDaoImpl extends AbstractDao<OpeningKey, COAOpening> implements COAOpeningDao {
 

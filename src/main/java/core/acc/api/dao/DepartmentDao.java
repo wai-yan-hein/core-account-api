@@ -2,7 +2,6 @@ package core.acc.api.dao;
 
 import core.acc.api.entity.Department;
 import core.acc.api.entity.DepartmentKey;
-import core.acc.api.entity.Trader;
 
 import java.time.LocalDateTime;
 import java.util.List;

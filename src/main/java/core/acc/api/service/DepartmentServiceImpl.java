@@ -4,7 +4,6 @@ import core.acc.api.common.Util1;
 import core.acc.api.dao.DepartmentDao;
 import core.acc.api.entity.Department;
 import core.acc.api.entity.DepartmentKey;
-import core.acc.api.entity.Trader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

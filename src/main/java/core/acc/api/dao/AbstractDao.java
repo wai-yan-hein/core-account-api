@@ -1,7 +1,8 @@
 package core.acc.api.dao;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.*;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -12,10 +13,8 @@ import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 public abstract class AbstractDao<PK extends Serializable, T> {

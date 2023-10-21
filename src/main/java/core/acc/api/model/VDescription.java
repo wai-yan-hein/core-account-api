@@ -1,6 +1,6 @@
 package core.acc.api.model;
 
-import lombok.*;
+import lombok.Data;
 
 @Data
 public class VDescription {

@@ -1,8 +1,7 @@
 package core.acc.api.entity;
 
-import lombok.Data;
-
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.Date;

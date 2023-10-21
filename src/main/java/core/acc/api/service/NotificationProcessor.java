@@ -1,6 +1,5 @@
 package core.acc.api.service;
 
-import core.acc.api.entity.Gl;
 import core.acc.api.model.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
