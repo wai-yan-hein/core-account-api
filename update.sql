@@ -186,6 +186,14 @@ alter table gl
 add column order_id int null after service_id,
 add column ex_code varchar(15) null after order_id;
 
+create table trader_group (
+  group_code varchar(15) not null,
+  comp_code varchar(15) not null,
+  user_code varchar(15) default null,
+  group_name varchar(255) default null,
+  primary key (group_code,comp_code)
+) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
+
 set sql_safe_updates =0;
 #cleaning deleted data
 #delete from gl where deleted = true and mac_id =99;
