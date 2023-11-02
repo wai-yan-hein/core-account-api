@@ -2,12 +2,15 @@ package core.acc.api.service;
 
 import core.acc.api.common.Util1;
 import core.acc.api.dao.ReportDao;
+import core.acc.api.dao.TmpDepartmentDao;
 import core.acc.api.entity.*;
 import core.acc.api.model.Financial;
 import core.acc.api.model.ReturnObject;
 import core.acc.api.model.VoucherInfo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,12 +22,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @Transactional
 @Slf4j
+@RequiredArgsConstructor
 public class ReportServiceImpl implements ReportService {
 
-    @Autowired
-    private ReportDao dao;
-    @Autowired
-    private COAOpeningService coaOpeningService;
+    private final ReportDao dao;
+    private final TmpDepartmentDao tmpDao;
+    private final COAOpeningService coaOpeningService;
     private static final String OP_INV = "Opening Inventory";
     private static final String CL_INV = "Closing Inventory";
     private static final String GP = "Gross Profit (Loss)";
@@ -32,18 +35,30 @@ public class ReportServiceImpl implements ReportService {
     private static final String COS = "Cost of Sale";
     private final HashMap<Integer, ReturnObject> hmRo = new HashMap<>();
 
-    @Transactional
     @Override
     public void insertTmp(List<String> listStr, Integer macId, String compCode) {
         try {
             deleteTmp(macId);
             if (listStr == null || listStr.isEmpty()) {
-                String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select dept_code," + macId + " mac_id from department";
-                dao.exeSql(sql);
+                String sql = """
+                        select dept_code
+                        from department
+                        where comp_code=?""";
+                ResultSet rs = dao.executeAndResult(sql, compCode);
+                while (rs.next()) {
+                    TmpDepartment tmp = new TmpDepartment();
+                    TmpDepartmentKey key = new TmpDepartmentKey();
+                    key.setDeptCode(rs.getString("dept_code"));
+                    key.setMacId(macId);
+                    tmpDao.save(tmp);
+                }
             } else {
-                for (String str : listStr) {
-                    String sql = "insert into tmp_dep_filter(dept_code,mac_id)\n" + "select '" + str + "'," + macId;
-                    dao.exeSql(sql);
+                for (String deptCode : listStr) {
+                    TmpDepartment tmp = new TmpDepartment();
+                    TmpDepartmentKey key = new TmpDepartmentKey();
+                    key.setDeptCode(deptCode);
+                    key.setMacId(macId);
+                    tmpDao.save(tmp);
                 }
             }
         } catch (Exception e) {

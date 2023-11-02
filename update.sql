@@ -194,6 +194,9 @@ create table trader_group (
   primary key (group_code,comp_code)
 ) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
 
+alter table department
+change column updated_dt updated_dt timestamp not null default current_timestamp() ;
+
 set sql_safe_updates =0;
 #cleaning deleted data
 #delete from gl where deleted = true and mac_id =99;
