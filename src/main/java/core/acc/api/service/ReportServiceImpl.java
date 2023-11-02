@@ -50,6 +50,7 @@ public class ReportServiceImpl implements ReportService {
                     TmpDepartmentKey key = new TmpDepartmentKey();
                     key.setDeptCode(rs.getString("dept_code"));
                     key.setMacId(macId);
+                    tmp.setKey(key);
                     tmpDao.save(tmp);
                 }
             } else {
@@ -58,6 +59,7 @@ public class ReportServiceImpl implements ReportService {
                     TmpDepartmentKey key = new TmpDepartmentKey();
                     key.setDeptCode(deptCode);
                     key.setMacId(macId);
+                    tmp.setKey(key);
                     tmpDao.save(tmp);
                 }
             }
