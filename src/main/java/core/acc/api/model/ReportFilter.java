@@ -26,6 +26,7 @@ public class ReportFilter {
     private String traderType;
     private String coaLv2;
     private String coaLv1;
+    private String coaLv3;
     private String invGroup;
     private Integer macId;
     private boolean closing;

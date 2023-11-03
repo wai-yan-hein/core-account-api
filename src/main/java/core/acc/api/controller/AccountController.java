@@ -201,7 +201,7 @@ public class AccountController {
         String deptCode = Util1.isNull(filter.getDeptCode(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");
-        String coaLv3 = Util1.isNull(filter.getCoaCode(), "-");
+        String coaLv3 = Util1.isNull(filter.getCoaLv3(), "-");
         String traderType = Util1.isNull(filter.getTraderType(), "-");
         String opDate = Util1.isNull(filter.getOpeningDate(), "-");
         String projectNo = Util1.isAll(filter.getProjectNo());

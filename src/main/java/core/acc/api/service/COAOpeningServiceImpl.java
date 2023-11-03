@@ -116,8 +116,31 @@ public class COAOpeningServiceImpl implements COAOpeningService {
     }
 
     @Override
-    public List<COAOpening> searchOpening(String opDate, String deptCode, String curCode, String traderType, String coaLv1, String coaLv2, String coaLv3, String projectNo, String compCode) {
-        String sql = "select op.*,c1.coa_code_usr,c1.coa_name_eng,c1.coa_parent coa_lv2,c2.coa_parent coa_lv1,t.user_code t_user_code,t.trader_name,t.discriminator,d.usr_code\n" + "from coa_opening op\n" + "join chart_of_account c1 on op.source_acc_id = c1.coa_code\n" + "and op.comp_code = c1.comp_code\n" + "join chart_of_account c2 on c1.coa_parent = c2.coa_code\n" + "and c1.comp_code = c2.comp_code\n" + "left join trader t\n" + "on op.trader_code = t.code\n" + "and op.comp_code = t.comp_code\n" + "join department d on op.dept_code = d.dept_code\n" + "and op.comp_code = d.comp_code\n" + "where (op.dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" + "and op.deleted = false\n" + "and (c1.coa_parent ='" + coaLv2 + "' or '-'='" + coaLv2 + "')\n" + "and (c2.coa_parent ='" + coaLv1 + "' or '-'='" + coaLv1 + "')\n" + "and (op.cur_code ='" + curCode + "' or '-'='" + curCode + "')\n" + "and (op.project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" + "and op.comp_code ='" + compCode + "'\n" + "and op.op_date ='" + opDate + "'\n" + "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')\n" + "order by c1.coa_code_usr,t.user_code";
+    public List<COAOpening> searchOpening(String opDate, String deptCode, String curCode,
+                                          String traderType, String coaLv1, String coaLv2, String coaLv3,
+                                          String projectNo, String compCode) {
+        String sql = "select op.*,c1.coa_code_usr,c1.coa_name_eng,c1.coa_parent coa_lv2,c2.coa_parent coa_lv1,t.user_code t_user_code,t.trader_name,t.discriminator,d.usr_code\n" +
+                "from coa_opening op\n" +
+                "join chart_of_account c1 on op.source_acc_id = c1.coa_code\n" +
+                "and op.comp_code = c1.comp_code\n" +
+                "join chart_of_account c2 on c1.coa_parent = c2.coa_code\n" +
+                "and c1.comp_code = c2.comp_code\n" +
+                "left join trader t\n" +
+                "on op.trader_code = t.code\n" +
+                "and op.comp_code = t.comp_code\n" +
+                "join department d on op.dept_code = d.dept_code\n" +
+                "and op.comp_code = d.comp_code\n" +
+                "where (op.dept_code ='" + deptCode + "' or '-' ='" + deptCode + "')\n" +
+                "and op.deleted = false\n" +
+                "and (op.source_acc_id ='" + coaLv3 + "' or '-'='" + coaLv3 + "')\n" +
+                "and (c1.coa_parent ='" + coaLv2 + "' or '-'='" + coaLv2 + "')\n" +
+                "and (c2.coa_parent ='" + coaLv1 + "' or '-'='" + coaLv1 + "')\n" +
+                "and (op.cur_code ='" + curCode + "' or '-'='" + curCode + "')\n" +
+                "and (op.project_no ='" + projectNo + "' or '-'='" + projectNo + "')\n" +
+                "and op.comp_code ='" + compCode + "'\n" +
+                "and op.op_date ='" + opDate + "'\n" +
+                "and (t.discriminator='" + traderType + "' or '-' ='" + traderType + "')\n" +
+                "order by c1.coa_code_usr,t.user_code";
         ResultSet rs = reportDao.executeAndResult(sql);
         List<COAOpening> list = new ArrayList<>();
         try {
