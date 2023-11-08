@@ -398,8 +398,8 @@ public class AccountController {
         return Mono.justOrEmpty("converted.");
     }
     @GetMapping(path = "/shootTri")
-    public Mono<?> shootTri() {
-        return Mono.justOrEmpty(glService.shootTri());
+    public Mono<?> shootTri(@RequestParam String compCode) {
+        return Mono.justOrEmpty(glService.shootTri(compCode));
     }
 
     @PostMapping(path = "/yearEnd")

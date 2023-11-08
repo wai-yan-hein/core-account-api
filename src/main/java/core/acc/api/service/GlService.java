@@ -46,6 +46,6 @@ public interface GlService {
 
     void deleteVoucherByAcc(String vouNo, String tranSource, String srcAcc,String compCode);
 
-    List<String> shootTri();
+    List<String> shootTri(String compCode);
 
 }

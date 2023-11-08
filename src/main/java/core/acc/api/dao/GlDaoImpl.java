@@ -278,7 +278,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 and g.deleted = false
                 order by g.order_id,g.gl_code""";
         try {
-            ResultSet rs = getResult(sql,compCode,glVouNo);
+            ResultSet rs = getResult(sql, compCode, glVouNo);
             while (rs.next()) {
                 Gl g = new Gl();
                 GlKey key = new GlKey();
@@ -330,7 +330,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "and g.comp_code = coa.comp_code\n" +
                 "where g.comp_code ='" + compCode + "'\n" +
                 "and g.gl_vou_no ='" + glVouNo + "'\n" +
-                "and g.deleted = false\n"+
+                "and g.deleted = false\n" +
                 "and (g.tran_source ='DR' or g.tran_source='CR')\n" +
                 "order by g.gl_code";
         try {
@@ -413,96 +413,220 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public List<String> shootTri() {
+    public List<String> shootTri(String compCode) {
         List<String> logs = new ArrayList<>();
+        logs.addAll(checkSourceAccExist(compCode));
+        logs.addAll(checkAccountExist(compCode));
+        logs.addAll(checkGlDate(compCode));
+        logs.addAll(checkSameAccount(compCode));
+        logs.addAll(checkDepartment(compCode));
+        logs.addAll(checkAccount(compCode));
+        logs.addAll(checkSourceAcc(compCode));
+        logs.addAll(checkMinusOpening(compCode));
+        logs.addAll(checkTrader(compCode));
+        return logs;
+    }
+
+    private List<String> checkSourceAccExist(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select distinct source_ac_id,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and source_ac_id not in(
+                select coa_code from chart_of_account)""";
+        ResultSet rs = getResult(sql,compCode);
         try {
-            //check source acc
-            String sql = "select distinct source_ac_id,tran_source  from gl where source_ac_id not in(\n" + "select coa_code from chart_of_account) ";
-            ResultSet rs = getResult(sql);
             while (rs.next()) {
                 String sourceAcc = rs.getString("source_ac_id");
-                String tranSource = rs.getString("tran_source");
-                logs.add(tranSource + " : Gl take Source Account which not exist in Chart Of Account : " + sourceAcc);
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Gl take Source Account which not exist in Chart Of Account : " + sourceAcc + "<br>");
             }
-            //check account acc
-            String sql1 = "select distinct account_id,tran_source  from gl where account_id not in(\n" + "select coa_code from chart_of_account) ";
-            ResultSet rs1 = getResult(sql1);
-            while (rs1.next()) {
-                String account = rs1.getString("account_id");
-                String tranSource = rs1.getString("tran_source");
-                logs.add(tranSource + " : Gl take Account which not exist in Chart Of Account : " + account);
-            }
-            //check gl date
-            String sql2 = "select gl_code,tran_source from gl where (gl_date is null or gl_date = '') ";
-            ResultSet rs2 = getResult(sql2);
-            while (rs2.next()) {
-                String glCode = rs2.getString("gl_code");
-                String tranSource = rs2.getString("tran_source");
-                logs.add(tranSource + " : Gl date is null in Gl Code : " + glCode);
-            }
-            //check same account
-            String sql3 = "select gl_code,tran_source from gl where source_ac_id = account_id ";
-            ResultSet rs3 = getResult(sql3);
-            while (rs3.next()) {
-                String glCode = rs3.getString("gl_code");
-                String tranSource = rs3.getString("rs3");
-                logs.add(tranSource + " : Source Account Code and Account Code are the same in Gl Code : " + glCode);
-            }
-
-            //check gl date
-            String sql4 = "select gl_code,tran_source from gl where (dept_code is null or dept_code = '') ";
-            ResultSet rs4 = getResult(sql4);
-            while (rs4.next()) {
-                String glCode = rs4.getString("gl_code");
-                String tranSource = rs4.getString("tran_source");
-                logs.add(tranSource + " : Department is null in Gl Code : " + glCode);
-            }
-
-            String sql5 = """
-                    select gl_code,tran_source\s
-                    from gl
-                    where source_ac_id  in(
-                    select coa_code
-                    from chart_of_account coa
-                    where coa_level <=2
-                    )
-                    or
-                    account_id in (
-                    select coa_code
-                    from chart_of_account coa
-                    where coa_level <=2
-                    )""";
-            ResultSet rs5 = getResult(sql5);
-            while (rs5.next()) {
-                String glCode = rs5.getString("gl_code");
-                String tranSource = rs5.getString("tran_source");
-                logs.add(tranSource + " : Chart of Account in GL is Above Level 3 : " + glCode);
-            }
-            logs.addAll(checkMinusOpening());
-            return logs;
         } catch (Exception e) {
-            log.error("shootTri : " + e.getMessage());
+            log.error("checkSourceAccExist : " + e.getMessage());
         }
         return logs;
     }
 
-    private List<String> checkMinusOpening() {
+    private List<String> checkAccountExist(String compCode) {
+        List<String> logs = new ArrayList<>();
+        //check account acc
+        String sql = """
+                select distinct account_id,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and account_id not in(
+                select coa_code from chart_of_account)""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String account = rs.getString("account_id");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Gl take Account which not exist in Chart Of Account : " + account + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkAccountExist : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkGlDate(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql2 = """
+                select gl_code,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and (gl_date is null or gl_date = '')""";
+        ResultSet rs = getResult(sql2,compCode);
+        try {
+            while (rs.next()) {
+                String glCode = rs.getString("gl_code");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Gl date is null in Gl Code : " + glCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkGLDate : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkSameAccount(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select gl_code,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and source_ac_id = account_id""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String glCode = rs.getString("gl_code");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Source Account Code and Account Code are the same in Gl Code : " + glCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkSameAccount : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkDepartment(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select gl_code,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and (dept_code is null or dept_code = '')""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String glCode = rs.getString("gl_code");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Department is null in Gl Code : " + glCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkDepartment : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkSourceAcc(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select gl_code,tran_source\s
+                from gl
+                where deleted =false
+                and comp_code =?
+                and source_ac_id  in(
+                select coa_code
+                from chart_of_account coa
+                where coa_level <=2)""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String glCode = rs.getString("gl_code");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Source Account in GL is Above Level 3 : " + glCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkSourceAcc : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkAccount(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select gl_code,tran_source
+                from gl
+                where deleted =false
+                and comp_code =?
+                and account_id  in(
+                select coa_code
+                from chart_of_account coa
+                where coa_level <=2)""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String glCode = rs.getString("gl_code");
+                String tranSource = "<font color='red'>" + rs.getString("tran_source") + "</font>";
+                logs.add(tranSource + " : Account in GL is Above Level 3 : " + glCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkAccount : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkMinusOpening(String compCode) {
         List<String> logs = new ArrayList<>();
         String sql = """
                 select coa_op_id,dr_amt,cr_amt
                 from coa_opening
                 where deleted =false
+                and comp_code =?
                 and (ifnull(dr_amt,0)<0 or ifnull(cr_amt,0)<0)""";
-        ResultSet rs = getResult(sql);
+        ResultSet rs = getResult(sql,compCode);
         try {
             while (rs.next()) {
                 String opId = rs.getString("coa_op_id");
                 double drAmt = rs.getDouble("dr_amt");
                 double crAmt = rs.getDouble("cr_amt");
-                logs.add("Opening Minus Error : " + opId + " - " + "Dr Amt : " + drAmt + " - " + "Cr Amt : " + crAmt);
+                String tranSource = "<font color='red'>Opening Minus Error</font>";
+                logs.add(tranSource + " : " + opId + " - " + "Dr Amt : " + drAmt + " - " + "Cr Amt : " + crAmt + "<br>");
             }
         } catch (Exception e) {
             log.error("checkMinusOpening : " + e.getMessage());
+        }
+        return logs;
+    }
+
+    private List<String> checkTrader(String compCode) {
+        List<String> logs = new ArrayList<>();
+        String sql = """
+                select code,discriminator
+                from trader
+                where deleted =false
+                and comp_code =?
+                and account_code  in(
+                select coa_code
+                from chart_of_account coa
+                where coa_level <=2
+                )""";
+        ResultSet rs = getResult(sql,compCode);
+        try {
+            while (rs.next()) {
+                String traderCode = rs.getString("code");
+                String tranSource = "<font color='red'>Trader Account Error : </font>";
+                logs.add(tranSource + traderCode + "<br>");
+            }
+        } catch (Exception e) {
+            log.error("checkTrader : " + e.getMessage());
         }
         return logs;
     }
