@@ -192,8 +192,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<String> shootTri() {
-        return glDao.shootTri();
+    public List<String> shootTri(String compCode) {
+        return glDao.shootTri(compCode);
     }
 
 

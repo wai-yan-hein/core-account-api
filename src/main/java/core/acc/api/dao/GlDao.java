@@ -44,7 +44,7 @@ public interface GlDao {
 
     Date getMaxDate();
 
-    List<String> shootTri();
+    List<String> shootTri(String compCode);
 
 
 }
