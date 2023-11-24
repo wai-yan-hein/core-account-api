@@ -166,13 +166,6 @@ alter table stock_op_value
 change column created_date created_date timestamp not null default current_timestamp() on update current_timestamp() ,
 change column updated_date updated_date timestamp not null default current_timestamp() on update current_timestamp() ;
 
-create index idx_gl_date on gl (gl_date);
-create index idx_dept_code on gl (dept_code);
-create index idx_cur_code on gl (cur_code);
-create index idx_tran_source on gl (tran_source);
-create index idx_source_ac_id on gl (source_ac_id);
-create index idx_account_id on gl (account_id);
-
 alter table trader
 add column nrc varchar(255) null after deleted;
 
@@ -196,6 +189,13 @@ create table trader_group (
 
 alter table department
 change column updated_dt updated_dt timestamp not null default current_timestamp() ;
+
+#optional
+set sql_safe_updates =0;
+update gl
+set gl_date = concat(date(gl_date), ' ', current_time)
+where time(gl_date)='00:00:00';
+
 
 set sql_safe_updates =0;
 #cleaning deleted data
