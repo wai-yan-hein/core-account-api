@@ -237,7 +237,6 @@ public class ReportServiceImpl implements ReportService {
                 v.setProjectNo(rs.getString("project_no"));
                 list.add(v);
             }
-
         }
         if (!list.isEmpty()) {
             list.forEach(gl -> {
