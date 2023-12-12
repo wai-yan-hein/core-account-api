@@ -137,7 +137,25 @@ public class ReportServiceImpl implements ReportService {
         }
         List<Gl> list = new ArrayList<>();
         if (summary) {
-            String sql = "select a.*,dep.usr_code d_user_code,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" + "from (\n" + "select gl_date,gl_code,dept_id,cur_code,source_ac_id,account_id,dept_code,trader_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" + "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" + "group by source_ac_id,account_id,dept_code\n" + ")a\n" + "join department dep\n" + "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" + "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" + "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" + "on a.account_id = coa3.coa_code\n" + "and a.comp_code = coa3.comp_code\n" + "left join chart_of_account coa2\n" + "on coa3.coa_parent = coa2.coa_code\n" + "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" + "order by coa.coa_code_usr\n";
+            String sql = "select a.*,dep.usr_code d_user_code,coa.coa_name_eng src_acc_name,coa3.coa_name_eng acc_name\n" +
+                    "from (\n" + "select gl_date,gl_code,dept_id,cur_code,source_ac_id,account_id,dept_code,trader_code,comp_code,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+                    "from gl \n" +
+                    "where date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" +
+                    "and comp_code = '" + compCode + "'\n" +
+                    "and deleted = false\n" +
+                    "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n" +
+                    "and (account_id = '" + srcAcc + "' or source_ac_id ='" + srcAcc + "')\n" + filter + "\n" +
+                    "group by source_ac_id,account_id,dept_code\n" + ")a\n" +
+                    "join department dep\n" +
+                    "on a.dept_code = dep.dept_code\n" + "and a.comp_code = dep.comp_code\n" +
+                    "join chart_of_account coa\n" + "on a.source_ac_id = coa.coa_code\n" +
+                    "and a.comp_code = coa.comp_code\n" + "left join chart_of_account coa3\n" +
+                    "on a.account_id = coa3.coa_code\n" +
+                    "and a.comp_code = coa3.comp_code\n" +
+                    "left join chart_of_account coa2\n" +
+                    "on coa3.coa_parent = coa2.coa_code\n" +
+                    "and coa3.comp_code = coa2.comp_code\n" + coaFilter + "\n" +
+                    "order by coa.coa_code_usr\n";
             ResultSet rs = dao.executeAndResult(sql);
             if (!Objects.isNull(rs)) {
                 while (rs.next()) {
