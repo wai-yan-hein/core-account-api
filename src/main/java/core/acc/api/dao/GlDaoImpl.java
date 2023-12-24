@@ -214,7 +214,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
             filter += "and ref_no like '" + refNo + "%'\n";
         }
         if (!srcAcc.equals("-")) {
-            filter += "and source_acc_id = '" + srcAcc + "'\n";
+            filter += "and source_ac_id = '" + srcAcc + "'\n";
         }
         String sql = "select a.*,c.coa_name_eng src_acc_name\n" +
                 "from(\n" +
@@ -224,7 +224,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 "where " + filter +
                 "group by gl_vou_no\n" +
                 ")a join chart_of_account c on a.source_ac_id = c.coa_code\n" +
-                "and g.comp_code = c.comp_code\n" +
+                "and a.comp_code = c.comp_code\n" +
                 "order by gl_date,tran_source,gl_vou_no";
         try {
             ResultSet rs = getResult(sql);
