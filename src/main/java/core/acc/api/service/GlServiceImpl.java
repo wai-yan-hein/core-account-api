@@ -141,8 +141,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
-        return glDao.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId);
+    public List<Gl> searchVoucher(String srcAcc,String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
+        return glDao.searchVoucher(srcAcc,fromDate, toDate, vouNo, description, reference, refNo, compCode, macId);
     }
 
     @Override

@@ -26,7 +26,7 @@ public interface GlService {
     List<Gl> searchJournal(String fromDate, String toDate, String vouNo, String description,
                            String reference,String coaCode,String projectNo, String compCode, Integer macId);
 
-    List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId);
+    List<Gl> searchVoucher(String srcAcc,String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId);
 
     boolean deleteVoucher(String glVouNo, String compCode, String modifyBy);
 
