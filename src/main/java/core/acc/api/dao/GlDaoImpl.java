@@ -198,7 +198,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
     }
 
     @Override
-    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
+    public List<Gl> searchVoucher(String srcAcc, String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
         List<Gl> list = new ArrayList<>();
         String filter = " (tran_source ='DR' or tran_source ='CR')\n" + "and comp_code ='" + compCode + "'\n" + "and deleted = false\n" + "and date(gl_date) between '" + fromDate + "' and '" + toDate + "'\n" + "and dept_code in (select dept_code from tmp_dep_filter where mac_id =" + macId + ")\n";
         if (!vouNo.equals("-")) {
@@ -213,12 +213,25 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         if (!refNo.equals("-")) {
             filter += "and ref_no like '" + refNo + "%'\n";
         }
-        String sql = "select gl_date,description,reference,for_des,from_des,narration,\n" + "gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl\n" + "where " + filter + "group by gl_vou_no\n" + "order by gl_date,tran_source,gl_vou_no";
+        if (!srcAcc.equals("-")) {
+            filter += "and source_ac_id = '" + srcAcc + "'\n";
+        }
+        String sql = "select a.*,c.coa_name_eng src_acc_name\n" +
+                "from(\n" +
+                "select gl_date,description,reference,for_des,from_des,narration,\n" +
+                "gl_vou_no,tran_source,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt,source_ac_id,comp_code\n" +
+                "from gl\n" +
+                "where " + filter +
+                "group by gl_vou_no\n" +
+                ")a join chart_of_account c on a.source_ac_id = c.coa_code\n" +
+                "and a.comp_code = c.comp_code\n" +
+                "order by gl_date,tran_source,gl_vou_no";
         try {
             ResultSet rs = getResult(sql);
             while (rs.next()) {
                 Gl g = new Gl();
                 g.setGlDate(rs.getTimestamp("gl_date").toLocalDateTime());
+                g.setSrcAccName(rs.getString("src_acc_name"));
                 g.setDescription(rs.getString("description"));
                 g.setReference(rs.getString("reference"));
                 g.setForDes(rs.getString("for_des"));
@@ -318,7 +331,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
         List<Gl> list = new ArrayList<>();
         String sql = "select g.comp_code,g.dept_id,g.gl_code,g.dept_code,g.cur_code,g.trader_code,\n" +
                 "g.gl_date,g.source_ac_id,g.account_id,g.gl_vou_no,g.description,g.reference,g.ref_no,g.dr_amt,g.cr_amt,\n" +
-                "g.for_des,g.from_des,g.narration,\n" +
+                "g.for_des,g.from_des,g.narration,g.qty,g.price,\n" +
                 "t.user_code t_user_code,t.trader_name,g.tran_source,\n" +
                 "d.usr_code d_user_code,coa.coa_name_eng\n" +
                 "from gl g\n" +
@@ -363,6 +376,8 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 g.setSrcAccCode(rs.getString("source_ac_id"));
                 g.setTranSource(rs.getString("tran_source"));
                 g.setCurCode(rs.getString("cur_code"));
+                g.setQty(rs.getDouble("qty"));
+                g.setPrice(rs.getDouble("price"));
                 list.add(g);
             }
         } catch (Exception e) {
@@ -436,7 +451,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 and comp_code =?
                 and source_ac_id not in(
                 select coa_code from chart_of_account)""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String sourceAcc = rs.getString("source_ac_id");
@@ -459,7 +474,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 and comp_code =?
                 and account_id not in(
                 select coa_code from chart_of_account)""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String account = rs.getString("account_id");
@@ -480,7 +495,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 where deleted =false
                 and comp_code =?
                 and (gl_date is null or gl_date = '')""";
-        ResultSet rs = getResult(sql2,compCode);
+        ResultSet rs = getResult(sql2, compCode);
         try {
             while (rs.next()) {
                 String glCode = rs.getString("gl_code");
@@ -501,7 +516,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 where deleted =false
                 and comp_code =?
                 and source_ac_id = account_id""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String glCode = rs.getString("gl_code");
@@ -522,7 +537,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 where deleted =false
                 and comp_code =?
                 and (dept_code is null or dept_code = '')""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String glCode = rs.getString("gl_code");
@@ -546,7 +561,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 select coa_code
                 from chart_of_account coa
                 where coa_level <=2)""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String glCode = rs.getString("gl_code");
@@ -570,7 +585,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 select coa_code
                 from chart_of_account coa
                 where coa_level <=2)""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String glCode = rs.getString("gl_code");
@@ -591,7 +606,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 where deleted =false
                 and comp_code =?
                 and (ifnull(dr_amt,0)<0 or ifnull(cr_amt,0)<0)""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String opId = rs.getString("coa_op_id");
@@ -618,7 +633,7 @@ public class GlDaoImpl extends AbstractDao<GlKey, Gl> implements GlDao {
                 from chart_of_account coa
                 where coa_level <=2
                 )""";
-        ResultSet rs = getResult(sql,compCode);
+        ResultSet rs = getResult(sql, compCode);
         try {
             while (rs.next()) {
                 String traderCode = rs.getString("code");

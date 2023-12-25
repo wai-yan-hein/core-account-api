@@ -79,6 +79,10 @@ public class Gl {
     private String exCode;
     @Column(name = "order_id")
     private Integer orderId;
+    @Column(name = "qty")
+    private double qty;
+    @Column(name = "price")
+    private double price;
     @Transient
     private String glDateStr;
     @Transient

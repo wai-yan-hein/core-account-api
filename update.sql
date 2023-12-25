@@ -190,6 +190,11 @@ create table trader_group (
 alter table department
 change column updated_dt updated_dt timestamp not null default current_timestamp() ;
 
+alter table gl
+add column qty double(20,3) null after for_des,
+add column price double(20,3) null after qty;
+
+
 #optional
 set sql_safe_updates =0;
 update gl

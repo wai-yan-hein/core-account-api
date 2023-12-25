@@ -36,9 +36,9 @@ public class GlServiceImpl implements GlService {
     @Override
     public Gl save(Gl gl, boolean backup) {
         String updatedBy = gl.getModifyBy();
-        gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
         gl.setModifyDate(LocalDateTime.now());
         if (Util1.isNull(gl.getKey().getGlCode())) {
+            gl.setGlDate(Util1.toDateTime(gl.getGlDate()));
             gl.setCreatedDate(LocalDateTime.now());
             Integer macId = gl.getMacId();
             String compCode = gl.getKey().getCompCode();
@@ -141,8 +141,8 @@ public class GlServiceImpl implements GlService {
     }
 
     @Override
-    public List<Gl> searchVoucher(String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
-        return glDao.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId);
+    public List<Gl> searchVoucher(String srcAcc,String fromDate, String toDate, String vouNo, String description, String reference, String refNo, String compCode, Integer macId) {
+        return glDao.searchVoucher(srcAcc,fromDate, toDate, vouNo, description, reference, refNo, compCode, macId);
     }
 
     @Override

@@ -228,6 +228,7 @@ public class AccountController {
     public Mono<Boolean> deleteCOA(@RequestBody COAKey key) {
         return Mono.just(coaService.delete(key));
     }
+
     @PostMapping(path = "/deleteDepartment")
     public Mono<?> deleteDepartment(@RequestBody DepartmentKey key) {
         return Mono.just(departmentService.delete(key));
@@ -346,8 +347,9 @@ public class AccountController {
         String reference = Util1.isAll(filter.getReference());
         String refNo = Util1.isNull(filter.getRefNo(), "-");
         String compCode = filter.getCompCode();
+        String sourceAcc = Util1.isNull(filter.getSrcAcc(), "-");
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
-        return Flux.fromIterable(glService.searchVoucher(fromDate, toDate, vouNo, description, reference, refNo, compCode, macId)).onErrorResume(throwable -> Flux.empty());
+        return Flux.fromIterable(glService.searchVoucher(sourceAcc, fromDate, toDate, vouNo, description, reference, refNo, compCode, macId)).onErrorResume(throwable -> Flux.empty());
     }
 
     @GetMapping(path = "/getJournal")
@@ -397,6 +399,7 @@ public class AccountController {
         converterService.convertToUnicode();
         return Mono.justOrEmpty("converted.");
     }
+
     @GetMapping(path = "/shootTri")
     public Mono<?> shootTri(@RequestParam String compCode) {
         return Mono.justOrEmpty(glService.shootTri(compCode));
