@@ -55,6 +55,8 @@ public class ChartOfAccount {
     private String intgUpdStatus;
     @Column(name = "credit")
     private boolean credit;
+    @Column(name = "bank_no")
+    private String bankNo;
     @Transient
     private String groupCode;
     @Transient
