@@ -80,9 +80,9 @@ public class Gl {
     @Column(name = "order_id")
     private Integer orderId;
     @Column(name = "qty")
-    private double qty;
+    private Double qty;
     @Column(name = "price")
-    private double price;
+    private Double price;
     @Transient
     private String glDateStr;
     @Transient

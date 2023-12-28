@@ -69,7 +69,7 @@ public class GlServiceImpl implements GlService {
     public ReturnObject save(List<Gl> glList) {
         ReturnObject ro = new ReturnObject();
         if (!glList.isEmpty()) {
-            Gl tmp = glList.get(0);
+            Gl tmp = glList.getFirst();
             String vouNo = tmp.getRefNo();
             String tranSource = tmp.getTranSource();
             String compCode = tmp.getKey().getCompCode();

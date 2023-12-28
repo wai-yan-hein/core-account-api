@@ -194,6 +194,8 @@ alter table gl
 add column qty double(20,3) null after for_des,
 add column price double(20,3) null after qty;
 
+alter table chart_of_account
+add column bank_no varchar(20) null after credit;
 
 #optional
 set sql_safe_updates =0;
