@@ -108,7 +108,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
                 "and a.comp_code = c1.comp_code\n" +
                 "left join chart_of_account c2\n" +
                 "on c1.coa_parent = c2.coa_code\n" +
-                "and c1.comp_code = c2.comp_code\n"+
+                "and c1.comp_code = c2.comp_code\n" +
                 "order by coa_code_usr,coa_name_eng";
         ResultSet rs = getResult(sql, level, level, compCode, str, str);
         try {
@@ -209,14 +209,16 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> getCOAByGroup(String groupCode, String compCode) {
+        groupCode = Util1.isNull(groupCode, "-");
         String sql = """
                 select coa_code,coa_name_eng,comp_code
                 from chart_of_account
-                where coa_parent =?
+                where (coa_parent =? or '-' =?)
                 and comp_code =?
+                and coa_level =2
                 and active = true and deleted = false
                 order by coa_code_usr,coa_name_eng""";
-        ResultSet rs = getResult(sql, groupCode, compCode);
+        ResultSet rs = getResult(sql, groupCode, groupCode, compCode);
         List<ChartOfAccount> list = new ArrayList<>();
         try {
             while (rs.next()) {

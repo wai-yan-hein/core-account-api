@@ -45,4 +45,5 @@ public class ReportFilter {
     private String plAcc;
     private String reAcc;
     private String projectNo;
+    private List<String> listCOAGroup;
 }

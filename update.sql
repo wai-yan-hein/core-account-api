@@ -197,6 +197,10 @@ add column price double(20,3) null after qty;
 alter table chart_of_account
 add column bank_no varchar(20) null after credit;
 
+alter table gl
+change column gl_date gl_date timestamp not null ;
+
+
 #optional
 set sql_safe_updates =0;
 update gl

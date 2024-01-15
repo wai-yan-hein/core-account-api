@@ -59,6 +59,7 @@ public class ReportController {
         Integer macId = filter.getMacId();
         String projectNo = Util1.isAll(filter.getProjectNo());
         String reportName = filter.getReportName();
+        List<String> listCOAGroup = filter.getListCOAGroup();
         String exportPath = String.format("temp%s%s.json", File.separator, reportName + filter.getMacId());
         createFilePath(exportPath);
         reportService.insertTmp(filter.getListDepartment(), macId, compCode);
@@ -116,6 +117,8 @@ public class ReportController {
                 case "COA" -> {
                     List<Financial> list = reportService.getCOAList(compCode);
                     Util1.writeJsonFile(list, exportPath);
+                }
+                case "CashBankSummary"->{
                 }
             }
             try (FileInputStream in = new FileInputStream(exportPath)) {

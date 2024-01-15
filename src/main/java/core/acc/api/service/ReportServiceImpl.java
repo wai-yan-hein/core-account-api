@@ -1235,7 +1235,26 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public Gl getCashBook(String startDate, String endDate, String srcAcc, String curCode, String compCode) {
-        String sql = "select sum(a.dr_amt) dr_amt,sum(a.cr_amt) cr_amt\n" + "from (\n" + "select source_ac_id,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and source_ac_id ='" + srcAcc + "'\n" + "and cur_code ='" + curCode + "'\n" + "group by source_ac_id\n" + "\tunion all\n" + "select account_id,sum(cr_amt) dr_amt,sum(dr_amt) cr_amt\n" + "from gl \n" + "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" + "and comp_code = '" + compCode + "'\n" + "and deleted = false\n" + "and account_id ='" + srcAcc + "'\n" + "and cur_code ='" + curCode + "'\n" + "group by account_id\n" + ")a\n" + "group by source_ac_id\n";
+        String sql = "select sum(a.dr_amt) dr_amt,sum(a.cr_amt) cr_amt\n" +
+                "from (\n" +
+                "select source_ac_id,sum(dr_amt) dr_amt,sum(cr_amt) cr_amt\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and deleted = false\n" +
+                "and source_ac_id ='" + srcAcc + "'\n" +
+                "and cur_code ='" + curCode + "'\n" +
+                "group by source_ac_id\n" +
+                "\tunion all\n" +
+                "select account_id,sum(cr_amt) dr_amt,sum(dr_amt) cr_amt\n" +
+                "from gl \n" +
+                "where date(gl_date) between '" + startDate + "' and '" + endDate + "'\n" +
+                "and comp_code = '" + compCode + "'\n" +
+                "and deleted = false\n" +
+                "and account_id ='" + srcAcc + "'\n" +
+                "and cur_code ='" + curCode + "'\n" +
+                "group by account_id\n" + ")a\n" +
+                "group by source_ac_id\n";
         ResultSet rs = getResult(sql);
         try {
             if (rs.next()) {
@@ -1287,6 +1306,7 @@ public class ReportServiceImpl implements ReportService {
         }
         return list;
     }
+
 
     private String getHeadSqlDetail(String head, Integer macId) {
         return "select tmp.coa_code,tmp.curr_id, tmp.cr_amt-tmp.dr_amt amount,\n" + "coa1.coa_name_eng,coa2.coa_name_eng group_name,coa3.coa_name_eng head_name\n" + "from tmp_tri tmp \n" + "join chart_of_account coa1\n" + "on tmp.coa_code = coa1.coa_code\n" + "and tmp.comp_code = coa1.comp_code\n" + "join chart_of_account coa2\n" + "on coa1.coa_parent = coa2.coa_code\n" + "and coa1.comp_code = coa2.comp_code\n" + "join chart_of_account coa3\n" + "on coa2.coa_parent = coa3.coa_code\n" + "and coa2.comp_code = coa3.comp_code\n" + "where tmp.mac_id =" + macId + "\n" + "and coa2.coa_parent='" + head + "'\n" + "and (dr_amt<>0 or cr_amt<>0)\n" + "order by coa3.coa_code_usr,coa3.coa_name_eng,coa2.coa_code_usr,coa2.coa_name_eng,coa1.coa_code_usr,coa1.coa_name_eng";
