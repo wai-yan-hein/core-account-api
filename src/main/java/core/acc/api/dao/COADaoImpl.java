@@ -203,7 +203,7 @@ public class COADaoImpl extends AbstractDao<COAKey, ChartOfAccount> implements C
 
     @Override
     public List<ChartOfAccount> findAllActive(String compCode) {
-        String hsql = "select o from ChartOfAccount o where o.key.compCode ='" + compCode + "' and o.active =1 and o.deleted = false";
+        String hsql = "select o from ChartOfAccount o where o.key.compCode ='" + compCode + "' and o.active =true and o.deleted = false";
         return findHSQL(hsql);
     }
 
