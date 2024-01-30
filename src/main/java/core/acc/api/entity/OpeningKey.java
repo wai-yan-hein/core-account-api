@@ -10,7 +10,7 @@ import java.io.Serializable;
 @Data
 public class OpeningKey implements Serializable {
     @Column(name = "coa_op_id")
-    private String opId;
+    private String coaOpId;
     @Column(name = "comp_code")
     private String compCode;
 }

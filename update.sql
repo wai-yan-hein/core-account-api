@@ -198,7 +198,13 @@ alter table chart_of_account
 add column bank_no varchar(20) null after credit;
 
 alter table gl
-change column gl_date gl_date timestamp not null ;
+change column gl_date gl_date DATETIME not null ;
+
+create table tmp_coa_filter (
+  coa_code varchar(15) not null,
+  mac_id int(11) not null,
+  primary key (dept_code,mac_id)
+) engine=innodb default charset=utf8mb3 collate=utf8mb3_general_ci;
 
 
 #optional
@@ -211,4 +217,3 @@ where time(gl_date)='00:00:00';
 set sql_safe_updates =0;
 #cleaning deleted data
 #delete from gl where deleted = true and mac_id =99;
-

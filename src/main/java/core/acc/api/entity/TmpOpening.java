@@ -9,6 +9,4 @@ public class TmpOpening {
     private Double drAmt;
     private Double crAmt;
     private Double closing;
-
-
 }

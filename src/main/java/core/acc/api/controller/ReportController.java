@@ -47,7 +47,6 @@ public class ReportController {
         String otherIncomeAcc = Util1.isNull(filter.getOtherIncomeAcc(), "-");
         String purAcc = Util1.isNull(filter.getPurchaseAcc(), "-");
         String expenseAcc = Util1.isNull(filter.getExpenseAcc(), "-");
-
         String ieProcess = String.format("%s,%s,%s,%s", incomeAcc, otherIncomeAcc, purAcc, expenseAcc);
         String plProcess = String.format("%s,%s,%s,%s", incomeAcc, purAcc, otherIncomeAcc, expenseAcc);
         String bsProcess = String.format("%s,%s,%s,%s", fixAcc, curAcc, liaAcc, capitalAcc);
@@ -118,7 +117,7 @@ public class ReportController {
                     List<Financial> list = reportService.getCOAList(compCode);
                     Util1.writeJsonFile(list, exportPath);
                 }
-                case "CashBankSummary"->{
+                case "CashBankSummary" -> {
                 }
             }
             try (FileInputStream in = new FileInputStream(exportPath)) {
@@ -168,7 +167,7 @@ public class ReportController {
     }
 
     @PostMapping(path = "/getTriBalance")
-    public Flux<?> getTriBalance(@RequestBody ReportFilter filter) throws IOException {
+    public Flux<?> getTriBalance(@RequestBody ReportFilter filter) {
         String coaCode = Util1.isNull(filter.getCoaCode(), "-");
         String coaLv1 = Util1.isNull(filter.getCoaLv1(), "-");
         String coaLv2 = Util1.isNull(filter.getCoaLv2(), "-");

@@ -28,8 +28,8 @@ public class COAOpeningServiceImpl implements COAOpeningService {
 
     @Override
     public COAOpening save(COAOpening op) {
-        if (Util1.isNull(op.getKey().getOpId())) {
-            op.getKey().setOpId(getCode(op.getKey().getCompCode()));
+        if (Util1.isNull(op.getKey().getCoaOpId())) {
+            op.getKey().setCoaOpId(getCode(op.getKey().getCompCode()));
         }
         if (op.getTraderCode() != null) {
             if (op.getSourceAccId() == null) {
@@ -152,7 +152,7 @@ public class COAOpeningServiceImpl implements COAOpeningService {
                     COAOpening coa = new COAOpening();
                     OpeningKey key = new OpeningKey();
                     key.setCompCode(compCode);
-                    key.setOpId(rs.getString("coa_op_id"));
+                    key.setCoaOpId(rs.getString("coa_op_id"));
                     coa.setKey(key);
                     coa.setCoaUsrCode(rs.getString("coa_code_usr"));
                     coa.setSourceAccId(rs.getString("source_acc_id"));

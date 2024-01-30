@@ -79,7 +79,7 @@ public abstract class AbstractDao<PK extends Serializable, T> {
             for (int i = 0; i < params.length; i++) {
                 stmt.setObject(i + 1, params[i]);
             }
-            //log.info(formatSqlWithParams(sql, params));
+           // log.info(formatSqlWithParams(sql, params));
             return stmt.executeQuery();
         });
     }

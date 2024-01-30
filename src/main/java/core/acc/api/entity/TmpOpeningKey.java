@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @Embeddable
-public class TmpOpeningKey implements java.io.Serializable {
+public class TmpOpeningKey  {
     @Column(name = "coa_code")
     private String coaCode;
     @Column(name = "cur_code")

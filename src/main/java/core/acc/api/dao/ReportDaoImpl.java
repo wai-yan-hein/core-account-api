@@ -12,8 +12,6 @@ public class ReportDaoImpl extends AbstractDao<String, Object> implements Report
     }
 
 
-
-
     @Override
     public ResultSet executeAndResult(String sql) {
         return getResult(sql);
