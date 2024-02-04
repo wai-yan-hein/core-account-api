@@ -485,7 +485,7 @@ public class ReportServiceImpl implements ReportService {
     }
 
     private void updateInvClosing(String stDate, String enDate, String invGroup, String compCode, Integer macId) {
-        List<Financial> list = getInvClosing(stDate, enDate, invGroup, compCode, macId, false);
+        List<Financial> list = getInvClosing(stDate, enDate, invGroup, compCode, macId, true);
         list.forEach(f -> {
             double amt = f.getAmount();
             String coaCode = f.getCoaCode();
