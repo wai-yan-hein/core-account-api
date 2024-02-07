@@ -3,6 +3,7 @@ package core.acc.api.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -14,7 +15,7 @@ public class StockOP {
     private StockOPKey key;
     @Temporal(TemporalType.DATE)
     @Column(name = "tran_date")
-    private Date tranDate;
+    private LocalDate tranDate;
     @Column(name = "coa_code")
     private String coaCode;
     @Column(name = "dept_code")
