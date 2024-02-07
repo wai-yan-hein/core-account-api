@@ -1,5 +1,6 @@
 package core.acc.api.dao;
 
+import core.acc.api.common.Util1;
 import core.acc.api.entity.StockOP;
 import core.acc.api.entity.StockOPKey;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +15,7 @@ import java.util.List;
 public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements StockOPDao {
     @Override
     public StockOP save(StockOP op) {
-        saveOrUpdate(op,op.getKey());
+        saveOrUpdate(op, op.getKey());
         return op;
     }
 
@@ -25,7 +26,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
     }
 
     @Override
-    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode,String projectNo, String compCode) {
+    public List<StockOP> search(String fromDate, String toDate, String deptCode, String curCode, String projectNo, String compCode) {
         List<StockOP> list = new ArrayList<>();
         String sql = "select a.*,dep.usr_code d_user_code,coa.coa_code_usr,coa.coa_name_eng\n" +
                 "from (\n" +
@@ -55,7 +56,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                     key.setCompCode(rs.getString("comp_code"));
                     key.setDeptId(rs.getInt("dept_id"));
                     op.setKey(key);
-                    op.setTranDate(rs.getTimestamp("tran_date"));
+                    op.setTranDate(Util1.toLocalDate(rs.getDate("tran_date")));
                     op.setDeleted(rs.getBoolean("deleted"));
                     op.setCurCode(rs.getString("curr_code"));
                     op.setRemark(rs.getString("remark"));

@@ -414,5 +414,9 @@ public class Util1 {
         }
         return strMonth;
     }
-
+    public static LocalDate toLocalDate(Date date) {
+        Instant instant = date.toInstant();
+        ZoneId zoneId = ZoneId.systemDefault();
+        return instant.atZone(zoneId).toLocalDate();
+    }
 }
