@@ -32,7 +32,7 @@ public class ChartOfAccount {
     @Column(name = "coa_parent")
     private String coaParent;
     @Column(name = "coa_option", length = 5)
-    private String option;
+    private String coaOption;
     @Column(name = "coa_level")
     private Integer coaLevel;
     @Column(name = "coa_code_usr")

@@ -138,7 +138,7 @@ public class COAServiceImpl implements COAService {
             c.setCoaNameMya(t.getCoaNameMya());
             c.setActive(t.isActive());
             c.setCreatedBy("1");
-            c.setOption("USR");
+            c.setCoaOption("USR");
             c.setCreatedDate(LocalDateTime.now());
             c.setModifiedDate(LocalDateTime.now());
             c.setCoaParent(t.getCoaParent());

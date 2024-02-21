@@ -60,7 +60,7 @@ public class YearEndServiceImpl implements YearEndService {
                     coa.setDeleted(yn.isDeleted());
                     coa.setCurCode(yn.getCurCode());
                     coa.setDeptCode(yn.getDeptCode());
-                    coa.setOption(yn.getOption());
+                    coa.setCoaOption(yn.getCoaOption());
                     coa.setCredit(yn.isCredit());
                     coa.setMacId(macId);
                     coaService.save(coa);

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class StockOPDaoImpl extends AbstractDao<StockOPKey, StockOP> implements 
                     key.setCompCode(rs.getString("comp_code"));
                     key.setDeptId(rs.getInt("dept_id"));
                     op.setKey(key);
-                    op.setTranDate(Util1.toLocalDate(rs.getDate("tran_date")));
+                    op.setTranDate(LocalDate.parse(rs.getString("tran_date")));
                     op.setDeleted(rs.getBoolean("deleted"));
                     op.setCurCode(rs.getString("curr_code"));
                     op.setRemark(rs.getString("remark"));
